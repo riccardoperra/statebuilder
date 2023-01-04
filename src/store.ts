@@ -8,7 +8,7 @@ export const $EXTENSION = Symbol('store-state-extension');
 
 export type StoreDefinitionCreator<
   T extends StoreValue,
-  TStoreExtension = unknown
+  TStoreExtension extends {}
 > = StoreDefinition<T, TStoreExtension> & {
   extend<TExtendedStore>(
     createPlugin: (ctx: Store<T>) => TExtendedStore,
@@ -46,12 +46,11 @@ export function makeStore<
 
 export function defineStore<
   TState extends StoreValue,
-  TStoreExtension
 >(
   initialValue: TState,
-): StoreDefinitionCreator<TState, TStoreExtension> {
+): StoreDefinitionCreator<TState, {}> {
   const name = `state-${++id}`;
-  const extensions: Array<(ctx: Store<TState>) => TStoreExtension> = [];
+  const extensions: Array<(ctx: Store<TState>) => {}> = [];
 
   return {
     [$NAME]: name,
@@ -59,7 +58,7 @@ export function defineStore<
     initialValue,
     extend(createPlugin) {
       extensions.push((context) => {
-        return Object.assign(context, createPlugin(context)) as TStoreExtension;
+        return Object.assign(context, createPlugin(context));
       });
       return this as any;
     },

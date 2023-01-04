@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Container, defineStore } from '../src';
-import { createRoot, getOwner } from 'solid-js';
+import { getOwner } from 'solid-js';
 
 describe('Container', () => {
   const owner = getOwner()!;
