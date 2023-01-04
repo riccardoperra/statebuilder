@@ -1,36 +1,67 @@
-import { Accessor, createMemo, createSignal } from 'solid-js';
-import { createStore, SetStoreFunction, unwrap } from 'solid-js/store';
+import { createMemo, createSignal } from 'solid-js';
+import { createStore, SetStoreFunction } from 'solid-js/store';
+import type { Store, StoreDefinition, StoreValue, Wrap } from './types';
 
-export interface Store<T> {
-  get: Accessor<T>;
-  set: SetStoreFunction<T>;
-  state: T;
+let id = 0;
+export const $NAME = Symbol('store-state-name');
+export const $EXTENSION = Symbol('store-state-extension');
 
-  extend<Data>(mergeCb: (ctx: Store<T>) => Data): Store<T> & Data;
+export type StoreDefinitionCreator<
+  T extends StoreValue,
+  TStoreExtension = unknown
+> = StoreDefinition<T, TStoreExtension> & {
+  extend<TExtendedStore>(
+    createPlugin: (ctx: Store<T>) => TExtendedStore,
+  ): StoreDefinitionCreator<T, Wrap<unknown extends TStoreExtension ? TExtendedStore : TExtendedStore & TStoreExtension>>;
 }
 
-export function defineStore<TState extends object>(
-  initialState: TState,
-): Store<TState> {
-  const [notification, notify] = createSignal(undefined, { equals: false });
-  const [store, internalSetStore] = createStore(initialState);
+type MakeStoreConfiguration<TState extends StoreValue> = {
+  initialValue: TState
+}
 
-  const setStore: SetStoreFunction<TState> = (...args: unknown[]) => {
+export function makeStore<
+  TState extends StoreValue,
+  TStoreExtension
+>(
+  options: MakeStoreConfiguration<TState>,
+): Store<TState> {
+  const [store, internalSetStore] = createStore(options.initialValue);
+  const [track, notify] = createSignal(undefined, { equals: false });
+
+  const set: SetStoreFunction<TState> = (...args: unknown[]) => {
     (internalSetStore as any)(...args);
     notify();
   };
 
-  const get = createMemo(() => {
-    notification();
-    return unwrap(store);
+  const accessor = createMemo(() => {
+    track();
+    return store;
   });
 
+  return new Proxy(Object.assign(accessor, {
+    set,
+    get: store,
+  }), {});
+}
+
+export function defineStore<
+  TState extends StoreValue,
+  TStoreExtension
+>(
+  initialValue: TState,
+): StoreDefinitionCreator<TState, TStoreExtension> {
+  const name = `state-${++id}`;
+  const extensions: Array<(ctx: Store<TState>) => TStoreExtension> = [];
+
   return {
-    get,
-    set: setStore,
-    state: store,
-    extend(ctx) {
-      return Object.assign(this, ctx(this));
+    [$NAME]: name,
+    [$EXTENSION]: extensions,
+    initialValue,
+    extend(createPlugin) {
+      extensions.push((context) => {
+        return Object.assign(context, createPlugin(context)) as TStoreExtension;
+      });
+      return this as any;
     },
   };
 }
