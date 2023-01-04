@@ -9,11 +9,10 @@ It's built to be an extremely modular system, with an API that allows you to add
 Of course, this come with a built-in TypeScript support.
 
 ![Plugin architecture](./plugin-architecture.png)
-## Usage
 
-Solid already come with a state management system thanks to signals and stores, it already provides all necessary primitives. What's missing is a well defined pattern to follow while building your application.
+Solid already provides the primitives to build a state manaher system thanks to signals and stores. What's missing is a well defined pattern to follow while building your application.
 
-Rstate thanks to his composability allows to define the approach you prefer to handle your state. 
+Rstate thanks to it's modular system allows you to define the approach you prefer to handle your state.
 
 This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
 
