@@ -20,10 +20,12 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest",
-    "typecheck":  "vitest typecheck"
+    "typecheck": "vitest typecheck",
+    "coverage": "vitest run --coverage"
   },
   "license": "MIT",
   "devDependencies": {
+    "@vitest/coverage-c8": "^0.26.3",
     "happy-dom": "^8.1.2",
     "prettier": "^2.8.1",
     "tsup": "^6.5.0",
