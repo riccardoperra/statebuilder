@@ -3,5 +3,7 @@ export { Container } from './container';
 
 export {
   StateProvider,
-  provideState
+  provideState,
 } from './solid';
+
+export { withAsyncAction } from './plugins/asyncAction';
