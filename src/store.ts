@@ -11,7 +11,7 @@ export type StoreDefinitionCreator<
   TStoreExtension extends {}
 > = StoreDefinition<T, TStoreExtension> & {
   extend<TExtendedStore>(
-    createPlugin: (ctx: Store<T>) => TExtendedStore,
+    createPlugin: (ctx: Store<T> & TStoreExtension) => TExtendedStore,
   ): StoreDefinitionCreator<T, Wrap<unknown extends TStoreExtension ? TExtendedStore : TExtendedStore & TStoreExtension>>;
 }
 

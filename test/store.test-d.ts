@@ -53,4 +53,18 @@ describe('defineStore', () => {
 
     expectTypeOf($def).toMatchTypeOf<Test>();
   });
+
+  test('infer context while building', () => {
+    defineStore({ name: 'test', id: 1 })
+      .extend(ctx => {
+        return {
+          dispatch() {
+          },
+        };
+      })
+      .extend(ctx => {
+        type Test = Store<{ name: string, id: number }> & { dispatch: () => void };
+        expectTypeOf(ctx).toMatchTypeOf<Test>();
+      });
+  });
 });
