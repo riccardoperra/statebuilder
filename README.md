@@ -1,3 +1,15 @@
+# rstate
+
+`Rstate` is a state management library built on the top of SolidJS reactivity.
+
+Rstate allows the user to extend its functionalities with plugins. This is the main concept of this state manager. 
+
+It's built
+to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors in an easier way.
+
+Of course, this come with a built-in TypeScript support.
+
+![Plugin architecture](./plugin-architecture.png)
 ## Usage
 
 Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
