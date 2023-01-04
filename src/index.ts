@@ -1,3 +1,1 @@
-export function foo(): string {
-  return "";
-}
+export {defineStore} from './store';
