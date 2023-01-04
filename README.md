@@ -4,15 +4,16 @@
 
 Rstate allows the user to extend its functionalities with plugins. This is the main concept of this state manager. 
 
-It's built
-to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors in an easier way.
+It's built to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors in an easier way.
 
 Of course, this come with a built-in TypeScript support.
 
 ![Plugin architecture](./plugin-architecture.png)
 ## Usage
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+Solid already come with a state management system thanks to signals and stores, it already provides all necessary primitives. What's missing is a well defined pattern to follow while building your application.
+
+Rstate thanks to his composability allows to define the approach you prefer to handle your state. 
 
 This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
 
