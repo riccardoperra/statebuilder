@@ -1,5 +1,11 @@
 # plustate
 
+## 0.1.0-unstable.5
+
+### Patch Changes
+
+- a8a78aa: improve command typings
+
 ## 0.1.0-unstable.4
 
 ### Patch Changes
