@@ -12,21 +12,25 @@ export interface StateCommand<
 
   execute<TValue extends T>(
     payload: TValue,
-  ): ExecutedStateCommand<Identity, TValue>;
+  ): ExecutedStateCommand<Identity, TValue, this>;
 
   with<TMetadata extends object>(
     metadata: TMetadata,
-  ): StateCommand<Identity, T> & TMetadata;
+  ): this & TMetadata;
 }
 
-export type ExecutedStateCommand<Identity extends string, T> = Readonly<
-  Omit<StateCommand<Identity, T>, 'withPayload' | 'execute'> & {
+export type ExecutedStateCommand<
+  Identity extends string,
+  T,
+  TStateCommand extends StateCommand<Identity, T>
+> = Readonly<
+  Omit<TStateCommand, 'withPayload' | 'execute'> & {
   consumerValue: T;
 }
 >;
 
 export type GenericStateCommand = StateCommand<string, unknown>;
-export type ExecutedGenericStateCommand = ExecutedStateCommand<string, unknown>;
+export type ExecutedGenericStateCommand = ExecutedStateCommand<string, unknown, StateCommand<any, any>>;
 
 type GetCommandInfo<T extends GenericStateCommand> = T extends StateCommand<
     infer TIdentity,
@@ -54,7 +58,7 @@ export function createCommand<Identity extends string, T = unknown>(
     },
     execute<TValue extends T>(
       payload: TValue,
-    ): ExecutedStateCommand<Identity, TValue> {
+    ): ExecutedStateCommand<Identity, TValue, StateCommand<Identity, T>> {
       return Object.assign(this, {
         consumerValue: payload,
       });
