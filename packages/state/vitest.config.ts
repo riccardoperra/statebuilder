@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import solidPlugin from 'vite-plugin-solid';
 
 export default defineConfig({
   test: {
@@ -12,4 +13,5 @@ export default defineConfig({
     threads: false,
     isolate: false,
   },
+  plugins: [solidPlugin()],
 });

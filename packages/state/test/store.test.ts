@@ -13,32 +13,32 @@ describe('Store', () => {
 
   describe('defineState', () => {
     it('should define state with params', () => {
-      const def = defineStore<Todo>({ id: 1, title: 'title', completed: false });
+      const def = defineStore<Todo>(() => ({ id: 1, title: 'title', completed: false }));
 
-      expect(def.initialValue).toEqual({ id: 1, title: 'title', completed: false });
+      expect(def.initialValue()).toEqual({ id: 1, title: 'title', completed: false });
       expect(def[$EXTENSION].length).toEqual(0);
     });
 
     it('should define state with extension', () => {
-      const def = defineStore<Todo>({ id: 1, title: 'title', completed: false })
+      const def = defineStore<Todo>(() => ({ id: 1, title: 'title', completed: false }))
         .extend(ctx => {
         })
         .extend(ctx => {
         });
 
-      expect(def.initialValue).toEqual({ id: 1, title: 'title', completed: false });
+      expect(def.initialValue()).toEqual({ id: 1, title: 'title', completed: false });
       expect(def[$EXTENSION].length).toEqual(2);
     });
   });
 
-  const container = new Container(getOwner()!);
+  const container = Container.create();
 
   it('should create store', () => {
-    const store = container.get(defineStore<Todo>({
+    const store = container.get(defineStore<Todo>(() => ({
       id: 0,
       completed: true,
       title: '',
-    }));
+    })));
 
     expect(store).toBeDefined();
 
@@ -65,11 +65,11 @@ describe('Store', () => {
     const idFn = vi.fn().mockName('idFn');
     const titleFn = vi.fn().mockName('titleFn');
 
-    const store = container.get(defineStore<Todo>({
+    const store = container.get(defineStore<Todo>(() => ({
       id: 0,
       completed: true,
       title: 'initial',
-    }));
+    })));
 
     expect(store).toBeDefined();
 

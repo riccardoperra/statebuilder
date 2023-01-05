@@ -11,12 +11,12 @@ interface Todo {
 
 describe('defineStore', () => {
   test('infer initial value type', () => {
-    const $def = defineStore({ name: 'test', id: 1 });
+    const $def = defineStore(() => ({ name: 'test', id: 1 }));
     expectTypeOf($def).toMatchTypeOf<StoreDefinitionCreator<Todo, {}>>();
   });
 
   test('infer type with extensions', () => {
-    const $def = defineStore({ name: 'test', id: 1 })
+    const $def = defineStore(() => ({ name: 'test', id: 1 }))
       .extend(ctx => {
         const [signal, setSignal] = createSignal(true);
         return {
@@ -43,7 +43,7 @@ describe('defineStore', () => {
       };
     }
 
-    const $def = defineStore({ name: 'test', id: 1 })
+    const $def = defineStore(() => ({ name: 'test', id: 1 }))
       .extend(plugin<{ data: number }>());
 
 
@@ -55,7 +55,7 @@ describe('defineStore', () => {
   });
 
   test('infer context while building', () => {
-    defineStore({ name: 'test', id: 1 })
+    defineStore(() => ({ name: 'test', id: 1 }))
       .extend(ctx => {
         return {
           dispatch() {

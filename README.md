@@ -1,6 +1,6 @@
-# rstate
+# statesolid
 
-`Rstate` is a state management library built on the top of SolidJS reactivity.
+`statesolid` is a state management library built on the top of SolidJS reactivity.
 
 Rstate allows the user to extend its functionalities with plugins. This is the main concept of this state manager.
 
@@ -25,10 +25,10 @@ $ npm install # or pnpm install or yarn install
 
 ## Usage
 
-Before using `rstate`, you should mount the `StoreProvider` to your app, ideally at the root.
+Before using `statesolid`, you should mount the `StoreProvider` to your app, ideally at the root.
 
 ```tsx
-import { StoreProvider } from 'rstate';
+import { StoreProvider } from 'statesolid';
 import { render } from 'solid-js/web';
 
 <StoreProvider>
@@ -42,7 +42,7 @@ The `defineStore` function is used to define a store with a state. The first arg
 Next, you can extend your store definition with the `.extend()` method.
 
 ```ts
-import { defineStore } from 'rstate';
+import { defineStore } from 'statesolid';
 
 const countStore = defineStore({ count: 0 })
   .extend(ctx => ({
