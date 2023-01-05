@@ -18,10 +18,7 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "build": "tsup",
-    "test": "vitest",
-    "typecheck": "vitest typecheck",
-    "coverage": "vitest run --coverage"
+    "build": "pnpm --filter=solidstate build"
   },
   "license": "MIT",
   "devDependencies": {

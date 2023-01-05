@@ -1,10 +1,10 @@
 {
-  "name": "@rstate/core",
+  "name": "solidstate",
+  "version": "0.0.1",
   "source": "src/index.tsx",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
-  "version": "0.0.0",
   "files": [
     "dist"
   ],

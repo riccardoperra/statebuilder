@@ -5,6 +5,7 @@
     "build": "solid-start build",
     "start": "solid-start start"
   },
+  "private": true,
   "type": "module",
   "devDependencies": {
     "@types/node": "^18.11.9",
