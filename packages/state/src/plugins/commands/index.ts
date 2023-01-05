@@ -13,3 +13,14 @@ export {
   withProxyCommands,
 } from './proxy';
 
+export {
+  untrackCommand,
+  track,
+  makeCommandNotifier,
+  type ExecuteCommandCallback,
+} from './notifier';
+
+export {
+  createTrackObserver
+} from './track';
+
