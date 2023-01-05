@@ -12,7 +12,6 @@
     "baseUrl": "./",
     "paths": {
       "~/*": ["./src/*"],
-      "rstate": ["../../src/index.ts"]
     }
   }
 }
