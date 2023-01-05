@@ -1,5 +1,11 @@
 # plustate
 
+## 0.1.0-unstable.3
+
+### Patch Changes
+
+- a984ef0: add missing command plugin exports
+
 ## 0.1.0-unstable.2
 
 ### Minor Changes
