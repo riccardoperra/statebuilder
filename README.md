@@ -2,45 +2,74 @@
 
 `Rstate` is a state management library built on the top of SolidJS reactivity.
 
-Rstate allows the user to extend its functionalities with plugins. This is the main concept of this state manager. 
+Rstate allows the user to extend its functionalities with plugins. This is the main concept of this state manager.
 
-It's built to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors in an easier way.
+It's built to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors
+in an easier way.
 
 Of course, this come with a built-in TypeScript support.
 
 ![Plugin architecture](./plugin-architecture.png)
 
-Solid already provides the primitives to build a state manaher system thanks to signals and stores. What's missing is a well defined pattern to follow while building your application.
+Solid already provides the primitives to build a state manaher system thanks to signals and stores. What's missing is a
+well defined pattern to follow while building your application.
 
 Rstate thanks to it's modular system allows you to define the approach you prefer to handle your state.
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
+This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely
+be removed once you clone a template.
 
 ```bash
 $ npm install # or pnpm install or yarn install
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+## Usage
 
-## Available Scripts
+Before using `rstate`, you should mount the `StoreProvider` to your app, ideally at the root.
 
-In the project directory, you can run:
+```tsx
+import { StoreProvider } from 'rstate';
+import { render } from 'solid-js/web';
 
-### `npm dev` or `npm start`
+<StoreProvider>
+  <App />
+</StoreProvider>
+```
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The `StoreProvider` will manage all lifecycles and instances of your store.
 
-The page will reload if you make edits.<br>
+The `defineStore` function is used to define a store with a state. The first argument is the initial value of the state.
+Next, you can extend your store definition with the `.extend()` method.
 
-### `npm run build`
+```ts
+import { defineStore } from 'rstate';
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
+const countStore = defineStore({ count: 0 })
+  .extend(ctx => ({
+    increment: () => ctx.set('count', count => count + 1),
+    decrement: () => ctx.set('count', count => count - 1),
+  }))
+  .extend(withLocalStoragePlugin({ name: '@countStore' }));
+```
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+> **Note** The `.extend()` method is fully typesafe and chainable, allowing you to the use multiple plugin at once.
 
-## Deployment
+Once your store definition is ready, you can inject the store in your components by using the `provideState` helper.
 
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+```tsx
+import { provideState } from './solid';
+
+function Counter() {
+  const count = provideState(countStore);
+  const state = count.state;
+  
+  return (
+    <>
+      <h1>Count: {state.count}</h1>
+      <button onClick={count.increment}>Increment</button>
+    </>
+  );
+}
+```
+
+Since these store instances are managed by the `StoreProvider`, state will not be resetted while unmounting the component.

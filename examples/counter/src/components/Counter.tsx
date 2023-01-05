@@ -9,10 +9,9 @@ const $store = defineStore({
   .extend(ctx => {
     return {
       incrementAfter1S: ctx.asyncAction(async (payload: number) => {
-        console.log(payload);
         await new Promise(r => setTimeout(r, 3000));
         ctx.set('count', count => count + 1);
-        return `${payload} - test`;
+        return payload;
       }),
     };
   });
@@ -20,7 +19,10 @@ const $store = defineStore({
 export default function Counter() {
   const store = provideState($store);
 
-  createEffect(() => console.log('loadign', store.incrementAfter1S.loading));
+  createEffect(() => {
+    console.log('loading state', store.incrementAfter1S.loading);
+    console.log('latest value', store.incrementAfter1S.latestValue);
+  });
 
   return (
     <>
@@ -32,8 +34,9 @@ export default function Counter() {
 
       <button
         class='increment'
+        disabled={store.incrementAfter1S.loading}
         onClick={() => store.incrementAfter1S()}>
-        After 1 sec
+        Increment after 1 sec
       </button>
     </>
 

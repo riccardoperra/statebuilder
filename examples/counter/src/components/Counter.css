@@ -18,3 +18,8 @@
 .increment:active {
   background-color: rgba(68, 107, 158, 0.2);
 }
+
+.increment:disabled {
+  opacity: .25;
+  cursor: not-allowed;
+}

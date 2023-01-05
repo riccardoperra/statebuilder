@@ -36,7 +36,6 @@ export function makeAsyncAction<T, R = void>(
       .finally(() => setLoading(false));
   }
 
-
   Object.defineProperties(notify, {
     loading: {
       get() {
