@@ -1,6 +1,12 @@
 import { Observable } from 'rxjs';
 import { Store, StoreValue } from '~/types';
-import { CommandPayload, createCommand, GenericStateCommand, MapCommandToActions, StateCommand } from './command';
+import {
+  CommandPayload,
+  createCommand,
+  GenericStateCommand,
+  MapCommandToActions,
+  StateCommand,
+} from './command';
 import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
 
 type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
@@ -50,7 +56,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
       const commandsMap: Record<string, GenericStateCommand> = {};
       return {
         ownKeys() {
-          return Reflect.ownKeys(actions);
+          return Reflect.ownKeys(commandsMap);
         },
         getOwnPropertyDescriptor(target, key) {
           return {
@@ -62,7 +68,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
         get(_, property: string) {
           if (!commandsMap[property]) {
             commandsMap[property] = createCommand(property).withPayload();
-            actions[property];
+            void Reflect.get(actions, property);
           }
           return commandsMap[property];
         },
@@ -88,9 +94,9 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
         get(_, property: string) {
           const command = commands[
             property as keyof typeof commands
-            ] as unknown as GenericStateCommand;
+          ] as unknown as GenericStateCommand;
           if (!actions[property]) {
-            actions[property] = payload => {
+            actions[property] = (payload) => {
               dispatch(command, payload);
             };
           }

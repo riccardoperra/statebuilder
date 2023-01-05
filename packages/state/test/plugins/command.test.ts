@@ -81,4 +81,17 @@ describe('proxyCommand', () => {
     innerStore.setFirstName('updated');
     expect(store.get.firstName).toBe('updated');
   });
+
+  it('should have available proxy in context extend callback', function () {
+    const config = defineStore(() => initialObject)
+      .extend(withProxyCommands<Commands>())
+      .extend((ctx) => {
+        ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
+          set('firstName', _)
+        );
+        expect({ ...ctx.actions }).toHaveProperty('setFirstName');
+        return ctx.actions;
+      });
+    container.get(config);
+  });
 });
