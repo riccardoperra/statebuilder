@@ -2,7 +2,7 @@
 import { Suspense } from 'solid-js';
 import { A, Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title } from 'solid-start';
 import './root.css';
-import { StateProvider } from '../../../src';
+import { StateProvider } from 'statesolid';
 
 export default function Root() {
   return (

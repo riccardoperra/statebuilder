@@ -14,7 +14,30 @@
       "import": "./dist/index.mjs",
       "browser": "./dist/index.mjs",
       "require": "./dist/index.js",
-      "node": "./dist/index.js"
+      "node": "./dist/index.js",
+      "types": "./dist/plugins/commands.d.ts"
+    },
+    "./asyncAction": {
+      "import": "./dist/plugins/asyncAction.mjs",
+      "browser": "./dist/plugins/asyncAction.mjs",
+      "require": "./dist/plugins/asyncAction.js",
+      "node": "./dist/plugins/asyncAction.js"
+    },
+    "./commands": {
+      "import": "./dist/plugins/commands.mjs",
+      "browser": "./dist/plugins/commands.mjs",
+      "require": "./dist/plugins/commands.js",
+      "node": "./dist/plugins/commands.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "commands": [
+        "dist/plugins/commands.d.ts"
+      ],
+      "asyncAction": [
+        "dist/plugins/asyncAction.d.ts"
+      ]
     }
   },
   "description": "",

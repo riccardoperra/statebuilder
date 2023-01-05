@@ -1,13 +1,20 @@
-import {defineConfig} from "tsup";
+import { defineConfig } from 'tsup';
 
 export default defineConfig(options => {
-  return {
-    entry: ["src/index.ts"],
-    format: ['esm', 'cjs'],
-    clean: true,
-    sourcemap: true,
-    minify: !options.watch,
-    dts: true,
-    splitting: true
-  }
+  return [
+    {
+      entry: {
+        index: 'src/index.ts',
+        'plugins/asyncAction': 'src/plugins/asyncAction.ts',
+        'plugins/commands': 'src/plugins/commands/index.ts',
+      },
+      format: ['esm', 'cjs'],
+      treeshake: 'smallest',
+      external: ['solid-js', 'solid-js/web', 'solid-js/store', 'rxjs'],
+      clean: true,
+      sourcemap: true,
+      minify: false,
+      dts: true,
+      splitting: true,
+    }];
 });

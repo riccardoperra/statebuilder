@@ -27,6 +27,7 @@ importers:
       solid-js: ^1.6.2
       solid-start: ^0.2.0
       solid-start-node: ^0.2.0
+      statesolid: workspace:*
       typescript: ^4.8.4
       undici: ^5.11.0
       vite: ^3.1.8
@@ -35,6 +36,7 @@ importers:
       '@solidjs/router': 0.6.0_solid-js@1.6.7
       solid-js: 1.6.7
       solid-start: 0.2.10_qem5pvunnhnchmr74aj6fhpl2a
+      statesolid: link:../../packages/state
       undici: 5.14.0
     devDependencies:
       '@types/node': 18.11.18
@@ -44,7 +46,7 @@ importers:
       typescript: 4.9.4
       vite: 3.2.5_@types+node@18.11.18
 
-  packages/rstate:
+  packages/state:
     specifiers:
       '@vitest/coverage-c8': ^0.26.3
       happy-dom: ^8.1.2

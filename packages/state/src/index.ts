@@ -6,8 +6,6 @@ export {
   provideState,
 } from './solid';
 
-export { withAsyncAction } from './plugins/asyncAction';
-
 export type {
   Store,
   StoreValue,

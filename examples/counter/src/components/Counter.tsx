@@ -1,12 +1,15 @@
 import './Counter.css';
-import { Container, defineStore, provideState, withAsyncAction } from '../../../../src';
-import { createRoot } from 'solid-js';
+import { defineStore, provideState } from 'statesolid';
+import { withProxyCommands } from 'statesolid/commands';
+import { withAsyncAction } from 'statesolid/asyncAction';
 
 const $store = defineStore(() => ({
   count: 0,
 }))
   .extend(withAsyncAction())
+  .extend(withProxyCommands<{ increment: void }>())
   .extend(ctx => {
+    ctx.hold(ctx.commands.increment, (command, { set }) => set('count', count => count + 1));
     return {
       incrementAfter1S: ctx.asyncAction(async (payload: number) => {
         await new Promise(r => setTimeout(r, 3000));
@@ -23,7 +26,7 @@ export default function Counter() {
     <>
       <button
         class='increment'
-        onClick={() => store.set('count', count => count + 1)}>
+        onClick={() => store.actions.increment()}>
         Clicks: {store().count}
       </button>
 

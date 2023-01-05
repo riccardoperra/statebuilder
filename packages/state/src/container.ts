@@ -8,12 +8,12 @@ export class Container {
   protected constructor(private readonly owner: Owner) {
   }
 
-  static create() {
-    const owner = getOwner()!;
-    if (!owner) {
+  static create(owner?: Owner) {
+    const resolvedOwner = owner ?? getOwner()!;
+    if (!resolvedOwner) {
       console.warn('[rstate] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged');
     }
-    return new Container(owner);
+    return new Container(resolvedOwner);
   }
 
   get<
@@ -48,5 +48,4 @@ export class Container {
       });
     }
   }
-
 }

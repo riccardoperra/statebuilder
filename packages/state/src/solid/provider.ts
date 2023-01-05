@@ -9,8 +9,7 @@ export function StateProvider(props: FlowProps) {
   if (!owner) {
     throw new Error('Owner missing');
   }
-  const container = Container.create();
-
+  const container = Container.create(owner);
   return createComponent(StateProviderContext.Provider, {
     value: container,
     get children() {
@@ -32,8 +31,7 @@ export function provideState<
   TStoreExtension = {},
 >(
   storeDef: StoreDefinition<TStore, TStoreExtension>,
-  container?: Container,
 ): Store<TStore> & TStoreExtension {
-  const context = !container ? useStateContext() : container;
+  const context = useStateContext();
   return context.get(storeDef);
 }
