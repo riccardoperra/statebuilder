@@ -1,19 +1,20 @@
 {
   "name": "solidstate",
-  "version": "0.0.1",
-  "source": "src/index.tsx",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "version": "0.0.0",
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/types/index.d.ts",
   "files": [
     "dist"
   ],
+  "private": false,
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "browser": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "node": "./dist/cjs/index.js"
+      "import": "./dist/index.mjs",
+      "browser": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "node": "./dist/index.js"
     }
   },
   "description": "",
@@ -33,9 +34,6 @@
     "vite": "^4.0.4",
     "vite-plugin-solid": "^2.5.0",
     "vitest": "^0.26.3"
-  },
-  "publishConfig": {
-    "@riccardoperra:registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "rxjs": "^7.8.0",
