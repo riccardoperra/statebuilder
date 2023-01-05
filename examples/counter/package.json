@@ -1,6 +1,6 @@
 {
   "name": "counter",
-  "version": "0.0.1-unstable.3",
+  "version": "0.0.1-unstable.4",
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build",

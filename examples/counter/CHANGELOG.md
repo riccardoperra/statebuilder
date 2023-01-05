@@ -1,5 +1,12 @@
 # counter
 
+## 0.0.1-unstable.4
+
+### Patch Changes
+
+- Updated dependencies [4dfe1e1]
+  - statesolid@0.1.0-unstable.6
+
 ## 0.0.1-unstable.3
 
 ### Patch Changes

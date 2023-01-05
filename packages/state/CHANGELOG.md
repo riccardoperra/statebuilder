@@ -1,5 +1,11 @@
 # plustate
 
+## 0.1.0-unstable.6
+
+### Patch Changes
+
+- 4dfe1e1: fix command action proxy while spreading
+
 ## 0.1.0-unstable.5
 
 ### Patch Changes
