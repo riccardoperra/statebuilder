@@ -1,10 +1,10 @@
 import './Counter.css';
-import { defineStore, provideState, withAsyncAction } from '../../../../src';
-import { createEffect } from 'solid-js';
+import { Container, defineStore, provideState, withAsyncAction } from '../../../../src';
+import { createRoot } from 'solid-js';
 
-const $store = defineStore({
+const $store = defineStore(() => ({
   count: 0,
-})
+}))
   .extend(withAsyncAction())
   .extend(ctx => {
     return {
@@ -18,11 +18,6 @@ const $store = defineStore({
 
 export default function Counter() {
   const store = provideState($store);
-
-  createEffect(() => {
-    console.log('loading state', store.incrementAfter1S.loading);
-    console.log('latest value', store.incrementAfter1S.latestValue);
-  });
 
   return (
     <>

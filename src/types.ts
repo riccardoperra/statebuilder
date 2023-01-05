@@ -16,7 +16,7 @@ export type StoreDefinition<
 > = {
   [$NAME]: string;
   [$EXTENSION]: Array<(ctx: Store<T>) => TStoreExtension>;
-  initialValue: T;
+  initialValue: () => T;
 }
 
 export type StoreValue = {};

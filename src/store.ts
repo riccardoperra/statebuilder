@@ -16,7 +16,7 @@ export type StoreDefinitionCreator<
 }
 
 type MakeStoreConfiguration<TState extends StoreValue> = {
-  initialValue: TState
+  initialValue: () => TState
 }
 
 export function makeStore<
@@ -25,7 +25,7 @@ export function makeStore<
 >(
   options: MakeStoreConfiguration<TState>,
 ): Store<TState> {
-  const [store, internalSetStore] = createStore(options.initialValue);
+  const [store, internalSetStore] = createStore(options.initialValue());
   const [track, notify] = createSignal(undefined, { equals: false });
 
   const set: SetStoreFunction<TState> = (...args: unknown[]) => {
@@ -47,7 +47,7 @@ export function makeStore<
 export function defineStore<
   TState extends StoreValue,
 >(
-  initialValue: TState,
+  initialValue: () => TState,
 ): StoreDefinitionCreator<TState, {}> {
   const name = `state-${++id}`;
   const extensions: Array<(ctx: Store<TState>) => {}> = [];

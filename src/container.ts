@@ -1,11 +1,19 @@
-import { Owner, runWithOwner } from 'solid-js';
+import { getOwner, Owner, runWithOwner } from 'solid-js';
 import { $EXTENSION, $NAME, makeStore } from './store';
 import { Store, StoreDefinition, StoreValue } from './types';
 
 export class Container {
   private readonly states = new Map<string, Store<StoreValue>>();
 
-  constructor(private readonly owner: Owner) {
+  protected constructor(private readonly owner: Owner) {
+  }
+
+  static create() {
+    const owner = getOwner()!;
+    if (!owner) {
+      console.warn('[rstate] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged');
+    }
+    return new Container(owner);
   }
 
   get<
