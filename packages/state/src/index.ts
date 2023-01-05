@@ -7,3 +7,9 @@ export {
 } from './solid';
 
 export { withAsyncAction } from './plugins/asyncAction';
+
+export type {
+  Store,
+  StoreValue,
+  StoreDefinition,
+} from './types';

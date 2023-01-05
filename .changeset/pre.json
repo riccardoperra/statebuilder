@@ -3,9 +3,11 @@
   "tag": "unstable",
   "initialVersions": {
     "plustate": "0.0.0",
-    "counter": "0.0.0"
+    "counter": "0.0.0",
+    "statesolid": "0.0.1-unstable.0"
   },
   "changesets": [
-    "big-pillows-prove"
+    "big-pillows-prove",
+    "weak-onions-deny"
   ]
 }

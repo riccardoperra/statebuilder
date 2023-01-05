@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "build": "pnpm --filter=solidstate build"
+    "build": "pnpm --filter=statesolid build"
   },
   "license": "MIT",
   "devDependencies": {
