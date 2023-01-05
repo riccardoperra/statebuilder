@@ -1,5 +1,11 @@
 # plustate
 
+## 0.1.0-unstable.4
+
+### Patch Changes
+
+- c041c1f: fix build
+
 ## 0.1.0-unstable.3
 
 ### Patch Changes
