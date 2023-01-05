@@ -1,5 +1,0 @@
----
-'solidstate': patch
----
-
-Core architecture

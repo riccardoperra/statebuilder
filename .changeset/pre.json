@@ -2,7 +2,10 @@
   "mode": "pre",
   "tag": "unstable",
   "initialVersions": {
-    "solidstate": "0.0.1"
+    "plustate": "0.0.0",
+    "counter": "0.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "big-pillows-prove"
+  ]
 }
