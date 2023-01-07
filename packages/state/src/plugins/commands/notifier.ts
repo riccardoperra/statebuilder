@@ -1,21 +1,30 @@
 import { filter, map, Observable, Subject } from 'rxjs';
 import { batch, untrack } from 'solid-js';
-import { reconcile, SetStoreFunction } from 'solid-js/store';
-import { Store, StoreValue } from '~/types';
+import { reconcile } from 'solid-js/store';
+import { GenericStoreApi } from '~/types';
 import { createTrackObserver } from './track';
-import { CommandPayload, createCommand, ExecutedGenericStateCommand, GenericStateCommand } from './command';
+import {
+  CommandPayload,
+  createCommand,
+  ExecutedGenericStateCommand,
+  GenericStateCommand,
+} from './command';
 
-export type ExecuteCommandCallback<T, Command extends GenericStateCommand> = (
+export type ExecuteCommandCallback<
+  T,
+  Command extends GenericStateCommand,
+  TSetter = any,
+> = (
   payload: CommandPayload<Command>,
   meta: {
-    set: SetStoreFunction<T>;
+    set: TSetter;
     state: T;
   },
 ) => T | void;
 
 export const [track, untrackCommand] = createTrackObserver();
 
-export function makeCommandNotifier<T extends StoreValue>(ctx: Store<T>) {
+export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
   const commandsSubject$ = new Subject<ExecutedGenericStateCommand>();
 
   const callbacks = new Map<
@@ -25,7 +34,7 @@ export function makeCommandNotifier<T extends StoreValue>(ctx: Store<T>) {
 
   commandsSubject$
     .pipe(
-      map(command => {
+      map((command) => {
         const resolvedCallbacks = callbacks.get(command.identity) ?? [];
         return [command, resolvedCallbacks] as const;
       }),
@@ -72,11 +81,9 @@ export function makeCommandNotifier<T extends StoreValue>(ctx: Store<T>) {
     untrackCommand,
     watchCommand<Commands extends GenericStateCommand>(commands?: Commands[]) {
       return (commandsSubject$ as Observable<Commands>).pipe(
-        filter(command => {
+        filter((command) => {
           return !!(commands ?? []).find(
-            x =>
-              x.identity === command.identity &&
-              !(x as any).silent,
+            (x) => x.identity === command.identity && !(x as any).silent,
           );
         }),
       );

@@ -1,13 +1,12 @@
-export { defineStore } from './store';
+export { defineStore, type Store } from './store';
+export { defineSignal, type Signal } from './signal';
 export { Container } from './container';
 
-export {
-  StateProvider,
-  provideState,
-} from './solid';
+export { StateProvider, provideState } from './solid';
 
 export type {
-  Store,
-  StoreValue,
-  StoreDefinition,
+  GenericStoreApi,
+  UnwrapStoreDefinition,
+  Wrap,
+  StoreApiDefinition,
 } from './types';

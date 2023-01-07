@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { Store, StoreValue } from '~/types';
+import { GenericStoreApi } from '~/types';
 import {
   CommandPayload,
   createCommand,
@@ -12,6 +12,7 @@ import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
 type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
 interface StoreWithProxyCommands<
+  TStoreApi extends GenericStoreApi<any, any>,
   T,
   Commands extends Record<
     PropertyKey,
@@ -20,7 +21,11 @@ interface StoreWithProxyCommands<
 > {
   hold<Command extends GenericStateCommand>(
     command: Command,
-    callback: ExecuteCommandCallback<T, Command>,
+    callback: ExecuteCommandCallback<
+      T,
+      Command,
+      TStoreApi extends GenericStoreApi<any, infer R> ? R : never
+    >,
   ): this;
 
   dispatch<Command extends GenericStateCommand>(
@@ -42,13 +47,14 @@ type ProxifyCommands<T extends Record<string, unknown>> = {
 };
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <
-  TState extends StoreValue,
+  TGenericApi extends GenericStoreApi<any, any>,
+  TState,
 >(
-  ctx: Store<TState>,
-) => StoreWithProxyCommands<TState, ProxifyCommands<ActionsMap>> {
+  ctx: GenericStoreApi<TState, any>,
+) => StoreWithProxyCommands<TGenericApi, TState, ProxifyCommands<ActionsMap>> {
   type ProxifiedCommands = ProxifyCommands<ActionsMap>;
 
-  return <T extends StoreValue>(ctx: Store<T>) => {
+  return <T>(ctx: GenericStoreApi<T, any>) => {
     const { commandsSubject$, callbacks, track, watchCommand } =
       makeCommandNotifier(ctx);
 
@@ -140,7 +146,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 }
 
 export function withProxyCommands<T extends Record<string, unknown>>() {
-  return <S extends StoreValue>(ctx: Store<S>) => {
-    return plugin<T>()(ctx);
+  return <S extends GenericStoreApi<any, any>>(ctx: S) => {
+    return plugin<T>()<S, T>(ctx);
   };
 }

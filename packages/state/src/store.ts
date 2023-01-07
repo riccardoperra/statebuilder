@@ -1,33 +1,29 @@
-import { createMemo, createSignal, untrack } from 'solid-js';
-import { createStore, SetStoreFunction, unwrap } from 'solid-js/store';
-import type { Store, StoreDefinition, StoreValue, Wrap } from './types';
+import { createSignal } from 'solid-js';
+import { createStore, SetStoreFunction } from 'solid-js/store';
+import { ApiDefinitionCreator, GenericStoreApi } from './types';
+import { create } from './api';
 
-let id = 0;
-export const $NAME = Symbol('store-state-name');
-export const $EXTENSION = Symbol('store-state-extension');
+export type StoreValue = {};
+
+export type Store<TState extends StoreValue> = GenericStoreApi<
+  TState,
+  SetStoreFunction<TState>
+> & {
+  get: TState;
+};
 
 export type StoreDefinitionCreator<
   T extends StoreValue,
-  TStoreExtension extends {}
-> = StoreDefinition<T, TStoreExtension> & {
-  extend<TExtendedStore>(
-    createPlugin: (ctx: Store<T> & TStoreExtension) => TExtendedStore
-  ): StoreDefinitionCreator<
-    T,
-    Wrap<
-      unknown extends TStoreExtension
-        ? TExtendedStore
-        : TExtendedStore & TStoreExtension
-    >
-  >;
-};
+  TStoreApi extends GenericStoreApi<T, any>,
+  TStoreExtension extends {},
+> = ApiDefinitionCreator<TStoreApi, TStoreExtension>;
 
 type MakeStoreConfiguration<TState extends StoreValue> = {
   initialValue: () => TState;
 };
 
-export function makeStore<TState extends StoreValue, TStoreExtension>(
-  options: MakeStoreConfiguration<TState>
+function makeStore<TState extends StoreValue, TStoreExtension>(
+  options: MakeStoreConfiguration<TState>,
 ): Store<TState> {
   const [store, internalSetStore] = createStore(options.initialValue());
   const [track, notify] = createSignal([], { equals: false });
@@ -48,21 +44,9 @@ export function makeStore<TState extends StoreValue, TStoreExtension>(
   });
 }
 
-export function defineStore<TState extends StoreValue>(
-  initialValue: () => TState
-): StoreDefinitionCreator<TState, {}> {
-  const name = `state-${++id}`;
-  const extensions: Array<(ctx: Store<TState>) => {}> = [];
-
-  return {
-    [$NAME]: name,
-    [$EXTENSION]: extensions,
-    initialValue,
-    extend(createPlugin) {
-      extensions.push((context) => {
-        return Object.assign(context, createPlugin(context));
-      });
-      return this as any;
-    },
-  };
-}
+export const defineStore = create(
+  'store',
+  <T extends StoreValue>(initialValue: () => T) => {
+    return makeStore({ initialValue });
+  },
+);
