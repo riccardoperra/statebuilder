@@ -1,23 +1,18 @@
 import { describe, expectTypeOf, test } from 'vitest';
-import { defineStore } from '../src';
-import { Store, StoreDefinitionCreator, StoreValue } from '../src/store';
+import { defineSignal } from '../src';
+import { Signal, SignalDefinitionCreator } from '../src/signal';
 import { Accessor, createSignal } from 'solid-js';
 
-interface Todo {
-  name: string;
-  id: number;
-}
-
-describe('defineStore', () => {
+describe('defineSignal', () => {
   test('infer initial value type', () => {
-    const $def = defineStore(() => ({ name: 'test', id: 1 }));
+    const $def = defineSignal(() => 1);
     expectTypeOf($def).toMatchTypeOf<
-      StoreDefinitionCreator<Todo, Store<Todo>, {}>
+      SignalDefinitionCreator<number, Signal<number>, {}>
     >();
   });
 
   test('infer type with extensions', () => {
-    const $def = defineStore(() => ({ name: 'test', id: 1 })).extend((ctx) => {
+    const $def = defineSignal(() => 1).extend((ctx) => {
       const [signal, setSignal] = createSignal(true);
       return {
         dispatch() {},
@@ -25,9 +20,9 @@ describe('defineStore', () => {
       };
     });
 
-    type Test = StoreDefinitionCreator<
-      Todo,
-      Store<Todo>,
+    type Test = SignalDefinitionCreator<
+      number,
+      Signal<number>,
       {
         dispatch: () => void;
         signal: Accessor<boolean>;
@@ -39,20 +34,18 @@ describe('defineStore', () => {
 
   test('infer type with generics', () => {
     function plugin<T>() {
-      return <S extends StoreValue>(ctx: Store<S>) => {
+      return <S>(ctx: Signal<S>) => {
         return {
           outer: {} as T,
         };
       };
     }
 
-    const $def = defineStore(() => ({ name: 'test', id: 1 })).extend(
-      plugin<{ data: number }>(),
-    );
+    const $def = defineSignal(() => 1).extend(plugin<{ data: number }>());
 
-    type Test = StoreDefinitionCreator<
-      Todo,
-      Store<Todo>,
+    type Test = SignalDefinitionCreator<
+      number,
+      Signal<number>,
       {
         outer: { data: number };
       }
@@ -62,14 +55,14 @@ describe('defineStore', () => {
   });
 
   test('infer context while building', () => {
-    defineStore(() => ({ name: 'test', id: 1 }))
+    defineSignal(() => ({ name: 'test', id: 1 }))
       .extend((ctx) => {
         return {
           dispatch() {},
         };
       })
       .extend((ctx) => {
-        type Test = Store<{ name: string; id: number }> & {
+        type Test = Signal<{ name: string; id: number }> & {
           dispatch: () => void;
         };
         expectTypeOf(ctx).toMatchTypeOf<Test>();

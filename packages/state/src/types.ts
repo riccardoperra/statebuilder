@@ -1,22 +1,44 @@
-import { SetStoreFunction } from 'solid-js/store';
-import { $EXTENSION, $NAME } from './store';
+import { $EXTENSION, $NAME, $STOREDEF } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
-export type Store<TState extends StoreValue> = {
-  (): TState;
+export type GenericStoreApi<
+  T = unknown,
+  Setter extends (...args: any) => unknown = (...args: any) => unknown,
+> = {
+  (): T;
+  set: Setter;
+};
 
-  get: TState;
-  set: SetStoreFunction<TState>;
-}
+export type ApiDefinitionCreator<
+  TStoreApi extends GenericStoreApi<any, any>,
+  TSignalExtension extends {} = {},
+> = StoreApiDefinition<TStoreApi, TSignalExtension> & {
+  extend<TExtendedSignal>(
+    createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
+  ): ApiDefinitionCreator<
+    TStoreApi,
+    Wrap<
+      unknown extends TSignalExtension
+        ? TExtendedSignal
+        : TExtendedSignal & TSignalExtension
+    >
+  >;
+};
 
-export type StoreDefinition<
-  T extends StoreValue,
-  TStoreExtension = unknown
+export type StoreApiDefinition<
+  TStoreApi extends GenericStoreApi<any, (...args: any) => any>,
+  TStoreExtension = unknown,
 > = {
   [$NAME]: string;
-  [$EXTENSION]: Array<(ctx: Store<T>) => TStoreExtension>;
-  initialValue: () => T;
-}
+  [$STOREDEF]: () => TStoreApi;
+  [$EXTENSION]: Array<(ctx: TStoreApi) => TStoreExtension>;
+};
 
-export type StoreValue = {};
+export type GetStoreDefinitionValue<T extends GenericStoreApi<any, any>> =
+  T extends GenericStoreApi<infer TValue, any> ? TValue : never;
+
+export type UnwrapStoreDefinition<T extends StoreApiDefinition<any, any>> =
+  T extends StoreApiDefinition<infer TStoreApi, infer TExtensions>
+    ? TStoreApi & TExtensions
+    : never;

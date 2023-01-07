@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { defineStore } from '../../src/store';
-import { createCommand, withProxyCommands } from '../../src/plugins/commands';
-import { Container } from '../../src/container';
+import {describe, expect, it} from 'vitest';
+import {defineStore} from '../../src/store';
+import {createCommand, withProxyCommands} from '../../src/plugins/commands';
+import {Container} from '../../src/container';
 
 type Commands = {
   setFirstName: string;
@@ -27,8 +27,8 @@ describe('createCommand', () => {
   it('should merge props', () => {
     const command = createCommand('test')
       .withPayload<string>()
-      .with({ silent: true })
-      .with({ async: false })
+      .with({silent: true})
+      .with({async: false})
       .execute('1');
 
     expect(command.identity).toEqual('test');
@@ -73,7 +73,7 @@ describe('proxyCommand', () => {
 
   it('should not lose proxied getters while spreading', () => {
     function $innerStore() {
-      return { ...store.actions };
+      return {...store.actions};
     }
 
     const innerStore = $innerStore();
@@ -86,10 +86,10 @@ describe('proxyCommand', () => {
     const config = defineStore(() => initialObject)
       .extend(withProxyCommands<Commands>())
       .extend((ctx) => {
-        ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
+        ctx.hold(ctx.commands.setFirstName, (_, {set}) =>
           set('firstName', _)
         );
-        expect({ ...ctx.actions }).toHaveProperty('setFirstName');
+        expect({...ctx.actions}).toHaveProperty('setFirstName');
         return ctx.actions;
       });
     container.get(config);

@@ -1,6 +1,12 @@
-import { createComponent, createContext, FlowProps, getOwner, useContext } from 'solid-js';
+import {
+  createComponent,
+  createContext,
+  FlowProps,
+  getOwner,
+  useContext,
+} from 'solid-js';
 import { Container } from '../container';
-import { Store, StoreDefinition, StoreValue } from '../types';
+import { StoreApiDefinition, UnwrapStoreDefinition } from '../types';
 
 const StateProviderContext = createContext<Container>();
 
@@ -27,11 +33,8 @@ function useStateContext() {
 }
 
 export function provideState<
-  TStore extends StoreValue,
-  TStoreExtension = {},
->(
-  storeDef: StoreDefinition<TStore, TStoreExtension>,
-): Store<TStore> & TStoreExtension {
+  TStoreDefinition extends StoreApiDefinition<any, any, any>,
+>(definition: TStoreDefinition): UnwrapStoreDefinition<TStoreDefinition> {
   const context = useStateContext();
-  return context.get(storeDef);
+  return context.get(definition);
 }
