@@ -1,5 +1,19 @@
 # counter
 
+## 0.0.1
+
+### Patch Changes
+
+- Updated dependencies [cb35d5c]
+- Updated dependencies [4dfe1e1]
+- Updated dependencies [a8a78aa]
+- Updated dependencies [bccf7b1]
+- Updated dependencies [c041c1f]
+- Updated dependencies [fb1a817]
+- Updated dependencies [6ad5969]
+- Updated dependencies [a984ef0]
+  - statesolid@0.1.0
+
 ## 0.0.1-unstable.4
 
 ### Patch Changes

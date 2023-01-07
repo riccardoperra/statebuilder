@@ -1,5 +1,0 @@
----
-'statesolid': patch
----
-
-fix build

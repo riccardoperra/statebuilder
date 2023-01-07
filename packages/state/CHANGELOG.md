@@ -1,5 +1,21 @@
 # plustate
 
+## 0.1.0
+
+### Minor Changes
+
+- bccf7b1: Add command-based state plugin
+- fb1a817: Refactor core for agnostic and custom stores
+
+### Patch Changes
+
+- cb35d5c: add exports map
+- 4dfe1e1: fix command action proxy while spreading
+- a8a78aa: improve command typings
+- c041c1f: fix build
+- 6ad5969: Export store types
+- a984ef0: add missing command plugin exports
+
 ## 0.1.0-unstable.6
 
 ### Patch Changes
