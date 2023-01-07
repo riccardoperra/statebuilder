@@ -48,7 +48,7 @@ Next, you can extend your store definition with the `.extend()` method.
 
 import {defineStore} from 'statesolid';
 
-const countStore = defineStore({count: 0})
+const countStore = defineStore(() => ({count: 0}))
   .extend(ctx => ({
     increment: () => ctx.set('count', count => count + 1),
     decrement: () => ctx.set('count', count => count - 1),
