@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { GenericStoreApi, StoreValue } from '~/types';
+import { GenericStoreApi } from '~/types';
 import {
   CommandPayload,
   createCommand,
@@ -48,13 +48,13 @@ type ProxifyCommands<T extends Record<string, unknown>> = {
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <
   TGenericApi extends GenericStoreApi<any, any>,
-  TState extends StoreValue,
+  TState,
 >(
   ctx: GenericStoreApi<TState, any>,
 ) => StoreWithProxyCommands<TGenericApi, TState, ProxifyCommands<ActionsMap>> {
   type ProxifiedCommands = ProxifyCommands<ActionsMap>;
 
-  return <T extends StoreValue>(ctx: GenericStoreApi<T, any>) => {
+  return <T>(ctx: GenericStoreApi<T, any>) => {
     const { commandsSubject$, callbacks, track, watchCommand } =
       makeCommandNotifier(ctx);
 

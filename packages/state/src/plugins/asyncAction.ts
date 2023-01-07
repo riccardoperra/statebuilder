@@ -1,8 +1,8 @@
-import { Store, StoreValue } from '../types';
 import { createSignal } from 'solid-js';
+import { GenericStoreApi } from '~/types';
 
 export function withAsyncAction() {
-  return <T extends StoreValue>(ctx: Store<T>) => {
+  return <T>(ctx: GenericStoreApi<T>) => {
     return {
       asyncAction<P, R>(doSomething: (payload: P) => Promise<R>) {
         return makeAsyncAction(doSomething);

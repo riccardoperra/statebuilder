@@ -5,8 +5,8 @@ import {
   getOwner,
   useContext,
 } from 'solid-js';
-import { Container } from '../container';
-import { StoreApiDefinition, UnwrapStoreDefinition } from '../types';
+import { Container } from '~/container';
+import { StoreApiDefinition, UnwrapStoreDefinition } from '~/types';
 
 const StateProviderContext = createContext<Container>();
 
@@ -33,7 +33,7 @@ function useStateContext() {
 }
 
 export function provideState<
-  TStoreDefinition extends StoreApiDefinition<any, any, any>,
+  TStoreDefinition extends StoreApiDefinition<any, any>,
 >(definition: TStoreDefinition): UnwrapStoreDefinition<TStoreDefinition> {
   const context = useStateContext();
   return context.get(definition);
