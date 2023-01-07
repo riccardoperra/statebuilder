@@ -4,9 +4,12 @@ export { Container } from './container';
 
 export { StateProvider, provideState } from './solid';
 
+export { create } from './api';
+
 export type {
   GenericStoreApi,
-  UnwrapStoreDefinition,
+  ExtractStore,
   Wrap,
   StoreApiDefinition,
+  ApiDefinitionCreator,
 } from './types';

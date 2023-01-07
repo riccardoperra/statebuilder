@@ -22,6 +22,10 @@ all your system.
 
 ## Usage (Vanilla)
 
+```bash
+pnpm i statesolid # or npm or yarn
+```
+
 In order to start, the first thing to do is to create a new StateContainer which will store all the states.
 Each container saves stores as singletons, so once created the same instance will always be used.
 
@@ -64,6 +68,7 @@ The next step is to initialize it using the container we created earlier.
 
 ```ts
 // count.ts
+
 import {stateContainer} from './container.ts';
 import {createEffect} from 'solid-js';
 

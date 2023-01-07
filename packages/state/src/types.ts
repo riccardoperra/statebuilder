@@ -35,10 +35,7 @@ export type StoreApiDefinition<
   [$EXTENSION]: Array<(ctx: TStoreApi) => TStoreExtension>;
 };
 
-export type GetStoreDefinitionValue<T extends GenericStoreApi<any, any>> =
-  T extends GenericStoreApi<infer TValue, any> ? TValue : never;
-
-export type UnwrapStoreDefinition<T extends StoreApiDefinition<any, any>> =
+export type ExtractStore<T extends StoreApiDefinition<any, any>> =
   T extends StoreApiDefinition<infer TStoreApi, infer TExtensions>
     ? TStoreApi & TExtensions
     : never;

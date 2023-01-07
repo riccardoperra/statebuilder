@@ -1,9 +1,5 @@
 import { getOwner, Owner, runWithOwner } from 'solid-js';
-import {
-  GenericStoreApi,
-  StoreApiDefinition,
-  UnwrapStoreDefinition,
-} from './types';
+import { GenericStoreApi, StoreApiDefinition, ExtractStore } from './types';
 import { $EXTENSION, $NAME, $STOREDEF } from './api';
 
 export class Container {
@@ -23,8 +19,8 @@ export class Container {
 
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
-  ): UnwrapStoreDefinition<TStoreDefinition> {
-    type TypedStore = UnwrapStoreDefinition<TStoreDefinition>;
+  ): ExtractStore<TStoreDefinition> {
+    type TypedStore = ExtractStore<TStoreDefinition>;
 
     try {
       const name = state[$NAME];
