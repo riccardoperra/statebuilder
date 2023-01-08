@@ -1,5 +1,14 @@
 # counter
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [ee6ae05]
+- Updated dependencies [dcaed18]
+- Updated dependencies [39b6293]
+  - statesolid@0.2.0
+
 ## 0.0.1
 
 ### Patch Changes

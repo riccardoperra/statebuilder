@@ -1,5 +1,16 @@
 # plustate
 
+## 0.2.0
+
+### Minor Changes
+
+- 39b6293: add plugin system
+
+### Patch Changes
+
+- ee6ae05: export api core
+- dcaed18: improve types, rename $STOREDEF symbol to $CREATOR
+
 ## 0.1.0
 
 ### Minor Changes
