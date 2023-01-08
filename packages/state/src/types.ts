@@ -1,4 +1,4 @@
-import { $EXTENSION, $NAME, $STOREDEF } from '~/api';
+import { $EXTENSION, $NAME, $CREATOR } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
@@ -18,11 +18,7 @@ export type ApiDefinitionCreator<
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
-    Wrap<
-      unknown extends TSignalExtension
-        ? TExtendedSignal
-        : TExtendedSignal & TSignalExtension
-    >
+    Wrap<TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>>
   >;
 };
 
@@ -31,11 +27,22 @@ export type StoreApiDefinition<
   TStoreExtension = unknown,
 > = {
   [$NAME]: string;
-  [$STOREDEF]: () => TStoreApi;
+  [$CREATOR]: () => TStoreApi;
   [$EXTENSION]: Array<(ctx: TStoreApi) => TStoreExtension>;
 };
 
+type MergeStoreProps<
+  TStoreApi extends GenericStoreApi,
+  TExtensions,
+> = TExtensions extends {
+  set: infer TSetterOverride & ((...args: any[]) => unknown);
+}
+  ? Omit<TStoreApi, 'set'> & { set: TSetterOverride }
+  : TStoreApi & TExtensions;
+
 export type ExtractStore<T extends StoreApiDefinition<any, any>> =
   T extends StoreApiDefinition<infer TStoreApi, infer TExtensions>
-    ? TStoreApi & TExtensions
+    ? MergeStoreProps<TStoreApi, TExtensions>
     : never;
+
+export type Lazy<T> = () => T;

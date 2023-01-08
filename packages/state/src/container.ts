@@ -1,6 +1,6 @@
 import { getOwner, Owner, runWithOwner } from 'solid-js';
-import { GenericStoreApi, StoreApiDefinition, ExtractStore } from './types';
-import { $EXTENSION, $NAME, $STOREDEF } from './api';
+import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
+import { $NAME, resolve } from './api';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
@@ -28,13 +28,7 @@ export class Container {
       if (instance) {
         return instance as unknown as TypedStore;
       }
-      const store = runWithOwner(this.owner, () => {
-        const creatorFn = state[$STOREDEF];
-        return state[$EXTENSION].reduce(
-          (acc, extension) => Object.assign(acc, extension(acc)),
-          creatorFn(),
-        );
-      });
+      const store = runWithOwner(this.owner, () => resolve(state));
       this.states.set(name, store);
       return store as TypedStore;
     } catch (e) {

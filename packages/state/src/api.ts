@@ -1,6 +1,10 @@
-import { ApiDefinitionCreator, GenericStoreApi } from '~/types';
+import {
+  ApiDefinitionCreator,
+  GenericStoreApi,
+  StoreApiDefinition,
+} from '~/types';
 
-export const $STOREDEF = Symbol('store-definition-api');
+export const $CREATOR = Symbol('store-creator-api');
 export const $NAME = Symbol('store-state-name');
 export const $EXTENSION = Symbol('store-state-extension');
 
@@ -16,15 +20,28 @@ export function create<P extends any[], T extends GenericStoreApi>(
     const apiDefinition: ApiDefinitionCreator<T> = {
       [$NAME]: resolvedName,
       [$EXTENSION]: extensions,
-      [$STOREDEF]: () => creator(...args),
+      [$CREATOR]: () => creator(...args),
+
       extend(createPlugin) {
-        extensions.push((context) => {
-          return Object.assign(context, createPlugin(context));
-        });
+        extensions.push((context) =>
+          Object.assign(context, createPlugin(context)),
+        );
         return this as any;
       },
     };
 
     return apiDefinition;
   };
+}
+
+export function resolve<TDefinition extends StoreApiDefinition<any, any>>(
+  definition: TDefinition,
+) {
+  const creatorFn = definition[$CREATOR],
+    extensions = definition[$EXTENSION];
+
+  return extensions.reduce(
+    (acc, extension) => Object.assign(acc, extension(acc)),
+    creatorFn(),
+  );
 }
