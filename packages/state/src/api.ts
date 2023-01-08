@@ -19,7 +19,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
   return (...args) => {
     let customPluginId = 0;
     const resolvedName = `${name}-${++id}`,
-      extensions: Array<Plugin<any>> = [];
+      extensions: Array<Plugin<any, any>> = [];
 
     const apiDefinition: ApiDefinitionCreator<T> = {
       [$NAME]: resolvedName,
@@ -71,15 +71,16 @@ export function resolve<
   return storeApi;
 }
 
-type PluginCallback<R> = <S extends GenericStoreApi<any, any>>(
-  storeApi: S,
-  context?: PluginContext,
-) => R;
+type PluginCallback<S, R> = (storeApi: S, context?: PluginContext) => R;
 
-export function makePlugin<T extends PluginCallback<any>>(
-  pluginCallback: T,
+export function makePlugin<
+  TStore extends GenericStoreApi<any, any>,
+  TE,
+  T extends PluginCallback<TStore, TE>,
+>(
+  pluginCallback: PluginCallback<TStore, TE>,
   options: { name: string },
-): Plugin<T> {
+): Plugin<TStore, TE> {
   return {
     [$PLUGIN]: true,
     apply: pluginCallback,

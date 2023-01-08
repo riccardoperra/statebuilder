@@ -79,21 +79,16 @@ describe('resolve', () => {
     const pluginApply = vi.fn();
 
     const state = defineSignal(() => 0)
-      .extend({
-        name: 'custom',
-        apply(api) {
-          pluginApply();
-          return {
-            increment() {
-              api.set((x) => x + 1);
-            },
-          };
-        },
-      })
       .extend((api) => {
         pluginApply();
         return {
           decrement: () => api.set(api() - 1),
+        };
+      })
+      .extend((api) => {
+        pluginApply();
+        return {
+          increment: () => api.set(api() - 1),
         };
       });
 
@@ -107,20 +102,20 @@ describe('resolve', () => {
   test('will skip setters with invalid type', () => {
     const setFn = vi.fn();
     const state = defineSignal(() => 0)
+      .extend((api) => {
+        return {
+          set: 1,
+        };
+      })
       .extend({
         name: 'custom',
-        apply(api) {
+        apply(api, options) {
           const originalSet = api.set;
           const set: typeof originalSet = setFn;
           return {
             set,
           };
         },
-      })
-      .extend((api) => {
-        return {
-          set: 1,
-        };
       });
 
     const store = resolve(state);

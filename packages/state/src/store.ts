@@ -18,7 +18,7 @@ export type StoreDefinitionCreator<
   TStoreExtension extends {},
 > = ApiDefinitionCreator<TStoreApi, TStoreExtension>;
 
-function makeStore<TState extends StoreValue, TStoreExtension>(
+function makeStore<TState extends StoreValue>(
   initialValue: Lazy<TState>,
 ): Store<TState> {
   const [store, internalSetStore] = createStore(initialValue());

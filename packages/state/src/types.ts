@@ -3,8 +3,8 @@ import { $CREATOR, $EXTENSION, $NAME, $PLUGIN } from '~/api';
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
 export type GenericStoreApi<
-  T = unknown,
-  Setter extends (...args: any) => unknown = (...args: any) => unknown,
+  T = any,
+  Setter extends (...args: any) => any = (...args: any) => any,
 > = {
   (): T;
   set: Setter;
@@ -14,9 +14,12 @@ export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi<any, any>,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
-  extend<TPlugin extends PluginOfStoreApi<TStoreApi, unknown>>(
+  extend<
+    TPlugin extends Plugin<TStoreApi, any>,
+    TApply = TPlugin extends Plugin<any, infer R> ? R : never,
+  >(
     plugin: TPlugin,
-  ): ApiDefinitionCreator<TStoreApi, TPlugin['apply']>;
+  ): ApiDefinitionCreator<TStoreApi, Wrap<TApply & TSignalExtension>>;
 
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
@@ -32,7 +35,7 @@ export type StoreApiDefinition<
 > = {
   [$NAME]: string;
   [$CREATOR]: () => TStoreApi;
-  [$EXTENSION]: Array<Plugin<TStoreExtension>>;
+  [$EXTENSION]: Array<Plugin<TStoreApi, TStoreExtension>>;
 };
 
 type MergeStoreProps<
@@ -51,19 +54,13 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
 
 export type Lazy<T> = () => T;
 
-export type PluginOfStoreApi<S extends GenericStoreApi<any, any>, R> = {
+export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
   [$PLUGIN]?: boolean;
   name: string;
-  apply(storeApi: S, options: PluginContext): R;
-};
-
-export type Plugin<R> = {
-  [$PLUGIN]?: boolean;
-  name: string;
-  apply(storeApi: GenericStoreApi<any, any>, options: PluginContext): R;
+  apply(storeApi: TStoreApi, options: PluginContext): R;
 };
 
 export type PluginContext = {
-  plugins: readonly Plugin<unknown>[];
+  plugins: readonly Plugin<any, any>[];
   metadata: Map<string, unknown>;
 };

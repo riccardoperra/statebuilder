@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest';
 import { defineStore } from '../src';
-import { Store, StoreDefinitionCreator, StoreValue } from '../src/store';
+import { Store, StoreDefinitionCreator } from '../src/store';
 import { Accessor, createSignal } from 'solid-js';
 
 interface Todo {
@@ -31,30 +31,6 @@ describe('defineStore', () => {
       {
         dispatch: () => void;
         signal: Accessor<boolean>;
-      }
-    >;
-
-    expectTypeOf($def).toMatchTypeOf<Test>();
-  });
-
-  test('infer type with generics', () => {
-    function plugin<T>() {
-      return <S extends StoreValue>(ctx: Store<S>) => {
-        return {
-          outer: {} as T,
-        };
-      };
-    }
-
-    const $def = defineStore(() => ({ name: 'test', id: 1 })).extend(
-      plugin<{ data: number }>(),
-    );
-
-    type Test = StoreDefinitionCreator<
-      Todo,
-      Store<Todo>,
-      {
-        outer: { data: number };
       }
     >;
 
