@@ -8,6 +8,7 @@ import {
   StateCommand,
 } from './command';
 import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
+import { makePlugin } from '~/api';
 
 type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
@@ -146,7 +147,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 }
 
 export function withProxyCommands<T extends Record<string, unknown>>() {
-  return <S extends GenericStoreApi<any, any>>(ctx: S) => {
-    return plugin<T>()<S, T>(ctx);
-  };
+  return makePlugin((store) => plugin<T>()(store), {
+    name: 'withProxyCommands',
+  });
 }

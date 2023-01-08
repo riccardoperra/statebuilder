@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { Accessor, createSignal } from 'solid-js';
 import { createStore, SetStoreFunction } from 'solid-js/store';
 import { ApiDefinitionCreator, GenericStoreApi, Lazy } from './types';
 import { create } from './api';
@@ -29,7 +29,7 @@ function makeStore<TState extends StoreValue, TStoreExtension>(
     notify([]);
   };
 
-  const accessor = () => {
+  const accessor: Accessor<TState> = () => {
     track();
     return store;
   };
