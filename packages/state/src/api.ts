@@ -15,7 +15,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
   let id = 0;
   return (...args) => {
     const resolvedName = `${name}-${++id}`;
-    const extensions: Array<(ctx: T) => {}> = [];
+    const extensions: Array<(ctx: T) => any> = [];
 
     const apiDefinition: ApiDefinitionCreator<T> = {
       [$NAME]: resolvedName,
@@ -23,9 +23,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
       [$CREATOR]: () => creator(...args),
 
       extend(createPlugin) {
-        extensions.push((context) =>
-          Object.assign(context, createPlugin(context)),
-        );
+        extensions.push(createPlugin);
         return this as any;
       },
     };
@@ -34,14 +32,21 @@ export function create<P extends any[], T extends GenericStoreApi>(
   };
 }
 
-export function resolve<TDefinition extends StoreApiDefinition<any, any>>(
-  definition: TDefinition,
-) {
-  const creatorFn = definition[$CREATOR],
+export function resolve<
+  TDefinition extends StoreApiDefinition<GenericStoreApi<any, any>, any>,
+>(definition: TDefinition) {
+  const storeApi = definition[$CREATOR](),
     extensions = definition[$EXTENSION];
 
-  return extensions.reduce(
-    (acc, extension) => Object.assign(acc, extension(acc)),
-    creatorFn(),
-  );
+  for (const createExtension of extensions) {
+    const resolvedContext = createExtension(storeApi);
+    if (!resolvedContext) continue;
+    // We should avoid Object.assign in order to not override accessor and have
+    // full control of the property for future Plugin updates
+    for (const p in resolvedContext) {
+      storeApi[p] = resolvedContext[p];
+    }
+  }
+
+  return storeApi;
 }

@@ -2,7 +2,7 @@ import { createSignal } from 'solid-js';
 import { GenericStoreApi } from '~/types';
 
 export function withAsyncAction() {
-  return <T>(ctx: GenericStoreApi<T>) => {
+  return <S extends GenericStoreApi<any, any>>(ctx: S) => {
     return {
       asyncAction<P, R>(doSomething: (payload: P) => Promise<R>) {
         return makeAsyncAction(doSomething);

@@ -8,13 +8,14 @@ export type GenericStoreApi<
 > = {
   (): T;
   set: Setter;
+  [key: string]: unknown;
 };
 
 export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi<any, any>,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
-  extend<TExtendedSignal>(
+  extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,

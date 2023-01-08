@@ -66,6 +66,7 @@ describe('defineSignal', () => {
           dispatch: () => void;
         };
         expectTypeOf(ctx).toMatchTypeOf<Test>();
-      });
+      })
+      .extend((ctx) => {});
   });
 });

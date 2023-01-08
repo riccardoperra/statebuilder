@@ -29,7 +29,7 @@ export class Container {
         return instance as unknown as TypedStore;
       }
       const store = runWithOwner(this.owner, () => resolve(state));
-      this.states.set(name, store);
+      this.states.set(name, store!);
       return store as TypedStore;
     } catch (e) {
       throw new Error('Cannot initialize store correctly', {
