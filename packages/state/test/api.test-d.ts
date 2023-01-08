@@ -55,10 +55,14 @@ describe('makePlugin', () => {
         expectTypeOf(store.set).toMatchTypeOf<
           SetStoreFunction<{ count: number }>
         >();
+        return {
+          fromStore: 1,
+        };
       },
       { name: 'countSetter' },
     );
 
+    // @ts-expect-error mismatch type
     defineSignal(() => ({ count: 1 })).extend(onlyStorePlugin);
 
     defineStore(() => ({ count: 1 })).extend(onlyStorePlugin);

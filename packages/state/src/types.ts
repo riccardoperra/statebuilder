@@ -15,11 +15,25 @@ export type ApiDefinitionCreator<
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
   extend<
-    TPlugin extends Plugin<TStoreApi, any>,
-    TApply = TPlugin extends Plugin<any, infer R> ? R : never,
+    TPlugin extends Plugin<any, any>,
+    TPluginStoreApi extends GenericStoreApi<any, any> = TPlugin extends Plugin<
+      infer StorePlugin,
+      any
+    >
+      ? StorePlugin
+      : never,
   >(
-    plugin: TPlugin,
-  ): ApiDefinitionCreator<TStoreApi, Wrap<TApply & TSignalExtension>>;
+    // We need to unwrap the type again the store api in order to
+    // avoid passing plugins that have some type store constraints :)
+    plugin: TPluginStoreApi extends any
+      ? TStoreApi extends TPluginStoreApi
+        ? TPlugin
+        : never
+      : never,
+  ): ApiDefinitionCreator<
+    TStoreApi,
+    TPlugin extends Plugin<any, infer R> ? R : never
+  >;
 
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,

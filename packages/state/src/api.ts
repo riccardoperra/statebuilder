@@ -71,16 +71,15 @@ export function resolve<
   return storeApi;
 }
 
-type PluginCallback<S, R> = (storeApi: S, context?: PluginContext) => R;
+type PluginCallback<S extends GenericStoreApi<any, any>, R> = (
+  storeApi: S,
+  context?: PluginContext,
+) => R;
 
-export function makePlugin<
-  TStore extends GenericStoreApi<any, any>,
-  TE,
-  T extends PluginCallback<TStore, TE>,
->(
-  pluginCallback: PluginCallback<TStore, TE>,
+export function makePlugin<TStore extends GenericStoreApi<any, any>, Extension>(
+  pluginCallback: PluginCallback<TStore, Extension>,
   options: { name: string },
-): Plugin<TStore, TE> {
+): Plugin<TStore, Extension> {
   return {
     [$PLUGIN]: true,
     apply: pluginCallback,
