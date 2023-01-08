@@ -14,14 +14,9 @@ export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi<any, any>,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
-  extend<TPlugin extends Plugin<(store: TStoreApi) => any>>(
+  extend<TPlugin extends PluginOfStoreApi<TStoreApi, unknown>>(
     plugin: TPlugin,
-  ): ApiDefinitionCreator<
-    TStoreApi,
-    TPlugin extends Plugin<(store: TStoreApi) => infer Extension>
-      ? Extension
-      : never
-  >;
+  ): ApiDefinitionCreator<TStoreApi, TPlugin['apply']>;
 
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
@@ -55,6 +50,12 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
     : never;
 
 export type Lazy<T> = () => T;
+
+export type PluginOfStoreApi<S extends GenericStoreApi<any, any>, R> = {
+  [$PLUGIN]?: boolean;
+  name: string;
+  apply(storeApi: S, options: PluginContext): R;
+};
 
 export type Plugin<R> = {
   [$PLUGIN]?: boolean;

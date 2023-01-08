@@ -63,7 +63,7 @@ export function resolve<
     // We should avoid Object.assign in order to not override accessor and have
     // full control of the property for future Plugin updates
     for (const p in resolvedContext) {
-      if (p === 'set' && typeof p !== 'function') continue;
+      if (p === 'set' && typeof resolvedContext[p] !== 'function') continue;
       storeApi[p as keyof typeof storeApi] = resolvedContext[p];
     }
   }
