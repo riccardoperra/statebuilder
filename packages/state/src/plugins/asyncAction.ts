@@ -1,14 +1,17 @@
 import { createSignal } from 'solid-js';
-import { GenericStoreApi } from '~/types';
+import { makePlugin } from '~/api';
 
 export function withAsyncAction() {
-  return <S extends GenericStoreApi<any, any>>(ctx: S) => {
-    return {
-      asyncAction<P, R>(doSomething: (payload: P) => Promise<R>) {
-        return makeAsyncAction(doSomething);
-      },
-    };
-  };
+  return makePlugin(
+    () => {
+      return {
+        asyncAction<P, R>(doSomething: (payload: P) => Promise<R>) {
+          return makeAsyncAction(doSomething);
+        },
+      };
+    },
+    { name: 'asyncAction' },
+  );
 }
 
 export interface AsyncAction<T, R> {

@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { Accessor, createSignal } from 'solid-js';
 import { createStore, SetStoreFunction } from 'solid-js/store';
 import { ApiDefinitionCreator, GenericStoreApi, Lazy } from './types';
 import { create } from './api';
@@ -18,7 +18,7 @@ export type StoreDefinitionCreator<
   TStoreExtension extends {},
 > = ApiDefinitionCreator<TStoreApi, TStoreExtension>;
 
-function makeStore<TState extends StoreValue, TStoreExtension>(
+function makeStore<TState extends StoreValue>(
   initialValue: Lazy<TState>,
 ): Store<TState> {
   const [store, internalSetStore] = createStore(initialValue());
@@ -29,7 +29,7 @@ function makeStore<TState extends StoreValue, TStoreExtension>(
     notify([]);
   };
 
-  const accessor = () => {
+  const accessor: Accessor<TState> = () => {
     track();
     return store;
   };

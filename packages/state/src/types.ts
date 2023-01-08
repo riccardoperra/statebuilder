@@ -1,20 +1,40 @@
-import { $EXTENSION, $NAME, $CREATOR } from '~/api';
+import { $CREATOR, $EXTENSION, $NAME, $PLUGIN } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
 export type GenericStoreApi<
-  T = unknown,
-  Setter extends (...args: any) => unknown = (...args: any) => unknown,
+  T = any,
+  Setter extends (...args: any) => any = (...args: any) => any,
 > = {
   (): T;
   set: Setter;
-  [key: string]: unknown;
 };
 
 export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi<any, any>,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
+  extend<
+    TPlugin extends Plugin<any, any>,
+    TPluginStoreApi extends GenericStoreApi<any, any> = TPlugin extends Plugin<
+      infer StorePlugin,
+      any
+    >
+      ? StorePlugin
+      : never,
+  >(
+    // We need to unwrap the type again the store api in order to
+    // avoid passing plugins that have some type store constraints :)
+    plugin: TPluginStoreApi extends any
+      ? TStoreApi extends TPluginStoreApi
+        ? TPlugin
+        : never
+      : never,
+  ): ApiDefinitionCreator<
+    TStoreApi,
+    TPlugin extends Plugin<any, infer R> ? R : never
+  >;
+
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
@@ -29,7 +49,7 @@ export type StoreApiDefinition<
 > = {
   [$NAME]: string;
   [$CREATOR]: () => TStoreApi;
-  [$EXTENSION]: Array<(ctx: TStoreApi) => TStoreExtension>;
+  [$EXTENSION]: Array<Plugin<TStoreApi, TStoreExtension>>;
 };
 
 type MergeStoreProps<
@@ -47,3 +67,14 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
     : never;
 
 export type Lazy<T> = () => T;
+
+export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
+  [$PLUGIN]?: boolean;
+  name: string;
+  apply(storeApi: TStoreApi, options: PluginContext): R;
+};
+
+export type PluginContext = {
+  plugins: readonly Plugin<any, any>[];
+  metadata: Map<string, unknown>;
+};

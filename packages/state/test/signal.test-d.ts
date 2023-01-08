@@ -2,6 +2,7 @@ import { describe, expectTypeOf, test } from 'vitest';
 import { defineSignal } from '../src';
 import { Signal, SignalDefinitionCreator } from '../src/signal';
 import { Accessor, createSignal } from 'solid-js';
+import { makePlugin } from '~/api';
 
 describe('defineSignal', () => {
   test('infer initial value type', () => {
@@ -33,14 +34,13 @@ describe('defineSignal', () => {
   });
 
   test('infer type with generics', () => {
-    function plugin<T>() {
-      return <S>(ctx: Signal<S>) => {
-        return {
+    const plugin = <T>() =>
+      makePlugin(
+        (store) => ({
           outer: {} as T,
-        };
-      };
-    }
-
+        }),
+        { name: 'test ' },
+      );
     const $def = defineSignal(() => 1).extend(plugin<{ data: number }>());
 
     type Test = SignalDefinitionCreator<

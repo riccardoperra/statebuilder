@@ -4,7 +4,7 @@ export { Container } from './container';
 
 export { StateProvider, provideState } from './solid';
 
-export { create } from './api';
+export { create, makePlugin } from './api';
 
 export type {
   GenericStoreApi,
