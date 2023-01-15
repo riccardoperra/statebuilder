@@ -1,5 +1,11 @@
 # plustate
 
+## 0.2.1
+
+### Patch Changes
+
+- d02e8cc: add devtools plugin
+
 ## 0.2.0
 
 ### Minor Changes
