@@ -11,7 +11,7 @@ export class Container {
     const resolvedOwner = owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
-        '[statesolid] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged',
+        '[statebuilder] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged',
       );
     }
     return new Container(resolvedOwner);

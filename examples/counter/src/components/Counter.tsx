@@ -1,8 +1,8 @@
 import './Counter.css';
-import { defineStore, provideState } from 'statesolid';
-import { withProxyCommands } from 'statesolid/commands';
-import { withReduxDevtools } from 'statesolid/devtools';
-import { withAsyncAction } from 'statesolid/asyncAction';
+import { defineStore, provideState } from 'statebuilder';
+import { withProxyCommands } from 'statebuilder/commands';
+import { withReduxDevtools } from 'statebuilder/devtools';
+import { withAsyncAction } from 'statebuilder/asyncAction';
 
 const $store = defineStore(() => ({
   count: 0,

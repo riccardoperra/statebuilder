@@ -22,7 +22,7 @@
     "solid-js": "^1.6.2",
     "solid-start": "^0.2.0",
     "undici": "^5.11.0",
-    "statesolid": "workspace:*"
+    "statebuilder": "workspace:*"
   },
   "engines": {
     "node": ">=16.8"

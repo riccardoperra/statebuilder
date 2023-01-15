@@ -1,13 +1,13 @@
-![Preview](https://assets.solidjs.com/banner?background=blocks&type=Statesolid&project=statesolid)
+![Preview](https://assets.solidjs.com/banner?background=blocks&type=StateBuilder&project=statebuilder)
 
-# statesolid
+# StateBuilder
 
 > **Warning** This library has been built for experimental purposes for my needs while building apps that need an
 > agnostic state manager and a certain complexity.
 
-[![NPM](https://img.shields.io/npm/v/statesolid?style=for-the-badge)](https://www.npmjs.com/package/statesolid)
+[![NPM](https://img.shields.io/npm/v/statebuilder?style=for-the-badge)](https://www.npmjs.com/package/statebuilder)
 
-`statesolid` is an agnostic state management library built on the top of SolidJS reactivity.
+`StateBuilder` is an agnostic state management library built on the top of SolidJS reactivity.
 
 It's built to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors
 in an easier way. Of course, this come with a built-in TypeScript support.
@@ -31,16 +31,16 @@ well-defined pattern to follow while building your application.
 
 ![Plugin architecture](./plugin-architecture.png)
 
-With `statesolid` you can **compose** the approach you like to handle your state and reuse the behaviors across
+With `statebuilder` you can **compose** the approach you like to handle your state and reuse the behaviors across
 all your system.
 
 ## Getting started
 
 ```bash
-pnpm i statesolid # or npm or yarn
+pnpm i statebuilder # or npm or yarn
 ```
 
-`statesolid` already come with some built-ins utilities to define states:
+`statebuilder` already come with some built-ins utilities to define states:
 
 - defineSignal
 - defineStore
@@ -57,7 +57,7 @@ stores as singletons, so once created the same instance of the definition will b
 ```ts
 // container.ts
 
-import { Container } from 'statesolid';
+import { Container } from 'statebuilder';
 import { createRoot } from 'solid-js';
 
 export const stateContainer = createRoot(() => Container.create());
@@ -71,7 +71,7 @@ Next, you can extend your store definition with the `.extend()` method.
 ```ts
 // count.ts
 
-import { defineSignal } from 'statesolid';
+import { defineSignal } from 'statebuilder';
 import { createEffect } from 'solid-js';
 
 const count = defineSignal(() => 0)
@@ -115,7 +115,7 @@ createEffect(() => {
 
 ## Usage in SolidJS
 
-Before using `statesolid` on SolidJS, it's recommended to mount the `StoreProvider` to your app, ideally at the root.
+Before using `statebuilder` on SolidJS, it's recommended to mount the `StoreProvider` to your app, ideally at the root.
 This is needed to fix an issue with node and SSR while using global state managers.
 
 https://vuejs.org/guide/scaling-up/ssr.html#cross-request-state-pollution
@@ -123,7 +123,7 @@ https://vuejs.org/guide/scaling-up/ssr.html#cross-request-state-pollution
 The `StoreProvider` will manage all lifecycles and instances of your store. It act like a `Container`;
 
 ```tsx
-import { StoreProvider } from 'statesolid';
+import { StoreProvider } from 'statebuilder';
 
 // Put in your root tree
 <StoreProvider>
@@ -134,7 +134,7 @@ import { StoreProvider } from 'statesolid';
 Once your store definition is ready, you can inject the store in your components by using the `provideState` helper.
 
 ```tsx
-import { provideState } from 'statesolid';
+import { provideState } from 'statebuilder';
 import { count as countState } from './count';
 
 function Counter() {
@@ -151,13 +151,13 @@ function Counter() {
 
 ## Creating plugins
 
-As already said, `statesolid` core is powered by a pluggable system. Plugins are basically functions that take a state
+As already said, `statebuilder` core is powered by a pluggable system. Plugins are basically functions that take a state
 context and return a new object with the props to merge.
 
 // TODO
 
 ```ts
-import { makePlugin } from 'statesolid';
+import { makePlugin } from 'statebuilder';
 
 interface StoreWithReducer<T, Action> {
   dispatch(action: Action): void;
@@ -181,7 +181,7 @@ update the store thanks to the `.set()` method.
 Here is an example of what we have created.
 
 ```tsx
-import { defineStore, provideState } from 'statesolid';
+import { defineStore, provideState } from 'statebuilder';
 
 type Increment = { type: 'increment'; payload: number };
 
@@ -229,9 +229,9 @@ function Counter() {
 
 // TODO
 
-- [statesolid/commands](packages/state/src/plugins/commands): state management system with a command-event based
+- [statebuilder/commands](packages/state/src/plugins/commands): state management system with a command-event based
   approach using RXJS
-- [statesolid/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
+- [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
   observables
 
 ## Demo

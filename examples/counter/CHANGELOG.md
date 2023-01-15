@@ -7,7 +7,7 @@
 - Updated dependencies [ee6ae05]
 - Updated dependencies [dcaed18]
 - Updated dependencies [39b6293]
-  - statesolid@0.2.0
+  - statebuilder@0.2.0
 
 ## 0.0.1
 
@@ -21,39 +21,39 @@
 - Updated dependencies [fb1a817]
 - Updated dependencies [6ad5969]
 - Updated dependencies [a984ef0]
-  - statesolid@0.1.0
+  - statebuilder@0.1.0
 
 ## 0.0.1-unstable.4
 
 ### Patch Changes
 
 - Updated dependencies [4dfe1e1]
-  - statesolid@0.1.0-unstable.6
+  - statebuilder@0.1.0-unstable.6
 
 ## 0.0.1-unstable.3
 
 ### Patch Changes
 
 - Updated dependencies [a8a78aa]
-  - statesolid@0.1.0-unstable.5
+  - statebuilder@0.1.0-unstable.5
 
 ## 0.0.1-unstable.2
 
 ### Patch Changes
 
 - Updated dependencies [c041c1f]
-  - statesolid@0.1.0-unstable.4
+  - statebuilder@0.1.0-unstable.4
 
 ## 0.0.1-unstable.1
 
 ### Patch Changes
 
 - Updated dependencies [a984ef0]
-  - statesolid@0.1.0-unstable.3
+  - statebuilder@0.1.0-unstable.3
 
 ## 0.0.1-unstable.0
 
 ### Patch Changes
 
 - Updated dependencies [bccf7b1]
-  - statesolid@0.1.0-unstable.2
+  - statebuilder@0.1.0-unstable.2

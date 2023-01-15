@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "build": "pnpm --filter=statesolid build",
-    "test": "pnpm --filter=statesolid test",
-    "typecheck": "pnpm --filter=statesolid typecheck"
+    "build": "pnpm --filter=statebuilder build",
+    "test": "pnpm --filter=statebuilder test",
+    "typecheck": "pnpm --filter=statebuilder typecheck"
   },
   "license": "MIT",
   "devDependencies": {
