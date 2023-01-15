@@ -6,6 +6,9 @@ import { SetStoreFunction } from 'solid-js/store';
 import { defineSignal, Signal } from '~/signal';
 import { defineStore, Store, StoreValue } from '~/store';
 import { GenericStoreApi } from '~/types';
+import { withProxyCommands } from '~/plugins/commands';
+import { withReduxDevtools } from '~/plugins/devtools';
+import { withAsyncAction } from '~/plugins/asyncAction';
 
 const container = createRoot(() => Container.create());
 
@@ -114,5 +117,19 @@ describe('makePlugin', () => {
     defineSignal(() => ({ count: 1 })).extend(onlyCustomPlugin);
     // @ts-expect-error not matching type
     defineStore(() => ({ count: 1 })).extend(onlyCustomPlugin);
+  });
+});
+
+describe('extend', () => {
+  test('infer with multiple plugin extensions', () => {
+    defineSignal(() => 1)
+      .extend(withAsyncAction())
+      .extend(withProxyCommands<{ increment: void }>())
+      .extend(withReduxDevtools({ storeName: 'store' }))
+      .extend((ctx) => {
+        expectTypeOf(ctx.set).toEqualTypeOf<Setter<number>>();
+        expectTypeOf(ctx).toHaveProperty('commands');
+        expectTypeOf(ctx).toHaveProperty('asyncAction');
+      });
   });
 });

@@ -1,5 +1,5 @@
 {
-  "name": "statesolid",
+  "name": "statebuilder",
   "version": "0.2.0",
   "source": "src/index.ts",
   "main": "dist/index.js",
@@ -28,6 +28,12 @@
       "browser": "./dist/plugins/commands.mjs",
       "require": "./dist/plugins/commands.js",
       "node": "./dist/plugins/commands.js"
+    },
+    "./devtools": {
+      "import": "./dist/plugins/devtools.mjs",
+      "browser": "./dist/plugins/devtools.mjs",
+      "require": "./dist/plugins/devtools.js",
+      "node": "./dist/plugins/devtools.js"
     }
   },
   "typesVersions": {
@@ -37,6 +43,9 @@
       ],
       "asyncAction": [
         "dist/plugins/asyncAction.d.ts"
+      ],
+      "devtools": [
+        "dist/plugins/devtools.d.ts"
       ]
     }
   },

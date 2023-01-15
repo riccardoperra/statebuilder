@@ -32,7 +32,7 @@ export type ApiDefinitionCreator<
       : never,
   ): ApiDefinitionCreator<
     TStoreApi,
-    TPlugin extends Plugin<any, infer R> ? R : never
+    TSignalExtension & (TPlugin extends Plugin<any, infer R> ? R : never)
   >;
 
   extend<TExtendedSignal extends {} | void>(
