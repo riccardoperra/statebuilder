@@ -1,5 +1,5 @@
 {
-  "name": "statesolid",
+  "name": "statebuilder",
   "version": "0.2.0",
   "source": "src/index.ts",
   "main": "dist/index.js",
