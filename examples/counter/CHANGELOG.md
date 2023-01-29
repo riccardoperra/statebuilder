@@ -1,5 +1,12 @@
 # counter
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [ef18be4]
+  - statebuilder@0.2.2
+
 ## 0.0.3
 
 ### Patch Changes

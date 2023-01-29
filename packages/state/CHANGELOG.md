@@ -1,5 +1,11 @@
 # plustate
 
+## 0.2.2
+
+### Patch Changes
+
+- ef18be4: feat: plugin dependencies support
+
 ## 0.2.1
 
 ### Patch Changes
