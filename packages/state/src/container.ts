@@ -28,13 +28,31 @@ export class Container {
       if (instance) {
         return instance as unknown as TypedStore;
       }
-      const store = runWithOwner(this.owner, () => resolve(state));
+      const store = this.#resolveStore(this.owner, state);
       this.states.set(name, store!);
       return store as TypedStore;
-    } catch (e) {
-      throw new Error('Cannot initialize store correctly', {
-        cause: e,
-      });
+    } catch (exception) {
+      if (exception instanceof Error) throw exception;
+      throw new Error(
+        '[statebuilder] An error occurred during store initialization',
+        { cause: exception },
+      );
     }
+  }
+
+  #resolveStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
+    owner: Owner,
+    state: TStoreDefinition,
+  ) {
+    let error: Error | undefined;
+    const store = runWithOwner(owner, () => {
+      try {
+        return resolve(state);
+      } catch (e) {
+        error = e as Error;
+      }
+    });
+    if (error) throw error;
+    return store;
   }
 }

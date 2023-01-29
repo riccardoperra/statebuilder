@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { $EXTENSION, $NAME, create, makePlugin, resolve } from '../src/api';
 import { createRoot, createSignal } from 'solid-js';
 import { Container } from '../src/container';
@@ -10,7 +10,7 @@ import { defineSignal } from '~/signal';
 const container = createRoot(() => Container.create());
 
 describe('create', () => {
-  test('custom counter signal that accepts only positive numbers', () => {
+  it('custom counter signal that accepts only positive numbers', () => {
     const notify = vi.fn().mockName('set callback mock');
 
     const creatorFn = create('custom', (initialValue?: number) => {
@@ -49,7 +49,7 @@ describe('create', () => {
 });
 
 describe('makePlugin', () => {
-  test('make plugin with custom name', () => {
+  it('make plugin with custom name', () => {
     const withCountSetter = makePlugin(
       <
         S extends GenericStoreApi<
@@ -75,7 +75,7 @@ describe('makePlugin', () => {
 });
 
 describe('resolve', () => {
-  test('resolve definition', () => {
+  it('resolve definition', () => {
     const pluginApply = vi.fn();
 
     const state = defineSignal(() => 0)
@@ -99,7 +99,7 @@ describe('resolve', () => {
     expect(store).toHaveProperty('decrement');
   });
 
-  test('will skip setters with invalid type', () => {
+  it('will skip setters with invalid type', () => {
     const setFn = vi.fn();
     const state = defineSignal(() => 0)
       .extend((api) => {
@@ -125,5 +125,18 @@ describe('resolve', () => {
     store.set(10);
 
     expect(setFn).toHaveBeenCalledWith(10);
+  });
+
+  it('will throw exception when dependency is missing', () => {
+    const plugin1 = makePlugin(() => ({}), {
+      name: 'plugin1',
+      dependencies: ['missingPlugin'],
+    });
+
+    const state = defineSignal(() => 0).extend(plugin1);
+
+    expect(() => resolve(state)).toThrowError(
+      `[statebuilder] The dependency 'missingPlugin' of plugin 'plugin1' is missing`,
+    );
   });
 });

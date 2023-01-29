@@ -43,6 +43,26 @@ export function create<P extends any[], T extends GenericStoreApi>(
   };
 }
 
+function checkDependencies(
+  resolvedPlugins: string[],
+  plugin: Plugin<GenericStoreApi, any>,
+) {
+  const meta = plugin[$PLUGIN];
+  if (!meta) return;
+
+  const { dependencies } = meta;
+  if (!dependencies) return;
+
+  dependencies.forEach((dependency) => {
+    if (!resolvedPlugins.includes(dependency)) {
+      throw new Error(
+        `[statebuilder] The dependency '${dependency}' of plugin '${meta.name}' is missing`,
+        { cause: { resolvedDependencies: resolvedPlugins, plugin } },
+      );
+    }
+  });
+}
+
 export function resolve<
   TDefinition extends StoreApiDefinition<
     GenericStoreApi<any, (...args: any) => any>,
@@ -52,12 +72,17 @@ export function resolve<
   const storeApi = definition[$CREATOR](),
     extensions = definition[$EXTENSION];
 
+  const resolvedPlugins: string[] = [];
   const pluginContext: PluginContext = {
     plugins: extensions,
     metadata: new Map<string, unknown>(),
   };
 
+  pluginContext.metadata.set('core/resolvedPlugins', resolvedPlugins);
+
   for (const createExtension of extensions) {
+    checkDependencies(resolvedPlugins, createExtension);
+
     const resolvedContext = createExtension.apply(storeApi, pluginContext);
     if (!resolvedContext) continue;
     // We should avoid Object.assign in order to not override accessor and have
@@ -66,6 +91,8 @@ export function resolve<
       if (p === 'set' && typeof resolvedContext[p] !== 'function') continue;
       storeApi[p as keyof typeof storeApi] = resolvedContext[p];
     }
+
+    resolvedPlugins.push(createExtension.name);
   }
 
   return storeApi;
@@ -76,12 +103,20 @@ type PluginCallback<S extends GenericStoreApi<any, any>, R> = (
   context?: PluginContext,
 ) => R;
 
+type PluginCreatorOptions = {
+  name: string;
+  dependencies?: string[];
+};
+
 export function makePlugin<TStore extends GenericStoreApi<any, any>, Extension>(
   pluginCallback: PluginCallback<TStore, Extension>,
-  options: { name: string },
+  options: PluginCreatorOptions,
 ): Plugin<TStore, Extension> {
   return {
-    [$PLUGIN]: true,
+    [$PLUGIN]: {
+      name: options.name,
+      dependencies: options.dependencies ?? [],
+    },
     apply: pluginCallback,
     name: options.name,
   };
