@@ -68,8 +68,13 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
 
 export type Lazy<T> = () => T;
 
+export type PluginMetadata = {
+  name: string;
+  dependencies: string[];
+};
+
 export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
-  [$PLUGIN]?: boolean;
+  [$PLUGIN]?: PluginMetadata;
   name: string;
   apply(storeApi: TStoreApi, options: PluginContext): R;
 };
