@@ -1,5 +1,3 @@
-![Preview](https://assets.solidjs.com/banner?background=blocks&type=StateBuilder&project=statebuilder)
-
 # StateBuilder
 
 > **Warning** This library has been built for experimental purposes for my needs while building apps that need an
@@ -9,12 +7,15 @@
 
 `StateBuilder` is an agnostic state management library built on the top of SolidJS reactivity.
 
-It's built to be an extremely modular system, with an API that allows you to add methods, utilities and custom behaviors
+It's built to be an **extremely modular system**, with an API that allows you to add methods, utilities and custom behaviors to your store
 in an easier way. Of course, this come with a built-in TypeScript support.
 
-## Table of contents
+Solid already provides the primitives to build a state manager system thanks to signals and stores. What's missing is a
+well-defined pattern to follow while building your application.
 
-// TODO
+Thanks to `StateBuilder` you can **compose** the approach you like to handle your state.
+
+## Table of contents
 
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
@@ -24,15 +25,40 @@ in an easier way. Of course, this come with a built-in TypeScript support.
 
 ## Architecture
 
-// TODO
+`StateBuilder` come to the rescue introducing some concepts:
 
-Solid already provides the primitives to build a state manager system thanks to signals and stores. What's missing is a
-well-defined pattern to follow while building your application.
+### **State container**
 
-![Plugin architecture](./plugin-architecture.png)
+The state container it's a plain JavaScript object that collects all resolved store instances. Once created, every state container will have his own reactive scope, introduced by the `Owner` object from solid-js API.
 
-With `statebuilder` you can **compose** the approach you like to handle your state and reuse the behaviors across
-all your system.
+### **Store creator**
+
+The store creator it's the function that define your **store api** implementation, which requires you to follow a specific signature to be complaint to `StateBuilder` API.
+
+`StateBuilder` already comes with two built-in store creators:
+
+- defineStore
+- defineSignal
+
+Using the store definition creator, you can define where you want your state, that will be
+**lazy evaluated** only once you inject it.
+
+### **Plugin**
+
+Plugins are the **core** of `StateBuilder`. They are basically configurable objects or
+functions that override your store's signature, adding new features or modifying existing ones.
+
+They are not only here to define your store internals or the pattern you want
+to use (persistance, redux-like, rxjs integration etc.), but you can also create mini-modules that can be reused in your app.
+
+```mermaid
+graph TD
+    A[Store]
+    A -->|Extend| B[Redux Plugin]
+    A -->|Extend| C[RxJS Plugin]
+    A -->|Extend| D[LocalStorage Plugin]
+    A -->|Extend| E[EntityOrm Plugin]
+```
 
 ## Getting started
 
