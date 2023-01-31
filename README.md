@@ -58,6 +58,8 @@ graph TD
     A -->|Extend| C[RxJS Plugin]
     A -->|Extend| D[LocalStorage Plugin]
     A -->|Extend| E[EntityOrm Plugin]
+    A -->|Extend| F[Events Plugin]
+    A -->|Extend| G[Devtools Plugin]
 ```
 
 ## Getting started
