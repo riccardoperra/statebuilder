@@ -322,8 +322,8 @@ function Counter() {
 
 - [statebuilder/commands](packages/state/src/plugins/commands): state management system with a command-event based
   approach using RXJS
-- [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
-  observables
+- [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and observables
+- [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux devtools integration
 
 ## Demo
 
