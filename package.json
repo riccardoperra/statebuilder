@@ -8,8 +8,9 @@
     "test": "pnpm --filter=statebuilder test",
     "typecheck": "pnpm --filter=statebuilder typecheck",
     "changeset": "changeset",
-    "ci:release": "pnpm build && changeset publish",
-    "ci:version": "changeset version && pnpm i --no-frozen-lockfile && git add ."
+    "prepublish": "cp ./README.md ./packages/state",
+    "ci:publish": "changeset publish",
+    "ci:version": "changeset version"
   },
   "license": "MIT",
   "devDependencies": {
