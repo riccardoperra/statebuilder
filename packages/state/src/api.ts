@@ -11,6 +11,13 @@ export const $CREATOR = Symbol('store-creator-api'),
   $EXTENSION = Symbol('store-state-extension'),
   $PLUGIN = Symbol('store-plugin');
 
+/**
+ * A factory function that creates a store API definition creator.
+ *
+ * @param name - The name of the store API definition.
+ * @param creator - The function that creates the store API instance.
+ * @returns A store API definition creator that takes arguments to be passed to the store API instance creator and returns a store API definition object.
+ */
 export function create<P extends any[], T extends GenericStoreApi>(
   name: string,
   creator: (...args: P) => T,
@@ -63,11 +70,15 @@ function checkDependencies(
   });
 }
 
+/**
+ * A function that resolves a store API definition by applying the provided extensions to it.
+ *
+ * @template TDefinition - The type of the store API definition.
+ * @param definition - The store API definition to resolve.
+ * @returns The resolved store API with all of the extensions applied.
+ */
 export function resolve<
-  TDefinition extends StoreApiDefinition<
-    GenericStoreApi,
-    Record<string, any>
-  >,
+  TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition) {
   const storeApi = definition[$CREATOR](),
     extensions = definition[$EXTENSION];
@@ -108,6 +119,15 @@ type PluginCreatorOptions = {
   dependencies?: string[];
 };
 
+/**
+ * A function that creates a plugin for a generic store API.
+ *
+ * @template TStore - The type of the store API that this plugin is for.
+ * @template Extension - The type of the extension that this plugin adds to the store.
+ * @param pluginCallback - The function that will be called when the plugin is applied.
+ * @param options - The options for creating the plugin.
+ * @returns A plugin object with the given name and dependencies and the apply function provided.
+ */
 export function makePlugin<TStore extends GenericStoreApi, Extension>(
   pluginCallback: PluginCallback<TStore, Extension>,
   options: PluginCreatorOptions,
