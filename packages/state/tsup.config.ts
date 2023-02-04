@@ -8,6 +8,7 @@ export default defineConfig((options) => {
         'plugins/asyncAction': 'src/plugins/asyncAction.ts',
         'plugins/commands': 'src/plugins/commands/index.ts',
         'plugins/devtools': 'src/plugins/devtools/index.ts',
+        'plugins/reducer': 'src/plugins/reducer/index.ts',
       },
       format: ['esm', 'cjs'],
       treeshake: 'smallest',
