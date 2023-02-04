@@ -6,7 +6,11 @@
   "scripts": {
     "build": "pnpm --filter=statebuilder build",
     "test": "pnpm --filter=statebuilder test",
-    "typecheck": "pnpm --filter=statebuilder typecheck"
+    "typecheck": "pnpm --filter=statebuilder typecheck",
+    "changeset": "changeset",
+    "prepublish": "cp ./README.md ./packages/state",
+    "ci:publish": "changeset publish",
+    "ci:version": "changeset version"
   },
   "license": "MIT",
   "devDependencies": {
