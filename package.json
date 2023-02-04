@@ -6,7 +6,10 @@
   "scripts": {
     "build": "pnpm --filter=statebuilder build",
     "test": "pnpm --filter=statebuilder test",
-    "typecheck": "pnpm --filter=statebuilder typecheck"
+    "typecheck": "pnpm --filter=statebuilder typecheck",
+    "changeset": "changeset",
+    "ci:release": "pnpm build && changeset publish",
+    "ci:version": "changeset version && pnpm i --no-frozen-lockfile && git add ."
   },
   "license": "MIT",
   "devDependencies": {
