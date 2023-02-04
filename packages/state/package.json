@@ -34,6 +34,12 @@
       "browser": "./dist/plugins/devtools.mjs",
       "require": "./dist/plugins/devtools.js",
       "node": "./dist/plugins/devtools.js"
+    },
+    "./reducer": {
+      "import": "./dist/plugins/reducer.mjs",
+      "browser": "./dist/plugins/reducer.mjs",
+      "require": "./dist/plugins/reducer.js",
+      "node": "./dist/plugins/reducer.js"
     }
   },
   "typesVersions": {
@@ -46,6 +52,9 @@
       ],
       "devtools": [
         "dist/plugins/devtools.d.ts"
+      ],
+      "reducer": [
+        "dist/plugins/reducer.d.ts"
       ]
     }
   },
