@@ -1,5 +1,11 @@
 # plustate
 
+## 0.2.3
+
+### Patch Changes
+
+- 2788c2c: add reducer plugin
+
 ## 0.2.2
 
 ### Patch Changes
