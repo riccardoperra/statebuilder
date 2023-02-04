@@ -13,7 +13,7 @@ import { makePlugin } from '~/api';
 type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
 interface StoreWithProxyCommands<
-  TStoreApi extends GenericStoreApi<any, any>,
+  TStoreApi extends GenericStoreApi,
   T,
   Commands extends Record<
     PropertyKey,
@@ -48,7 +48,7 @@ type ProxifyCommands<T extends Record<string, unknown>> = {
 };
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <
-  TGenericApi extends GenericStoreApi<any, any>,
+  TGenericApi extends GenericStoreApi,
   TState,
 >(
   ctx: GenericStoreApi<TState, any>,

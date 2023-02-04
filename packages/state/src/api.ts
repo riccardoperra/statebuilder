@@ -65,7 +65,7 @@ function checkDependencies(
 
 export function resolve<
   TDefinition extends StoreApiDefinition<
-    GenericStoreApi<any, (...args: any) => any>,
+    GenericStoreApi,
     Record<string, any>
   >,
 >(definition: TDefinition) {
@@ -98,7 +98,7 @@ export function resolve<
   return storeApi;
 }
 
-type PluginCallback<S extends GenericStoreApi<any, any>, R> = (
+type PluginCallback<S extends GenericStoreApi, R> = (
   storeApi: S,
   context?: PluginContext,
 ) => R;
@@ -108,7 +108,7 @@ type PluginCreatorOptions = {
   dependencies?: string[];
 };
 
-export function makePlugin<TStore extends GenericStoreApi<any, any>, Extension>(
+export function makePlugin<TStore extends GenericStoreApi, Extension>(
   pluginCallback: PluginCallback<TStore, Extension>,
   options: PluginCreatorOptions,
 ): Plugin<TStore, Extension> {

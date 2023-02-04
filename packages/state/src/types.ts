@@ -11,12 +11,12 @@ export type GenericStoreApi<
 };
 
 export type ApiDefinitionCreator<
-  TStoreApi extends GenericStoreApi<any, any>,
+  TStoreApi extends GenericStoreApi,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
   extend<
     TPlugin extends Plugin<any, any>,
-    TPluginStoreApi extends GenericStoreApi<any, any> = TPlugin extends Plugin<
+    TPluginStoreApi extends GenericStoreApi = TPlugin extends Plugin<
       infer StorePlugin,
       any
     >
@@ -44,7 +44,7 @@ export type ApiDefinitionCreator<
 };
 
 export type StoreApiDefinition<
-  TStoreApi extends GenericStoreApi<any, (...args: any) => any>,
+  TStoreApi extends GenericStoreApi,
   TStoreExtension = unknown,
 > = {
   [$NAME]: string;
