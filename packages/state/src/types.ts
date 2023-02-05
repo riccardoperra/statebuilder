@@ -36,7 +36,7 @@ export type ApiDefinitionCreator<
   >;
 
   extend<TPlugin extends Plugin<any, any>>(
-    plugin: (ctx: TStoreApi & TSignalExtension) => TPlugin,
+    pluginWithContext: (ctx: TStoreApi & TSignalExtension) => TPlugin,
   ): ApiDefinitionCreator<
     TStoreApi,
     TSignalExtension & (TPlugin extends Plugin<any, infer R> ? R : never)
