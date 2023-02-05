@@ -47,17 +47,6 @@ type ProxifyCommands<T extends Record<string, unknown>> = {
   [K in keyof T]: StateCommand<K & string, T[K]>;
 };
 
-declare function plugin2<
-  TGenericStore extends GenericStoreApi,
-  ActionsMap extends Record<string, unknown>,
->(): (
-  ctx: TGenericStore,
-) => StoreWithProxyCommands<
-  TGenericStore,
-  TGenericStore extends any ? GetStoreApiState<TGenericStore> : never,
-  ProxifyCommands<ActionsMap>
->;
-
 function plugin<ActionsMap extends Record<string, unknown>>(): <
   TGenericApi extends GenericStoreApi,
 >(
