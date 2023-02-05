@@ -149,7 +149,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   };
 }
 
-export function _withProxyCommands<T extends Record<string, unknown>>() {
+function _withProxyCommands<T extends Record<string, unknown>>() {
   return makePlugin((store) => plugin<T>()(store), {
     name: 'withProxyCommands',
   });
@@ -159,7 +159,7 @@ export const withProxyCommands = Object.assign(_withProxyCommands, {
   of<S extends GenericStoreApi>(store: S) {
     return {
       with<T extends Record<string, unknown>>() {
-        return makePlugin(() => plugin<T>()(store), {
+        return makePlugin((_store: S) => plugin<T>()(store), {
           name: 'withProxyCommands',
         });
       },
