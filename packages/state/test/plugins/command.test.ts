@@ -47,7 +47,7 @@ describe('proxyCommand', () => {
   };
 
   const config = defineStore(() => initialObject).extend(
-    withProxyCommands<Commands>(),
+    ctx => withProxyCommands.of(ctx).with<Commands>(),
   );
 
   const store = container.get(config);
@@ -84,7 +84,7 @@ describe('proxyCommand', () => {
 
   it('should have available proxy in context extend callback', function () {
     const config = defineStore(() => initialObject)
-      .extend(withProxyCommands<Commands>())
+      .extend(ctx => withProxyCommands.of(ctx).with<Commands>())
       .extend((ctx) => {
         ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
           set('firstName', _),
