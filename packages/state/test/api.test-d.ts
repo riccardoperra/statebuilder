@@ -132,4 +132,37 @@ describe('extend', () => {
         expectTypeOf(ctx).toHaveProperty('asyncAction');
       });
   });
+
+  test('infer with (ctx) -> {} signature', () => {
+    defineSignal(() => 1)
+      .extend((ctx) => ({ doubleCount: () => ctx() * 2 }))
+      .extend((ctx) => {
+        expectTypeOf(ctx.doubleCount).toEqualTypeOf<() => number>();
+      });
+  });
+
+  test('infer with Plugin signature', () => {
+    const withPlugin = makePlugin((state) => ({ set2: state.set }), {
+      name: 'plugin',
+    });
+
+    defineSignal(() => 1)
+      .extend(withPlugin)
+      .extend(ctx => {
+        expectTypeOf(ctx.set2).toEqualTypeOf<(...args: any) => any>();
+      });
+  });
+
+
+  test('infer with (ctx) -> Plugin signature', () => {
+    defineSignal(() => 1)
+      .extend((ctx) =>
+        makePlugin((state: typeof ctx) => ({ set2: ctx.set }), {
+          name: 'plugin',
+        }),
+      )
+      .extend((ctx) => {
+        expectTypeOf(ctx.set2).toEqualTypeOf<Setter<number>>();
+      });
+  });
 });
