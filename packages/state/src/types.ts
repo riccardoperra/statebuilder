@@ -23,8 +23,8 @@ export type ApiDefinitionCreator<
       ? StorePlugin
       : never,
   >(
-    // We need to unwrap the type again the store api in order to
-    // avoid passing plugins that have some type store constraints :)
+    // We need to unwrap the store api type in order to
+    // avoid passing plugins that have some type store constraints
     plugin: TPluginStoreApi extends any
       ? TStoreApi extends TPluginStoreApi
         ? TPlugin
