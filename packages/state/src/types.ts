@@ -87,6 +87,11 @@ export type PluginContext = {
   metadata: Map<string, unknown>;
 };
 
-export type PluginCreatorFunction<S extends GenericStoreApi, R> = (
-  store: S,
-) => R extends Plugin<any, any> ? R : Plugin<S, R>;
+export type PluginCreatorFunction<
+  TStoreApi extends GenericStoreApi,
+  TReturn,
+> = (
+  store: TStoreApi,
+) => TReturn extends Plugin<any, infer R>
+  ? Plugin<TStoreApi, R>
+  : Plugin<TStoreApi, TReturn>;
