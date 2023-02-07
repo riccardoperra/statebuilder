@@ -1,6 +1,6 @@
 import { getOwner, Owner, runWithOwner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
-import { $NAME, resolve } from './api';
+import { $CREATOR, resolve } from './api';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
@@ -23,8 +23,8 @@ export class Container {
     type TypedStore = ExtractStore<TStoreDefinition>;
 
     try {
-      const name = state[$NAME];
-      const instance = this.states.get(state[$NAME]);
+      const name = state[$CREATOR].name;
+      const instance = this.states.get(name);
       if (instance) {
         return instance as unknown as TypedStore;
       }
