@@ -1,5 +1,11 @@
 # plustate
 
+## 0.2.4
+
+### Patch Changes
+
+- e311052: perf: improve types and documentation
+
 ## 0.2.3
 
 ### Patch Changes
