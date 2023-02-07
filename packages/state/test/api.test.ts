@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { $EXTENSION, $NAME, create, makePlugin, resolve } from '../src/api';
+import { $CREATOR, create, makePlugin, resolve } from '../src/api';
 import { createRoot, createSignal } from 'solid-js';
 import { Container } from '../src/container';
 import { GenericStoreApi } from '~/types';
@@ -28,8 +28,8 @@ describe('create', () => {
       decrement: () => ctx.set(ctx() - 1),
     }));
 
-    expect(definition[$EXTENSION]).length(1);
-    expect(definition[$NAME]).toEqual('custom-1');
+    expect(definition[$CREATOR].plugins).length(1);
+    expect(definition[$CREATOR].name).toEqual('custom-1');
 
     const state = container.get(definition);
 
