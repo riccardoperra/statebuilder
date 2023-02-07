@@ -35,7 +35,10 @@ export function create<P extends any[], T extends GenericStoreApi>(
       [$CREATOR]: () => creator(...args),
 
       extend(createPlugin: any) {
-        if (!createPlugin[$PLUGIN]) {
+        if (
+          typeof createPlugin === 'function' &&
+          !createPlugin.hasOwnProperty($PLUGIN)
+        ) {
           extensions.push({
             name: `custom-${++customPluginId}`,
             apply: createPlugin,
