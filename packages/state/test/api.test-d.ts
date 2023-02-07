@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, Mock, test, vi } from 'vitest';
-import { $EXTENSION, $NAME, create, makePlugin } from '~/api';
+import { $EXTENSION, $NAME, create, makePlugin, withPlugin } from '~/api';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container } from '~/container';
 import { SetStoreFunction } from 'solid-js/store';
@@ -80,6 +80,7 @@ describe('makePlugin', () => {
     );
 
     defineSignal(() => ({ count: 1 })).extend(onlySignalPlugin);
+
     defineStore(() => ({ count: 1 })).extend(onlySignalPlugin);
 
     // @ts-expect-error Value not matching
@@ -130,6 +131,43 @@ describe('extend', () => {
         expectTypeOf(ctx.set).toEqualTypeOf<Setter<number>>();
         expectTypeOf(ctx).toHaveProperty('commands');
         expectTypeOf(ctx).toHaveProperty('asyncAction');
+      });
+  });
+
+  test('infer with (ctx) -> {} signature', () => {
+    defineSignal(() => 1)
+      .extend((ctx) => ({ doubleCount: () => ctx() * 2 }))
+      .extend((ctx) => {
+        expectTypeOf(ctx.doubleCount).toEqualTypeOf<() => number>();
+      });
+  });
+
+  test('infer with Plugin signature', () => {
+    const withPlugin = makePlugin((state) => ({ set2: state.set }), {
+      name: 'plugin',
+    });
+
+    defineSignal(() => 1)
+      .extend(withPlugin)
+      .extend((ctx) => {
+        expectTypeOf(ctx.set2).toEqualTypeOf<(...args: any) => any>();
+      });
+  });
+
+  test('infer with (ctx) -> Plugin signature', () => {
+    defineSignal(() => 1)
+      .extend(
+        withPlugin((ctx) => {
+          return makePlugin(
+            () => ({
+              set2: ctx.set,
+            }),
+            { name: 'test' },
+          );
+        }),
+      )
+      .extend((ctx) => {
+        expectTypeOf(ctx.set2).toEqualTypeOf<Setter<number>>();
       });
   });
 });

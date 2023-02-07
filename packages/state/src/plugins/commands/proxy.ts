@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { GenericStoreApi } from '~/types';
+import { GenericStoreApi, GetStoreApiState } from '~/types';
 import {
   CommandPayload,
   createCommand,
@@ -13,7 +13,7 @@ import { makePlugin } from '~/api';
 type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
 interface StoreWithProxyCommands<
-  TStoreApi extends GenericStoreApi<any, any>,
+  TStoreApi extends GenericStoreApi,
   T,
   Commands extends Record<
     PropertyKey,
@@ -48,11 +48,14 @@ type ProxifyCommands<T extends Record<string, unknown>> = {
 };
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <
-  TGenericApi extends GenericStoreApi<any, any>,
-  TState,
+  TGenericApi extends GenericStoreApi,
 >(
-  ctx: GenericStoreApi<TState, any>,
-) => StoreWithProxyCommands<TGenericApi, TState, ProxifyCommands<ActionsMap>> {
+  ctx: TGenericApi,
+) => StoreWithProxyCommands<
+  TGenericApi,
+  TGenericApi extends any ? GetStoreApiState<TGenericApi> : never,
+  ProxifyCommands<ActionsMap>
+> {
   type ProxifiedCommands = ProxifyCommands<ActionsMap>;
 
   return <T>(ctx: GenericStoreApi<T, any>) => {
@@ -146,8 +149,20 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   };
 }
 
-export function withProxyCommands<T extends Record<string, unknown>>() {
+function _withProxyCommands<T extends Record<string, unknown>>() {
   return makePlugin((store) => plugin<T>()(store), {
     name: 'withProxyCommands',
   });
 }
+
+export const withProxyCommands = Object.assign(_withProxyCommands, {
+  of<S extends GenericStoreApi>(store: S) {
+    return {
+      with<T extends Record<string, unknown>>() {
+        return makePlugin((_store: S) => plugin<T>()(store), {
+          name: 'withProxyCommands',
+        });
+      },
+    };
+  },
+});
