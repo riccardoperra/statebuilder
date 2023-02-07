@@ -1,4 +1,4 @@
-import { $CREATOR, $EXTENSION, $NAME, $PLUGIN } from '~/api';
+import { $CREATOR, $PLUGIN } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
@@ -52,12 +52,14 @@ export type StoreApiDefinition<
   TStoreApi extends GenericStoreApi,
   TStoreExtension = unknown,
 > = {
-  [$NAME]: string;
-  [$CREATOR]: () => TStoreApi;
-  [$EXTENSION]: Array<
-    | PluginCreatorFunction<TStoreApi, TStoreExtension>
-    | Plugin<TStoreApi, TStoreExtension>
-  >;
+  [$CREATOR]: {
+    name: string;
+    plugins: Array<
+      | PluginCreatorFunction<TStoreApi, TStoreExtension>
+      | Plugin<TStoreApi, TStoreExtension>
+    >;
+    factory: () => TStoreApi;
+  };
 };
 
 type MergeStoreProps<

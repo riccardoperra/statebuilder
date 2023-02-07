@@ -8,8 +8,6 @@ import {
 } from '~/types';
 
 export const $CREATOR = Symbol('store-creator-api'),
-  $NAME = Symbol('store-state-name'),
-  $EXTENSION = Symbol('store-state-extension'),
   $PLUGIN = Symbol('store-plugin');
 
 /**
@@ -26,25 +24,28 @@ export function create<P extends any[], T extends GenericStoreApi>(
   let id = 0;
   return (...args) => {
     let customPluginId = 0;
+
     const resolvedName = `${name}-${++id}`,
-      extensions: Array<Plugin<any, any>> = [];
+      plugins: Array<Plugin<any, any>> = [];
 
     const apiDefinition: ApiDefinitionCreator<T> = {
-      [$NAME]: resolvedName,
-      [$EXTENSION]: extensions,
-      [$CREATOR]: () => creator(...args),
+      [$CREATOR]: {
+        name: resolvedName,
+        plugins,
+        factory: () => creator(...args),
+      },
 
       extend(createPlugin: any) {
         if (
           typeof createPlugin === 'function' &&
           !createPlugin.hasOwnProperty($PLUGIN)
         ) {
-          extensions.push({
+          plugins.push({
             name: `custom-${++customPluginId}`,
             apply: createPlugin,
           });
         } else {
-          extensions.push(createPlugin);
+          plugins.push(createPlugin);
         }
         return this as any;
       },
@@ -84,39 +85,42 @@ function checkDependencies(
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition) {
-  const storeApi = definition[$CREATOR](),
-    extensions = definition[$EXTENSION];
+  const api = definition[$CREATOR];
+
+  const { factory, plugins } = api;
 
   const resolvedPlugins: string[] = [];
   const pluginContext: PluginContext = {
-    plugins: extensions,
+    plugins,
     metadata: new Map<string, unknown>(),
   };
 
+  const resolvedStore = factory();
+
   pluginContext.metadata.set('core/resolvedPlugins', resolvedPlugins);
 
-  for (const extensionCreator of extensions) {
+  for (const extensionCreator of plugins) {
     const createExtension =
       typeof extensionCreator === 'function'
-        ? extensionCreator(storeApi)
+        ? extensionCreator(resolvedStore)
         : extensionCreator;
 
     checkDependencies(resolvedPlugins, extensionCreator);
 
-    const resolvedContext = createExtension.apply(storeApi, pluginContext);
+    const resolvedContext = createExtension.apply(resolvedStore, pluginContext);
 
     if (!resolvedContext) continue;
     // We should avoid Object.assign in order to not override accessor and have
     // full control of the property for future Plugin updates
     for (const p in resolvedContext) {
       if (p === 'set' && typeof resolvedContext[p] !== 'function') continue;
-      storeApi[p as keyof typeof storeApi] = resolvedContext[p];
+      resolvedStore[p as keyof typeof resolvedStore] = resolvedContext[p];
     }
 
     resolvedPlugins.push(extensionCreator.name);
   }
 
-  return storeApi;
+  return resolvedStore;
 }
 
 type PluginCallback<S extends GenericStoreApi, R> = (
