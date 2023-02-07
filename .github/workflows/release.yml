@@ -1,6 +1,9 @@
 name: Release
 
-on: [workflow_dispatch]
+on:
+  push:
+    branch:
+      - main
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
