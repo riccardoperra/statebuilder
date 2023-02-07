@@ -150,8 +150,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 }
 
 export function withProxyCommands<T extends Record<string, unknown>>() {
-  return <S extends GenericStoreApi>(store: S) =>
-    makePlugin((x) => plugin<T>()(store), {
-      name: 'withProxyCommands',
-    });
+  return makePlugin((store) => plugin<T>()(store), {
+    name: 'withProxyCommands',
+  })
 }
