@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { defineStore } from '~/solid/store';
 import { createCommand, withProxyCommands } from '~/plugins/commands';
 import { Container } from '~/container';
-import { withPlugin } from '~/api';
 
 type Commands = {
   setFirstName: string;
@@ -48,7 +47,7 @@ describe('proxyCommand', () => {
   };
 
   const config = defineStore(() => initialObject).extend(
-    withPlugin((ctx) => withProxyCommands.of(ctx).with<Commands>()),
+    withProxyCommands<Commands>(),
   );
 
   const store = container.get(config);
@@ -85,7 +84,7 @@ describe('proxyCommand', () => {
 
   it('should have available proxy in context extend callback', function () {
     const config = defineStore(() => initialObject)
-      .extend(withPlugin((ctx) => withProxyCommands.of(ctx).with<Commands>()))
+      .extend(withProxyCommands<Commands>())
       .extend((ctx) => {
         ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
           set('firstName', _),

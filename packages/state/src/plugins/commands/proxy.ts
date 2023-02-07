@@ -53,7 +53,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   ctx: TGenericApi,
 ) => StoreWithProxyCommands<
   TGenericApi,
-  TGenericApi extends any ? GetStoreApiState<TGenericApi> : never,
+  GetStoreApiState<TGenericApi>,
   ProxifyCommands<ActionsMap>
 > {
   type ProxifiedCommands = ProxifyCommands<ActionsMap>;
@@ -149,20 +149,9 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   };
 }
 
-function _withProxyCommands<T extends Record<string, unknown>>() {
-  return makePlugin((store) => plugin<T>()(store), {
-    name: 'withProxyCommands',
-  });
+export function withProxyCommands<T extends Record<string, unknown>>() {
+  return <S extends GenericStoreApi>(store: S) =>
+    makePlugin((x) => plugin<T>()(store), {
+      name: 'withProxyCommands',
+    });
 }
-
-export const withProxyCommands = Object.assign(_withProxyCommands, {
-  of<S extends GenericStoreApi>(store: S) {
-    return {
-      with<T extends Record<string, unknown>>() {
-        return makePlugin((_store: S) => plugin<T>()(store), {
-          name: 'withProxyCommands',
-        });
-      },
-    };
-  },
-});

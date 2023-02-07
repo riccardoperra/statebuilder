@@ -89,4 +89,4 @@ export type PluginContext = {
 
 export type PluginCreatorFunction<S extends GenericStoreApi, R> = (
   store: S,
-) => Plugin<S, R>;
+) => R extends Plugin<any, any> ? R : Plugin<S, R>;
