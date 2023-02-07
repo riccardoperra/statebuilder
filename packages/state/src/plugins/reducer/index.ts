@@ -1,6 +1,6 @@
 import { makePlugin } from '~/api';
-import { Store } from '~/store';
-import { Signal } from '~/signal';
+import { Store } from '~/solid/store';
+import { Signal } from '~/solid/signal';
 import { GenericStoreApi } from '~/types';
 
 interface StoreWithReducer<T, Action> {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { defineStore } from '~/store';
+import { defineStore } from '~/solid/store';
 import { withReducer } from '~/plugins/reducer';
 import { Container } from '~/container';
-import { defineSignal } from '~/signal';
+import { defineSignal } from '~/solid/signal';
 
 type Increment = { type: 'increment'; payload: number };
 

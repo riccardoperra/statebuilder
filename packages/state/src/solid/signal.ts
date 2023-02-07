@@ -1,6 +1,6 @@
 import { createSignal, Setter } from 'solid-js';
-import type { ApiDefinitionCreator, GenericStoreApi, Lazy } from './types';
-import { create } from './api';
+import type { ApiDefinitionCreator, GenericStoreApi, Lazy } from '../types';
+import { create } from '../api';
 
 export type Signal<TState> = GenericStoreApi<TState, Setter<TState>>;
 

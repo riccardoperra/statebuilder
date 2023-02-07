@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest';
 import { defineSignal } from '../src';
-import { Signal, SignalDefinitionCreator } from '../src/signal';
+import { Signal, SignalDefinitionCreator } from '~/solid/signal';
 import { Accessor, createSignal } from 'solid-js';
 import { makePlugin } from '~/api';
 

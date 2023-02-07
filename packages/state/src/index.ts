@@ -1,15 +1,22 @@
-export { defineStore, type Store } from './store';
-export { defineSignal, type Signal } from './signal';
 export { Container } from './container';
 
-export { StateProvider, provideState } from './solid';
+export {
+  StateProvider,
+  provideState,
+  defineSignal,
+  defineStore,
+} from './solid';
 
-export { create, makePlugin, withContext } from './api';
+export type { Signal, Store } from './solid';
+
+export { create, makePlugin, withPlugin } from './api';
 
 export type {
   GenericStoreApi,
   ExtractStore,
-  Wrap,
   StoreApiDefinition,
   ApiDefinitionCreator,
+  GetStoreApiSetter,
+  GetStoreApiState,
+  Plugin,
 } from './types';

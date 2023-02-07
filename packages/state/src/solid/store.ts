@@ -1,7 +1,7 @@
 import { Accessor, createSignal } from 'solid-js';
 import { createStore, SetStoreFunction } from 'solid-js/store';
-import { ApiDefinitionCreator, GenericStoreApi, Lazy } from './types';
-import { create } from './api';
+import { ApiDefinitionCreator, GenericStoreApi, Lazy } from '../types';
+import { create } from '../api';
 
 export type StoreValue = {};
 

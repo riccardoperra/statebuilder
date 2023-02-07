@@ -2,19 +2,6 @@ import { $CREATOR, $PLUGIN } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
-// declare const tag: unique symbol;
-//
-// declare type Tagged<Token> = {
-//   readonly [tag]: Token;
-// };
-//
-// export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
-//
-// export type UnwrapOpaque<OpaqueType extends Tagged<unknown>> =
-//   OpaqueType extends Opaque<infer Type, OpaqueType[typeof tag]>
-//     ? Type
-//     : OpaqueType;
-
 export type GenericStoreApi<
   T = any,
   Setter extends (...args: any) => any = (...args: any) => any,

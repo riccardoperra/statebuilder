@@ -1,4 +1,8 @@
+export { provideState, StateProvider } from './provider';
+
+export { defineStore, type Store, type StoreValue } from './store';
 export {
-  provideState,
-  StateProvider
-} from './provider';
+  defineSignal,
+  type Signal,
+  type SignalDefinitionCreator,
+} from './signal';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defineStore } from '~/store';
+import { defineStore } from '~/solid/store';
 import { createCommand, withProxyCommands } from '~/plugins/commands';
 import { Container } from '~/container';
 import { withPlugin } from '~/api';
@@ -86,15 +86,13 @@ describe('proxyCommand', () => {
   it('should have available proxy in context extend callback', function () {
     const config = defineStore(() => initialObject)
       .extend(withPlugin((ctx) => withProxyCommands.of(ctx).with<Commands>()))
-      .extend(
-        (ctx) => {
-          ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
-            set('firstName', _),
-          );
-          expect({ ...ctx.actions }).toHaveProperty('setFirstName');
-          return ctx.actions;
-        },
-      );
+      .extend((ctx) => {
+        ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
+          set('firstName', _),
+        );
+        expect({ ...ctx.actions }).toHaveProperty('setFirstName');
+        return ctx.actions;
+      });
     container.get(config);
   });
 });

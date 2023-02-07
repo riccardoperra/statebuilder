@@ -4,8 +4,8 @@ import { createRoot, createSignal } from 'solid-js';
 import { Container } from '../src/container';
 import { GenericStoreApi } from '~/types';
 import { SetStoreFunction } from 'solid-js/store';
-import { defineStore } from '~/store';
-import { defineSignal } from '~/signal';
+import { defineStore } from '~/solid/store';
+import { defineSignal } from '~/solid/signal';
 
 const container = createRoot(() => Container.create());
 

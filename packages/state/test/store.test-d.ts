@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest';
 import { defineStore } from '../src';
-import { Store, StoreDefinitionCreator } from '../src/store';
+import { Store, StoreDefinitionCreator } from '~/solid/store';
 import { Accessor, createSignal } from 'solid-js';
 
 interface Todo {
