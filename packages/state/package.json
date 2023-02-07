@@ -62,6 +62,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest",
+    "test:all": "pnpm test && pnpm typecheck",
     "typecheck": "vitest typecheck",
     "coverage": "vitest run --coverage"
   },

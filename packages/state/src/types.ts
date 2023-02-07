@@ -2,6 +2,19 @@ import { $CREATOR, $EXTENSION, $NAME, $PLUGIN } from '~/api';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
+// declare const tag: unique symbol;
+//
+// declare type Tagged<Token> = {
+//   readonly [tag]: Token;
+// };
+//
+// export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
+//
+// export type UnwrapOpaque<OpaqueType extends Tagged<unknown>> =
+//   OpaqueType extends Opaque<infer Type, OpaqueType[typeof tag]>
+//     ? Type
+//     : OpaqueType;
+
 export type GenericStoreApi<
   T = any,
   Setter extends (...args: any) => any = (...args: any) => any,
@@ -14,32 +27,13 @@ export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
-  extend<
-    TPlugin extends Plugin<any, any>,
-    TPluginStoreApi extends GenericStoreApi = TPlugin extends Plugin<
-      infer StorePlugin,
-      any
-    >
-      ? StorePlugin
-      : never,
-  >(
-    // We need to unwrap the store api type in order to
-    // avoid passing plugins that have some type store constraints
-    plugin: TPluginStoreApi extends any
-      ? TStoreApi extends TPluginStoreApi
-        ? TPlugin
-        : never
-      : never,
+  extend<R extends Plugin<any, any>>(
+    pluginWithContext: PluginCreatorFunction<TStoreApi & TSignalExtension, R>,
   ): ApiDefinitionCreator<
     TStoreApi,
-    TSignalExtension & (TPlugin extends Plugin<any, infer R> ? R : never)
-  >;
-
-  extend<TPlugin extends Plugin<any, any>>(
-    pluginWithContext: (ctx: TStoreApi & TSignalExtension) => TPlugin,
-  ): ApiDefinitionCreator<
-    TStoreApi,
-    TSignalExtension & (TPlugin extends Plugin<any, infer R> ? R : never)
+    R extends Plugin<any, infer R>
+      ? Wrap<R & Omit<TSignalExtension, keyof R>>
+      : never
   >;
 
   extend<TExtendedSignal extends {} | void>(
@@ -48,6 +42,10 @@ export type ApiDefinitionCreator<
     TStoreApi,
     Wrap<TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>>
   >;
+
+  extend<R>(
+    plugin: Plugin<TStoreApi, R>,
+  ): ApiDefinitionCreator<TStoreApi, Wrap<R & Omit<TSignalExtension, keyof R>>>;
 };
 
 export type StoreApiDefinition<
@@ -56,7 +54,10 @@ export type StoreApiDefinition<
 > = {
   [$NAME]: string;
   [$CREATOR]: () => TStoreApi;
-  [$EXTENSION]: Array<Plugin<TStoreApi, TStoreExtension>>;
+  [$EXTENSION]: Array<
+    | PluginCreatorFunction<TStoreApi, TStoreExtension>
+    | Plugin<TStoreApi, TStoreExtension>
+  >;
 };
 
 type MergeStoreProps<
@@ -96,3 +97,7 @@ export type PluginContext = {
   plugins: readonly Plugin<any, any>[];
   metadata: Map<string, unknown>;
 };
+
+export type PluginCreatorFunction<S extends GenericStoreApi, R> = (
+  store: S,
+) => Plugin<S, R>;

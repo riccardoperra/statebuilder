@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, Mock, test, vi } from 'vitest';
-import { $EXTENSION, $NAME, create, makePlugin } from '~/api';
+import { $EXTENSION, $NAME, create, makePlugin, withPlugin } from '~/api';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container } from '~/container';
 import { SetStoreFunction } from 'solid-js/store';
@@ -80,6 +80,7 @@ describe('makePlugin', () => {
     );
 
     defineSignal(() => ({ count: 1 })).extend(onlySignalPlugin);
+
     defineStore(() => ({ count: 1 })).extend(onlySignalPlugin);
 
     // @ts-expect-error Value not matching
@@ -148,17 +149,21 @@ describe('extend', () => {
 
     defineSignal(() => 1)
       .extend(withPlugin)
-      .extend(ctx => {
+      .extend((ctx) => {
         expectTypeOf(ctx.set2).toEqualTypeOf<(...args: any) => any>();
       });
   });
 
-
   test('infer with (ctx) -> Plugin signature', () => {
     defineSignal(() => 1)
-      .extend((ctx) =>
-        makePlugin((state: typeof ctx) => ({ set2: ctx.set }), {
-          name: 'plugin',
+      .extend(
+        withPlugin((ctx) => {
+          return makePlugin(
+            () => ({
+              set2: ctx.set,
+            }),
+            { name: 'test' },
+          );
         }),
       )
       .extend((ctx) => {

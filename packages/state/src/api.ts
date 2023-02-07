@@ -3,6 +3,7 @@ import {
   GenericStoreApi,
   Plugin,
   PluginContext,
+  PluginCreatorFunction,
   StoreApiDefinition,
 } from '~/types';
 
@@ -34,7 +35,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
       [$CREATOR]: () => creator(...args),
 
       extend(createPlugin: any) {
-        if (typeof createPlugin === 'function') {
+        if (!createPlugin[$PLUGIN]) {
           extensions.push({
             name: `custom-${++customPluginId}`,
             apply: createPlugin,
@@ -75,7 +76,7 @@ function checkDependencies(
  *
  * @template TDefinition - The type of the store API definition.
  * @param definition - The store API definition to resolve.
- * @returns The resolved store API with all of the extensions applied.
+ * @returns The resolved store API with all the extensions applied.
  */
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
@@ -91,10 +92,16 @@ export function resolve<
 
   pluginContext.metadata.set('core/resolvedPlugins', resolvedPlugins);
 
-  for (const createExtension of extensions) {
-    checkDependencies(resolvedPlugins, createExtension);
+  for (const extensionCreator of extensions) {
+    const createExtension =
+      typeof extensionCreator === 'function'
+        ? extensionCreator(storeApi)
+        : extensionCreator;
+
+    checkDependencies(resolvedPlugins, extensionCreator);
 
     const resolvedContext = createExtension.apply(storeApi, pluginContext);
+
     if (!resolvedContext) continue;
     // We should avoid Object.assign in order to not override accessor and have
     // full control of the property for future Plugin updates
@@ -103,7 +110,7 @@ export function resolve<
       storeApi[p as keyof typeof storeApi] = resolvedContext[p];
     }
 
-    resolvedPlugins.push(createExtension.name);
+    resolvedPlugins.push(extensionCreator.name);
   }
 
   return storeApi;
@@ -139,5 +146,16 @@ export function makePlugin<TStore extends GenericStoreApi, Extension>(
     },
     apply: pluginCallback,
     name: options.name,
-  };
+  } as any;
+}
+
+export function withPlugin<
+  Api extends GenericStoreApi,
+  R extends Plugin<Api, any>,
+>(withPluginCallback: (store: Api) => R): PluginCreatorFunction<Api, R> {
+  Object.defineProperty(withPluginCallback, $PLUGIN, {
+    value: true,
+  });
+
+  return withPluginCallback as PluginCreatorFunction<Api, R>;
 }

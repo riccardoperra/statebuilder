@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defineStore } from '~/store';
 import { createCommand, withProxyCommands } from '~/plugins/commands';
 import { Container } from '~/container';
+import { withPlugin } from '~/api';
 
 type Commands = {
   setFirstName: string;
@@ -47,7 +48,7 @@ describe('proxyCommand', () => {
   };
 
   const config = defineStore(() => initialObject).extend(
-    ctx => withProxyCommands.of(ctx).with<Commands>(),
+    withPlugin((ctx) => withProxyCommands.of(ctx).with<Commands>()),
   );
 
   const store = container.get(config);
@@ -84,14 +85,16 @@ describe('proxyCommand', () => {
 
   it('should have available proxy in context extend callback', function () {
     const config = defineStore(() => initialObject)
-      .extend(ctx => withProxyCommands.of(ctx).with<Commands>())
-      .extend((ctx) => {
-        ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
-          set('firstName', _),
-        );
-        expect({ ...ctx.actions }).toHaveProperty('setFirstName');
-        return ctx.actions;
-      });
+      .extend(withPlugin((ctx) => withProxyCommands.of(ctx).with<Commands>()))
+      .extend(
+        (ctx) => {
+          ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
+            set('firstName', _),
+          );
+          expect({ ...ctx.actions }).toHaveProperty('setFirstName');
+          return ctx.actions;
+        },
+      );
     container.get(config);
   });
 });
