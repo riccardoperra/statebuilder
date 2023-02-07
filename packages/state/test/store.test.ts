@@ -1,7 +1,7 @@
 import { createEffect } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 import { Container, defineStore } from '../src';
-import { $EXTENSION } from '../src/api';
+import { $CREATOR } from '../src/api';
 
 interface Todo {
   id: number;
@@ -18,7 +18,7 @@ describe('Store', () => {
         completed: false,
       }));
 
-      expect(def[$EXTENSION].length).toEqual(0);
+      expect(def[$CREATOR]).toBeDefined();
     });
 
     it('should define state with extension', () => {
@@ -30,7 +30,7 @@ describe('Store', () => {
         .extend((ctx) => {})
         .extend((ctx) => {});
 
-      expect(def[$EXTENSION].length).toEqual(2);
+      expect(def[$CREATOR].plugins.length).toEqual(2);
     });
   });
 
