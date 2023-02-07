@@ -142,16 +142,22 @@ describe('extend', () => {
       });
   });
 
-  // TODO: need to fix
-  test.fails('infer with Plugin signature', () => {
-    const withPlugin = makePlugin((state) => ({ set2: state.set }), {
+  test('infer with Plugin signature', () => {
+    function plugin<TGenericApi extends GenericStoreApi>(
+      ctx: TGenericApi,
+    ): { set2: TGenericApi['set'] } {
+      return {
+        set2: ctx.set,
+      };
+    }
+    const withPlugin = makePlugin((state) => plugin(state), {
       name: 'plugin',
     });
 
     defineSignal(() => 1)
       .extend(withPlugin)
       .extend((ctx) => {
-        expectTypeOf(ctx.set2).toEqualTypeOf<(...args: any) => any>();
+        expectTypeOf(ctx.set2).toMatchTypeOf<Setter<number>>();
       });
   });
 

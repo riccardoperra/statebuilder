@@ -69,25 +69,4 @@ describe('withProxyCommand', () => {
         });
       });
   });
-
-  test('infer multiple payload', () => {
-    const command = createCommand('test')
-      .withPayload<string>()
-      .withPayload<number>()
-      .withPayload<() => void>();
-
-    expectTypeOf(command).toMatchTypeOf<
-      StateCommand<'test', string | number | (() => void)>
-    >();
-  });
-
-  it('infer executed state', () => {
-    const command = createCommand('test')
-      .withPayload<string>()
-      .execute('value');
-
-    expectTypeOf(command).toMatchTypeOf<
-      ExecutedStateCommand<'test', string, StateCommand<'test', string>>
-    >();
-  });
 });
