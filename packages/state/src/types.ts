@@ -92,6 +92,6 @@ export type PluginCreatorFunction<
   TReturn,
 > = (
   store: TStoreApi,
-) => TReturn extends Plugin<any, infer R>
-  ? Plugin<TStoreApi, R>
+) => TReturn extends Plugin<any, any>
+  ? TReturn
   : Plugin<TStoreApi, TReturn>;
