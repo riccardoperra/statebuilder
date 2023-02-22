@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, Mock, test, vi } from 'vitest';
+import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 import { $CREATOR, create, makePlugin } from '~/api';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container } from '~/container';
@@ -53,8 +53,8 @@ describe('create', () => {
 
 describe('makePlugin', () => {
   test('make plugin supported only by store definition', () => {
-    const onlyStorePlugin = makePlugin(
-      (store: Store<{ count: number }>) => {
+    const onlyStorePlugin = makePlugin.typed<Store<{ count: number }>>()(
+      (store) => {
         expectTypeOf(store.set).toMatchTypeOf<
           SetStoreFunction<{ count: number }>
         >();
@@ -90,7 +90,7 @@ describe('makePlugin', () => {
   test('make plugin supported only by custom definition', () => {
     type Custom<TState extends StoreValue> = GenericStoreApi<
       TState,
-      Mock<any[], any>
+      (...args: any[]) => any
     > & {
       log: () => void;
     };
@@ -106,9 +106,10 @@ describe('makePlugin', () => {
       });
     });
 
-    const onlyCustomPlugin = makePlugin(
-      (store: Custom<number>) => {
+    const onlyCustomPlugin = makePlugin.typed<Custom<number>>()(
+      (store) => {
         expectTypeOf(store.set).toMatchTypeOf<Setter<{ count: number }>>();
+        return {};
       },
       { name: 'countSetter' },
     );

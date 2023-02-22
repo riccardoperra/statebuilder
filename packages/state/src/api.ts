@@ -142,21 +142,38 @@ type PluginCreatorOptions = {
  * @param options - The options for creating the plugin.
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
-export function makePlugin<
+function _makePlugin<
   TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
 >(pluginCallback: TCallback, options: PluginCreatorOptions): TCallback {
   const pluginFactory = <S extends GenericStoreApi>(s: S) => ({
     [$PLUGIN]: {
       name: options.name,
       dependencies: options.dependencies ?? [],
+      apply: pluginCallback,
     },
     apply: pluginCallback,
     name: options.name,
   });
 
-  Object.defineProperty(pluginFactory, $PLUGIN, {
-    value: true,
+  Object.defineProperties(pluginFactory, {
+    [$PLUGIN]: {
+      value: {
+        name: options.name,
+        dependencies: options.dependencies ?? [],
+      },
+    },
+    name: { value: options.name },
   });
 
   return pluginFactory as any;
 }
+
+export const makePlugin = Object.assign(_makePlugin, {
+  typed<T extends GenericStoreApi>() {
+    return function _makePlugin2<
+      TCallback extends <S extends T>(store: S) => unknown,
+    >(cb: TCallback, options: PluginCreatorOptions): TCallback {
+      return _makePlugin(cb as any, options);
+    };
+  },
+});

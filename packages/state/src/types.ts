@@ -23,16 +23,21 @@ export type ApiDefinitionCreator<
       : never
   >;
 
+  extend<R extends Plugin<any, any>>(
+    pluginWithContext: <S extends TStoreApi>(store: S) => R,
+  ): ApiDefinitionCreator<
+    TStoreApi,
+    R extends Plugin<any, infer R>
+      ? Wrap<R & Omit<TSignalExtension, keyof R>>
+      : never
+  >;
+
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
     Wrap<TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>>
   >;
-
-  extend<R>(
-    plugin: Plugin<TStoreApi, R>,
-  ): ApiDefinitionCreator<TStoreApi, Wrap<R & Omit<TSignalExtension, keyof R>>>;
 };
 
 export type StoreApiDefinition<
