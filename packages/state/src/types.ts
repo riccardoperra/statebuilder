@@ -98,3 +98,9 @@ export type PluginCreatorFunction<
 > = (
   store: TStoreApi,
 ) => TReturn extends Plugin<any, any> ? TReturn : Plugin<TStoreApi, TReturn>;
+
+export type MarkPlugin<
+  TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
+> = TCallback extends (store: infer S) => infer R
+  ? <TStore extends S>() => Plugin<TStore & GenericStoreApi, R>
+  : never;

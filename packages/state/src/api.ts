@@ -3,7 +3,7 @@ import {
   GenericStoreApi,
   Plugin,
   PluginContext,
-  PluginCreatorFunction,
+  MarkPlugin,
   StoreApiDefinition,
 } from '~/types';
 
@@ -144,7 +144,10 @@ type PluginCreatorOptions = {
  */
 function _makePlugin<
   TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
->(pluginCallback: TCallback, options: PluginCreatorOptions): TCallback {
+>(
+  pluginCallback: TCallback,
+  options: PluginCreatorOptions,
+): MarkPlugin<TCallback> {
   const pluginFactory = <S extends GenericStoreApi>(s: S) => ({
     [$PLUGIN]: {
       name: options.name,
