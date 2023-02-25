@@ -9,7 +9,7 @@ export {
 
 export type { Signal, Store } from './solid';
 
-export { create, makePlugin, withPlugin } from './api';
+export { create, makePlugin } from './api';
 
 export type {
   GenericStoreApi,

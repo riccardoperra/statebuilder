@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { $CREATOR, create, makePlugin, resolve } from '../src/api';
+import { $CREATOR, $PLUGIN, create, makePlugin, resolve } from '../src/api';
 import { createRoot, createSignal } from 'solid-js';
 import { Container } from '../src/container';
 import { GenericStoreApi } from '~/types';
@@ -69,7 +69,7 @@ describe('makePlugin', () => {
     const store = Container.create().get(state);
 
     expect(withCountSetter.name).toEqual('countSetter');
-    expect(withCountSetter.apply).toBeDefined();
+    expect((withCountSetter as any)[$PLUGIN]).toBeDefined();
     expect(store).toHaveProperty('increment');
   });
 });
@@ -107,15 +107,12 @@ describe('resolve', () => {
           set: 1,
         };
       })
-      .extend({
-        name: 'custom',
-        apply(api, options) {
-          const originalSet = api.set;
-          const set: typeof originalSet = setFn;
-          return {
-            set,
-          };
-        },
+      .extend((api) => {
+        const originalSet = api.set;
+        const set: typeof originalSet = setFn as any;
+        return {
+          set,
+        };
       });
 
     const store = resolve(state);

@@ -3,7 +3,11 @@ import {
   createCommand,
   ExecutedStateCommand,
   StateCommand,
+  withProxyCommands,
 } from '../../src/plugins/commands';
+import { defineSignal, defineStore } from '~/solid';
+import { Setter } from 'solid-js';
+import { SetStoreFunction } from 'solid-js/store';
 
 type Commands = {
   setFirstName: string;
@@ -28,7 +32,7 @@ describe('createCommand', () => {
     >();
   });
 
-  it('infer executed state', function () {
+  it('infer executed state', () => {
     const command = createCommand('test')
       .withPayload<string>()
       .execute('value');
@@ -36,5 +40,33 @@ describe('createCommand', () => {
     expectTypeOf(command).toMatchTypeOf<
       ExecutedStateCommand<'test', string, StateCommand<'test', string>>
     >();
+  });
+});
+
+describe('withProxyCommand', () => {
+  test('infer command state/set context', () => {
+    defineSignal(() => 1)
+      .extend((ctx) => ({ newProp: ctx(), set2: ctx.set }))
+      .extend(withProxyCommands<{ increment: boolean }>())
+      .extend((ctx) => {
+        ctx.hold(ctx.commands.increment, (command, context) => {
+          expectTypeOf(command).toEqualTypeOf<boolean>();
+          expectTypeOf(context.state).toEqualTypeOf<number>();
+          expectTypeOf(context.set).toEqualTypeOf<Setter<number>>();
+        });
+      });
+
+    defineStore(() => ({ count: 1 }))
+      .extend((ctx) => ({ newProp: ctx(), set2: ctx.set }))
+      .extend(withProxyCommands<{ increment: boolean }>())
+      .extend((ctx) => {
+        ctx.hold(ctx.commands.increment, (command, context) => {
+          expectTypeOf(command).toEqualTypeOf<boolean>();
+          expectTypeOf(context.state).toEqualTypeOf<{ count: number }>();
+          expectTypeOf(context.set).toMatchTypeOf<
+            SetStoreFunction<{ count: number }>
+          >();
+        });
+      });
   });
 });

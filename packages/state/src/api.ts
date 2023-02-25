@@ -1,9 +1,10 @@
+import { DEV } from 'solid-js';
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
   Plugin,
   PluginContext,
-  PluginCreatorFunction,
+  PluginOf,
   StoreApiDefinition,
 } from '~/types';
 
@@ -142,27 +143,41 @@ type PluginCreatorOptions = {
  * @param options - The options for creating the plugin.
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
-export function makePlugin<TStore extends GenericStoreApi, Extension>(
-  pluginCallback: PluginCallback<TStore, Extension>,
+function _makePlugin<
+  TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
+>(
+  pluginCallback: TCallback,
   options: PluginCreatorOptions,
-): Plugin<TStore, Extension> {
-  return {
+): PluginOf<TCallback> {
+  const pluginFactory: () => Plugin<any, any> = () => ({
     [$PLUGIN]: {
       name: options.name,
       dependencies: options.dependencies ?? [],
+      apply: pluginCallback,
     },
     apply: pluginCallback,
     name: options.name,
-  } as any;
-}
-
-export function withPlugin<
-  Api extends GenericStoreApi,
-  R extends Plugin<Api, any>,
->(withPluginCallback: (store: Api) => R): PluginCreatorFunction<Api, R> {
-  Object.defineProperty(withPluginCallback, $PLUGIN, {
-    value: true,
   });
 
-  return withPluginCallback as PluginCreatorFunction<Api, R>;
+  Object.defineProperties(pluginFactory, {
+    [$PLUGIN]: {
+      value: {
+        name: options.name,
+        dependencies: options.dependencies ?? [],
+      },
+    },
+    name: { value: options.name },
+  });
+
+  return pluginFactory as unknown as TCallback;
 }
+
+export const makePlugin = Object.assign(_makePlugin, {
+  typed<T extends GenericStoreApi>() {
+    return function _makePlugin2<
+      TCallback extends <S extends T>(store: S) => unknown,
+    >(cb: TCallback, options: PluginCreatorOptions): TCallback {
+      return _makePlugin(cb as any, options);
+    };
+  },
+});

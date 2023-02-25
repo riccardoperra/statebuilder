@@ -1,5 +1,5 @@
-import { describe, expect, expectTypeOf, Mock, test, vi } from 'vitest';
-import { $CREATOR, create, makePlugin, withPlugin } from '~/api';
+import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { $CREATOR, create, makePlugin } from '~/api';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container } from '~/container';
 import { SetStoreFunction } from 'solid-js/store';
@@ -53,8 +53,8 @@ describe('create', () => {
 
 describe('makePlugin', () => {
   test('make plugin supported only by store definition', () => {
-    const onlyStorePlugin = makePlugin(
-      (store: Store<{ count: number }>) => {
+    const onlyStorePlugin = makePlugin.typed<Store<{ count: number }>>()(
+      (store) => {
         expectTypeOf(store.set).toMatchTypeOf<
           SetStoreFunction<{ count: number }>
         >();
@@ -90,7 +90,7 @@ describe('makePlugin', () => {
   test('make plugin supported only by custom definition', () => {
     type Custom<TState extends StoreValue> = GenericStoreApi<
       TState,
-      Mock<any[], any>
+      (...args: any[]) => any
     > & {
       log: () => void;
     };
@@ -106,9 +106,10 @@ describe('makePlugin', () => {
       });
     });
 
-    const onlyCustomPlugin = makePlugin(
-      (store: Custom<number>) => {
+    const onlyCustomPlugin = makePlugin.typed<Custom<number>>()(
+      (store) => {
         expectTypeOf(store.set).toMatchTypeOf<Setter<{ count: number }>>();
+        return {};
       },
       { name: 'countSetter' },
     );
@@ -143,28 +144,33 @@ describe('extend', () => {
   });
 
   test('infer with Plugin signature', () => {
-    const withPlugin = makePlugin((state) => ({ set2: state.set }), {
+    function plugin<TGenericApi extends GenericStoreApi>(
+      ctx: TGenericApi,
+    ): { set2: TGenericApi['set'] } {
+      return {
+        set2: ctx.set,
+      };
+    }
+    const withPlugin = makePlugin((state) => plugin(state), {
       name: 'plugin',
     });
 
     defineSignal(() => 1)
       .extend(withPlugin)
       .extend((ctx) => {
-        expectTypeOf(ctx.set2).toEqualTypeOf<(...args: any) => any>();
+        expectTypeOf(ctx.set2).toMatchTypeOf<Setter<number>>();
       });
   });
 
   test('infer with (ctx) -> Plugin signature', () => {
     defineSignal(() => 1)
       .extend(
-        withPlugin((ctx) => {
-          return makePlugin(
-            () => ({
-              set2: ctx.set,
-            }),
-            { name: 'test' },
-          );
-        }),
+        makePlugin(
+          (ctx) => ({
+            set2: ctx.set,
+          }),
+          { name: 'test' },
+        ),
       )
       .extend((ctx) => {
         expectTypeOf(ctx.set2).toEqualTypeOf<Setter<number>>();

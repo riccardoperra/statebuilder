@@ -14,25 +14,12 @@ export type ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi,
   TSignalExtension extends {} = {},
 > = StoreApiDefinition<TStoreApi, TSignalExtension> & {
-  extend<R extends Plugin<any, any>>(
-    pluginWithContext: PluginCreatorFunction<TStoreApi & TSignalExtension, R>,
-  ): ApiDefinitionCreator<
-    TStoreApi,
-    R extends Plugin<any, infer R>
-      ? Wrap<R & Omit<TSignalExtension, keyof R>>
-      : never
-  >;
-
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
     Wrap<TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>>
   >;
-
-  extend<R>(
-    plugin: Plugin<TStoreApi, R>,
-  ): ApiDefinitionCreator<TStoreApi, Wrap<R & Omit<TSignalExtension, keyof R>>>;
 };
 
 export type StoreApiDefinition<
@@ -76,6 +63,8 @@ export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
   apply(storeApi: TStoreApi, options: PluginContext): R;
 };
 
+export type PluginOf<Callback> = Callback;
+
 export type GetStoreApiSetter<T extends GenericStoreApi> =
   T extends GenericStoreApi<any, infer R> ? R : never;
 
@@ -87,6 +76,11 @@ export type PluginContext = {
   metadata: Map<string, unknown>;
 };
 
-export type PluginCreatorFunction<S extends GenericStoreApi, R> = (
-  store: S,
-) => Plugin<S, R>;
+export type MarkPlugin<T> = T & { [$PLUGIN]: true };
+
+export type PluginCreatorFunction<
+  TStoreApi extends GenericStoreApi,
+  TReturn,
+> = (
+  store: TStoreApi,
+) => TReturn extends Plugin<any, any> ? TReturn : Plugin<TStoreApi, TReturn>;
