@@ -1,5 +1,11 @@
 # plustate
 
+## 0.3.0
+
+### Minor Changes
+
+- 91547c7: feat: refactor types for implicit inference
+
 ## 0.2.4
 
 ### Patch Changes
