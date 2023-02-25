@@ -1,8 +1,10 @@
+import { DEV } from 'solid-js';
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
   Plugin,
   PluginContext,
+  PluginOf,
   StoreApiDefinition,
 } from '~/types';
 
@@ -146,8 +148,8 @@ function _makePlugin<
 >(
   pluginCallback: TCallback,
   options: PluginCreatorOptions,
-): TCallback {
-  const pluginFactory = <S extends GenericStoreApi>(s: S) => ({
+): PluginOf<TCallback> {
+  const pluginFactory: () => Plugin<any, any> = () => ({
     [$PLUGIN]: {
       name: options.name,
       dependencies: options.dependencies ?? [],
@@ -167,7 +169,7 @@ function _makePlugin<
     name: { value: options.name },
   });
 
-  return pluginFactory as any;
+  return pluginFactory as unknown as TCallback;
 }
 
 export const makePlugin = Object.assign(_makePlugin, {
