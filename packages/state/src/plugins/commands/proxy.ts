@@ -151,6 +151,6 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 
 export function withProxyCommands<T extends Record<string, unknown>>() {
   return makePlugin((store) => plugin<T>()(store), {
-    name: 'withProxyCommands',
+      name: 'withProxyCommands',
   })
 }

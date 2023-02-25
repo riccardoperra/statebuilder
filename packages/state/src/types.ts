@@ -46,10 +46,7 @@ export type StoreApiDefinition<
 > = {
   [$CREATOR]: {
     name: string;
-    plugins: Array<
-      | PluginCreatorFunction<TStoreApi, TStoreExtension>
-      | Plugin<TStoreApi, TStoreExtension>
-    >;
+    plugins: Array<Plugin<TStoreApi, TStoreExtension>>;
     factory: () => TStoreApi;
   };
 };
@@ -92,15 +89,11 @@ export type PluginContext = {
   metadata: Map<string, unknown>;
 };
 
+export type MarkPlugin<T> = T & { [$PLUGIN]: true };
+
 export type PluginCreatorFunction<
   TStoreApi extends GenericStoreApi,
   TReturn,
 > = (
   store: TStoreApi,
 ) => TReturn extends Plugin<any, any> ? TReturn : Plugin<TStoreApi, TReturn>;
-
-export type MarkPlugin<
-  TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
-> = TCallback extends (store: infer S) => infer R
-  ? <TStore extends S>() => Plugin<TStore & GenericStoreApi, R>
-  : never;
