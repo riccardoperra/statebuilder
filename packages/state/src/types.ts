@@ -46,7 +46,10 @@ export type StoreApiDefinition<
 > = {
   [$CREATOR]: {
     name: string;
-    plugins: Array<Plugin<TStoreApi, TStoreExtension>>;
+    plugins: Array<
+      | PluginCreatorFunction<TStoreApi, TStoreExtension>
+      | Plugin<TStoreApi, TStoreExtension>
+    >;
     factory: () => TStoreApi;
   };
 };
