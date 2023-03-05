@@ -1,4 +1,3 @@
-import { DEV } from 'solid-js';
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
@@ -123,11 +122,6 @@ export function resolve<
 
   return resolvedStore;
 }
-
-type PluginCallback<S extends GenericStoreApi, R> = (
-  storeApi: S,
-  context?: PluginContext,
-) => R;
 
 type PluginCreatorOptions = {
   name: string;

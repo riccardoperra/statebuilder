@@ -10,22 +10,22 @@ export type GenericStoreApi<
   set: Setter;
 };
 
-export type ApiDefinitionCreator<
+export interface ApiDefinitionCreator<
   TStoreApi extends GenericStoreApi,
   TSignalExtension extends {} = {},
-> = StoreApiDefinition<TStoreApi, TSignalExtension> & {
+> extends StoreApiDefinition<TStoreApi, TSignalExtension> {
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
-    Wrap<TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>>
+    TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>
   >;
-};
+}
 
-export type StoreApiDefinition<
+export interface StoreApiDefinition<
   TStoreApi extends GenericStoreApi,
   TStoreExtension = unknown,
-> = {
+> {
   [$CREATOR]: {
     name: string;
     plugins: Array<
@@ -34,7 +34,7 @@ export type StoreApiDefinition<
     >;
     factory: () => TStoreApi;
   };
-};
+}
 
 type MergeStoreProps<
   TStoreApi extends GenericStoreApi,
