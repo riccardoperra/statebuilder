@@ -1,5 +1,11 @@
 # plustate
 
+## 0.3.1
+
+### Patch Changes
+
+- 16fffae: perf: improve type resolution performance
+
 ## 0.3.0
 
 ### Minor Changes
