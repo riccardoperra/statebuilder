@@ -9,9 +9,7 @@ export {
   type MapCommandToActions,
 } from './command';
 
-export {
-  withProxyCommands,
-} from './proxy';
+export { withProxyCommands } from './plugin';
 
 export {
   untrackCommand,
@@ -20,7 +18,4 @@ export {
   type ExecuteCommandCallback,
 } from './notifier';
 
-export {
-  createTrackObserver
-} from './track';
-
+export { createTrackObserver } from './track';
