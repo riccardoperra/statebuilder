@@ -1,11 +1,16 @@
-import { filter, map, Observable, Subject } from 'rxjs';
-import { batch, untrack } from 'solid-js';
+import {
+  Accessor,
+  batch,
+  createEffect,
+  createSignal,
+  on,
+  untrack,
+} from 'solid-js';
 import { reconcile } from 'solid-js/store';
 import { GenericStoreApi } from '~/types';
 import { createTrackObserver } from './track';
 import {
   CommandPayload,
-  createCommand,
   ExecutedGenericStateCommand,
   GenericStateCommand,
 } from './command';
@@ -25,25 +30,23 @@ export type ExecuteCommandCallback<
 export const [track, untrackCommand] = createTrackObserver();
 
 export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
-  const commandsSubject$ = new Subject<ExecutedGenericStateCommand>();
+  const [command, executeCommand] = createSignal<
+    ExecutedGenericStateCommand | undefined
+  >(undefined, { equals: false });
 
   const callbacks = new Map<
     string,
     ReadonlyArray<ExecuteCommandCallback<T, GenericStateCommand>>
   >();
 
-  commandsSubject$
-    .pipe(
-      map((command) => {
-        const resolvedCallbacks = callbacks.get(command.identity) ?? [];
-        return [command, resolvedCallbacks] as const;
-      }),
-      filter(([command]) => !command.identity.endsWith('@Done')),
-    )
-    .subscribe(([command, callbacks]) => {
+  createEffect(
+    on(command, (command) => {
+      if (!command) return;
+      const resolvedCallbacks = callbacks.get(command.identity) ?? [];
+
       batch(() => {
         untrack(() => {
-          for (const callback of callbacks) {
+          for (const callback of resolvedCallbacks) {
             const result = callback(command.consumerValue, {
               set: ctx.set,
               state: ctx(),
@@ -53,40 +56,42 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
             }
           }
         });
-
-        const doneCommand = createCommand(
-          `${command.identity}@Done`,
-        ).withPayload<{
-          source: GenericStateCommand;
-          payload: unknown;
-          state: T;
-        }>();
-
-        commandsSubject$.next(
-          Object.assign(doneCommand, {
-            consumerValue: {
-              source: command,
-              payload: command.consumerValue,
-              state: ctx(),
-            },
-          }),
-        );
       });
-    });
+    }),
+  );
 
   return {
-    commandsSubject$,
+    executeCommand,
     callbacks,
     track,
     untrackCommand,
-    watchCommand<Commands extends GenericStateCommand>(commands?: Commands[]) {
-      return (commandsSubject$ as Observable<Commands>).pipe(
-        filter((command) => {
-          return !!(commands ?? []).find(
-            (x) => x.identity === command.identity && !(x as any).silent,
-          );
+    watchCommand<Commands extends GenericStateCommand>(
+      commands?: readonly Commands[],
+    ): Accessor<Commands> {
+      const [watchedCommand, watchCommand] = createSignal<
+        GenericStateCommand | undefined
+      >(undefined, {
+        equals: false,
+      });
+      createEffect(
+        on(command, (command) => {
+          if (!command) return;
+
+          const resolvedCommand = commands
+            ? (commands ?? []).find(
+                (watchedCommand) =>
+                  watchedCommand.identity === command.identity,
+              )
+            : command;
+
+          if (!resolvedCommand || resolvedCommand.silent) {
+            return;
+          }
+
+          watchCommand(() => command as unknown as GenericStateCommand);
         }),
       );
+      return watchedCommand as Accessor<Commands>;
     },
     dispatch<Command extends GenericStateCommand>(
       command: Command,
@@ -95,7 +100,7 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
       const resolvedCommand = !track()
         ? command.with({ silent: true as const })
         : command;
-      commandsSubject$.next(resolvedCommand.execute(payload));
+      executeCommand(() => resolvedCommand.execute(payload));
     },
   };
 }
