@@ -6,13 +6,13 @@ import {
   on,
   untrack,
 } from 'solid-js';
-import { reconcile } from 'solid-js/store';
 import { GenericStoreApi } from '~/types';
 import { createTrackObserver } from './track';
 import {
   CommandPayload,
   ExecutedGenericStateCommand,
   GenericStateCommand,
+  StateCommand,
 } from './command';
 
 export type ExecuteCommandCallback<
@@ -30,7 +30,7 @@ export type ExecuteCommandCallback<
 export const [track, untrackCommand] = createTrackObserver();
 
 export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
-  const [command, executeCommand] = createSignal<
+  const [latestCommand, executeCommand] = createSignal<
     ExecutedGenericStateCommand | undefined
   >(undefined, { equals: false });
 
@@ -40,8 +40,9 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
   >();
 
   createEffect(
-    on(command, (command) => {
+    on(latestCommand, (command) => {
       if (!command) return;
+
       const resolvedCallbacks = callbacks.get(command.identity) ?? [];
 
       batch(() => {
@@ -51,8 +52,9 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
               set: ctx.set,
               state: ctx(),
             });
+
             if (result !== undefined) {
-              ctx.set(reconcile(result));
+              ctx.set(() => result);
             }
           }
         });
@@ -66,26 +68,34 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
     track,
     untrackCommand,
     watchCommand<Commands extends GenericStateCommand>(
-      commands?: readonly Commands[],
+      commands?: readonly Commands[] | RegExp,
     ): Accessor<Commands> {
       const [watchedCommand, watchCommand] = createSignal<
         GenericStateCommand | undefined
       >(undefined, {
         equals: false,
       });
+
+      const filterByRegexp = commands instanceof RegExp;
+
       createEffect(
-        on(command, (command) => {
+        on(latestCommand, (command) => {
           if (!command) return;
+          if (filterByRegexp) {
+            if (!commands.test(command.identity)) {
+              return;
+            }
+          } else {
+            const resolvedCommand = commands
+              ? (commands ?? []).find(
+                  (watchedCommand) =>
+                    watchedCommand.identity === command.identity,
+                )
+              : command;
 
-          const resolvedCommand = commands
-            ? (commands ?? []).find(
-                (watchedCommand) =>
-                  watchedCommand.identity === command.identity,
-              )
-            : command;
-
-          if (!resolvedCommand || resolvedCommand.silent) {
-            return;
+            if (!resolvedCommand || resolvedCommand.silent) {
+              return;
+            }
           }
 
           watchCommand(() => command as unknown as GenericStateCommand);
@@ -100,7 +110,35 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
       const resolvedCommand = !track()
         ? command.with({ silent: true as const })
         : command;
+
       executeCommand(() => resolvedCommand.execute(payload));
+
+      executeCommand(() =>
+        command
+          .with({
+            identity: `@@AFTER/${command.identity}`,
+            correlate: resolvedCommand,
+            internal: true,
+          })
+          .execute({}),
+      );
     },
   };
+}
+
+export function isInternalCommand<T extends StateCommand<any, any>>(
+  command: T,
+): command is T & {
+  internal: true;
+} {
+  return !!Reflect.get(command, 'internal');
+}
+
+export function isAfterCommand<T extends StateCommand<any, any>>(
+  command: T,
+): command is T & {
+  correlate: ExecutedGenericStateCommand;
+  internal: true;
+} {
+  return isInternalCommand(command) && command.identity.startsWith('@@AFTER');
 }
