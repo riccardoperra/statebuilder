@@ -2,6 +2,7 @@ import {
   Accessor,
   batch,
   createEffect,
+  createMemo,
   createSignal,
   on,
   untrack,
@@ -10,6 +11,7 @@ import { GenericStoreApi } from '~/types';
 import { createTrackObserver } from './track';
 import {
   CommandPayload,
+  createCommand,
   ExecutedGenericStateCommand,
   GenericStateCommand,
   StateCommand,
@@ -30,9 +32,11 @@ export type ExecuteCommandCallback<
 export const [track, untrackCommand] = createTrackObserver();
 
 export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
+  const initCommand = createCommand('@@INIT');
+
   const [latestCommand, executeCommand] = createSignal<
     ExecutedGenericStateCommand | undefined
-  >(undefined, { equals: false });
+  >(initCommand.execute(void 0), { equals: false });
 
   const callbacks = new Map<
     string,
@@ -62,6 +66,29 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
     }),
   );
 
+  function retrieveCommand(
+    commandOrRegexp: readonly GenericStateCommand[] | RegExp | undefined,
+    command: ExecutedGenericStateCommand | undefined | null,
+  ) {
+    let resolvedCommand: ExecutedGenericStateCommand | null = null;
+    if (!command || command.silent) return null;
+
+    if (commandOrRegexp === undefined) {
+      resolvedCommand = command;
+    } else if (commandOrRegexp instanceof RegExp) {
+      if (commandOrRegexp.test(command.identity)) {
+        resolvedCommand = command;
+      }
+    } else {
+      const foundCommand = !!(commandOrRegexp ?? []).find(
+        (watchedCommand) => watchedCommand.identity === command.identity,
+      );
+      if (foundCommand) resolvedCommand = command;
+    }
+
+    return resolvedCommand;
+  }
+
   return {
     executeCommand,
     callbacks,
@@ -70,57 +97,46 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
     watchCommand<Commands extends GenericStateCommand>(
       commands?: readonly Commands[] | RegExp,
     ): Accessor<Commands> {
-      const [watchedCommand, watchCommand] = createSignal<
-        GenericStateCommand | undefined
-      >(undefined, {
-        equals: false,
-      });
-
-      const filterByRegexp = commands instanceof RegExp;
+      const [watchedCommand, watchCommand] =
+        createSignal<ExecutedGenericStateCommand | null>(
+          retrieveCommand(commands, latestCommand()),
+          { equals: false },
+        );
 
       createEffect(
-        on(latestCommand, (command) => {
-          if (!command) return;
-          if (filterByRegexp) {
-            if (!commands.test(command.identity)) {
-              return;
-            }
-          } else {
-            const resolvedCommand = commands
-              ? (commands ?? []).find(
-                  (watchedCommand) =>
-                    watchedCommand.identity === command.identity,
-                )
-              : command;
+        on(
+          latestCommand,
+          (command) => {
+            if (!command) return;
 
-            if (!resolvedCommand || resolvedCommand.silent) {
-              return;
+            const resolvedCommand = retrieveCommand(commands, command);
+            if (resolvedCommand) {
+              watchCommand(() => command);
             }
-          }
-
-          watchCommand(() => command as unknown as GenericStateCommand);
-        }),
+          },
+          { defer: true },
+        ),
       );
-      return watchedCommand as Accessor<Commands>;
+      return createMemo(watchedCommand) as unknown as Accessor<Commands>;
     },
     dispatch<Command extends GenericStateCommand>(
       command: Command,
       payload: CommandPayload<Command>,
     ): void {
-      const resolvedCommand = !track()
-        ? command.with({ silent: true as const })
-        : command;
+      const resolvedCommand = command
+        .with(track() ? {} : { silent: true })
+        .execute(payload);
 
-      executeCommand(() => resolvedCommand.execute(payload));
+      executeCommand(() => resolvedCommand);
 
       executeCommand(() =>
-        command
+        createCommand('@@AFTER/' + command.identity)
           .with({
             identity: `@@AFTER/${command.identity}`,
             correlate: resolvedCommand,
             internal: true,
           })
-          .execute({}),
+          .execute(void 0),
       );
     },
   };

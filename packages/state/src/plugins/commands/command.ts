@@ -26,8 +26,9 @@ export type ExecutedStateCommand<
   T,
   TStateCommand extends StateCommand<Identity, T>,
 > = Readonly<
-  Omit<TStateCommand, 'withPayload' | 'execute'> & {
+  Omit<TStateCommand, 'execute' | 'with' | 'clone' | 'withPayload'> & {
     consumerValue: T;
+    executionDate: string;
   }
 >;
 
@@ -50,8 +51,6 @@ export type CommandIdentity<T extends GenericStateCommand> =
 
 export type CommandPayload<T extends GenericStateCommand> =
   GetCommandInfo<T>['payload'];
-
-const $COMMAND_METADATA = Symbol('command-metadata-prop');
 
 function clone<TStateCommand extends StateCommand<any, any>>(
   command: TStateCommand,
@@ -87,7 +86,14 @@ export function createCommand<Identity extends string, T = unknown>(
     execute<TValue extends T>(
       payload: TValue,
     ): ExecutedStateCommand<Identity, TValue, StateCommand<Identity, T>> {
-      return extend(this, { consumerValue: payload }, true);
+      return extend(
+        this,
+        {
+          consumerValue: payload,
+          executionDate: new Date().toISOString(),
+        },
+        true,
+      );
     },
   };
 }
