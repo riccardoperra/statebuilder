@@ -45,7 +45,8 @@ export class Container {
     state: TStoreDefinition,
   ) {
     let error: Error | undefined;
-    const store = runWithOwner(owner, () => {
+    const resolvedOwner = this.#resolveOwner(state, owner);
+    const store = runWithOwner(resolvedOwner, () => {
       try {
         return resolve(state);
       } catch (e) {
@@ -54,5 +55,13 @@ export class Container {
     });
     if (error) throw error;
     return store;
+  }
+
+  #resolveOwner<TStoreDefinition extends StoreApiDefinition<any, any>>(
+    state: TStoreDefinition,
+    fallbackOwner: Owner,
+  ) {
+    const metadata = state[$CREATOR];
+    return metadata.owner ?? fallbackOwner;
   }
 }

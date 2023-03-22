@@ -1,11 +1,13 @@
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
+  HookConsumerFunction,
   Plugin,
   PluginContext,
   PluginOf,
   StoreApiDefinition,
 } from '~/types';
+import { getOwner, onCleanup } from 'solid-js';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
@@ -24,6 +26,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
   let id = 0;
   return (...args) => {
     let customPluginId = 0;
+    const owner = getOwner();
 
     const resolvedName = `${name}-${++id}`,
       plugins: Array<Plugin<any, any>> = [];
@@ -32,6 +35,7 @@ export function create<P extends any[], T extends GenericStoreApi>(
       [$CREATOR]: {
         name: resolvedName,
         plugins,
+        owner,
         factory: () => creator(...args),
       },
 
@@ -89,9 +93,17 @@ export function resolve<
 
   const { factory, plugins } = api;
 
+  const initSubscriptions = new Set<HookConsumerFunction>();
+  const destroySubscriptions = new Set<HookConsumerFunction>();
+
   const resolvedPlugins: string[] = [];
+
   const pluginContext: PluginContext = {
     plugins,
+    hooks: {
+      onInit: (callback) => initSubscriptions.add(callback),
+      onDestroy: (callback) => destroySubscriptions.add(callback),
+    },
     metadata: new Map<string, unknown>(),
   };
 
@@ -120,6 +132,18 @@ export function resolve<
     resolvedPlugins.push(extensionCreator.name);
   }
 
+  for (const listener of initSubscriptions) {
+    listener(resolvedStore);
+    initSubscriptions.delete(listener);
+  }
+
+  onCleanup(() => {
+    for (const listener of destroySubscriptions) {
+      listener(resolvedStore);
+      destroySubscriptions.delete(listener);
+    }
+  });
+
   return resolvedStore;
 }
 
@@ -138,7 +162,10 @@ type PluginCreatorOptions = {
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
 function _makePlugin<
-  TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
+  TCallback extends <S extends GenericStoreApi>(
+    store: S,
+    context: PluginContext,
+  ) => unknown,
 >(
   pluginCallback: TCallback,
   options: PluginCreatorOptions,
