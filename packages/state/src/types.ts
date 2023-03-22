@@ -1,4 +1,5 @@
 import { $CREATOR, $PLUGIN } from '~/api';
+import { Owner } from 'solid-js';
 
 export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
@@ -15,25 +16,34 @@ export interface ApiDefinitionCreator<
   TSignalExtension extends {} = {},
 > extends StoreApiDefinition<TStoreApi, TSignalExtension> {
   extend<TExtendedSignal extends {} | void>(
-    createPlugin: (ctx: TStoreApi & TSignalExtension) => TExtendedSignal,
+    createPlugin: (
+      ctx: TStoreApi & TSignalExtension,
+      context: PluginContext,
+    ) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
     TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>
   >;
 }
 
+export interface ApiDefinitionInternalCreator<
+  TStoreApi extends GenericStoreApi,
+  TStoreExtension = unknown,
+> {
+  name: string;
+  plugins: Array<
+    | PluginCreatorFunction<TStoreApi, TStoreExtension>
+    | Plugin<TStoreApi, TStoreExtension>
+  >;
+  owner: Owner | null;
+  factory: () => TStoreApi;
+}
+
 export interface StoreApiDefinition<
   TStoreApi extends GenericStoreApi,
   TStoreExtension = unknown,
 > {
-  [$CREATOR]: {
-    name: string;
-    plugins: Array<
-      | PluginCreatorFunction<TStoreApi, TStoreExtension>
-      | Plugin<TStoreApi, TStoreExtension>
-    >;
-    factory: () => TStoreApi;
-  };
+  [$CREATOR]: ApiDefinitionInternalCreator<TStoreApi, TStoreExtension>;
 }
 
 type MergeStoreProps<
@@ -71,12 +81,20 @@ export type GetStoreApiSetter<T extends GenericStoreApi> =
 export type GetStoreApiState<T extends GenericStoreApi> =
   T extends GenericStoreApi<infer S, any> ? S : never;
 
-export type PluginContext = {
+export type HookConsumerFunction<T extends GenericStoreApi = GenericStoreApi> =
+  (api: T) => void;
+
+interface PluginHooks<T extends GenericStoreApi> {
+  onInit: (consumer: HookConsumerFunction<T>) => void;
+
+  onDestroy: (consumer: HookConsumerFunction<T>) => void;
+}
+
+export type PluginContext<T extends GenericStoreApi = GenericStoreApi> = {
   plugins: readonly Plugin<any, any>[];
   metadata: Map<string, unknown>;
+  hooks: PluginHooks<T>;
 };
-
-export type MarkPlugin<T> = T & { [$PLUGIN]: true };
 
 export type PluginCreatorFunction<
   TStoreApi extends GenericStoreApi,

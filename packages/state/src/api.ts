@@ -1,11 +1,14 @@
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
+  HookConsumerFunction,
   Plugin,
   PluginContext,
   PluginOf,
   StoreApiDefinition,
 } from '~/types';
+import { onCleanup } from 'solid-js';
+import { ApiDefinition } from '~/apiDefinition';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
@@ -23,35 +26,8 @@ export function create<P extends any[], T extends GenericStoreApi>(
 ): (...args: P) => ApiDefinitionCreator<T> {
   let id = 0;
   return (...args) => {
-    let customPluginId = 0;
-
-    const resolvedName = `${name}-${++id}`,
-      plugins: Array<Plugin<any, any>> = [];
-
-    const apiDefinition: ApiDefinitionCreator<T> = {
-      [$CREATOR]: {
-        name: resolvedName,
-        plugins,
-        factory: () => creator(...args),
-      },
-
-      extend(createPlugin: any) {
-        if (
-          typeof createPlugin === 'function' &&
-          !createPlugin.hasOwnProperty($PLUGIN)
-        ) {
-          plugins.push({
-            name: `custom-${++customPluginId}`,
-            apply: createPlugin,
-          });
-        } else {
-          plugins.push(createPlugin);
-        }
-        return this as any;
-      },
-    };
-
-    return apiDefinition;
+    const resolvedName = `${name}-${++id}`;
+    return new ApiDefinition<T, {}>(resolvedName, id, () => creator(...args));
   };
 }
 
@@ -89,15 +65,18 @@ export function resolve<
 
   const { factory, plugins } = api;
 
-  const resolvedPlugins: string[] = [];
-  const pluginContext: PluginContext = {
-    plugins,
-    metadata: new Map<string, unknown>(),
-  };
-
-  const resolvedStore = factory();
-
-  pluginContext.metadata.set('core/resolvedPlugins', resolvedPlugins);
+  const initSubscriptions = new Set<HookConsumerFunction>(),
+    destroySubscriptions = new Set<HookConsumerFunction>(),
+    resolvedPlugins: string[] = [],
+    pluginContext: PluginContext = {
+      plugins,
+      hooks: {
+        onInit: (callback) => initSubscriptions.add(callback),
+        onDestroy: (callback) => destroySubscriptions.add(callback),
+      },
+      metadata: new Map<string, unknown>(),
+    },
+    resolvedStore = factory();
 
   for (const extensionCreator of plugins) {
     const createExtension =
@@ -120,6 +99,18 @@ export function resolve<
     resolvedPlugins.push(extensionCreator.name);
   }
 
+  for (const listener of initSubscriptions) {
+    listener(resolvedStore);
+    initSubscriptions.delete(listener);
+  }
+
+  onCleanup(() => {
+    for (const listener of destroySubscriptions) {
+      listener(resolvedStore);
+      destroySubscriptions.delete(listener);
+    }
+  });
+
   return resolvedStore;
 }
 
@@ -138,7 +129,10 @@ type PluginCreatorOptions = {
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
 function _makePlugin<
-  TCallback extends <S extends GenericStoreApi>(store: S) => unknown,
+  TCallback extends <S extends GenericStoreApi>(
+    store: S,
+    context: PluginContext,
+  ) => unknown,
 >(
   pluginCallback: TCallback,
   options: PluginCreatorOptions,
