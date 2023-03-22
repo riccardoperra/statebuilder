@@ -7,7 +7,8 @@ import {
   PluginOf,
   StoreApiDefinition,
 } from '~/types';
-import { getOwner, onCleanup } from 'solid-js';
+import { onCleanup } from 'solid-js';
+import { ApiDefinition } from '~/apiDefinition';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
@@ -25,37 +26,8 @@ export function create<P extends any[], T extends GenericStoreApi>(
 ): (...args: P) => ApiDefinitionCreator<T> {
   let id = 0;
   return (...args) => {
-    let customPluginId = 0;
-    const owner = getOwner();
-
-    const resolvedName = `${name}-${++id}`,
-      plugins: Array<Plugin<any, any>> = [];
-
-    const apiDefinition: ApiDefinitionCreator<T> = {
-      [$CREATOR]: {
-        name: resolvedName,
-        plugins,
-        owner,
-        factory: () => creator(...args),
-      },
-
-      extend(createPlugin: any) {
-        if (
-          typeof createPlugin === 'function' &&
-          !createPlugin.hasOwnProperty($PLUGIN)
-        ) {
-          plugins.push({
-            name: `custom-${++customPluginId}`,
-            apply: createPlugin,
-          });
-        } else {
-          plugins.push(createPlugin);
-        }
-        return this as any;
-      },
-    };
-
-    return apiDefinition;
+    const resolvedName = `${name}-${++id}`;
+    return new ApiDefinition<T, {}>(resolvedName, id, () => creator(...args));
   };
 }
 
@@ -93,23 +65,18 @@ export function resolve<
 
   const { factory, plugins } = api;
 
-  const initSubscriptions = new Set<HookConsumerFunction>();
-  const destroySubscriptions = new Set<HookConsumerFunction>();
-
-  const resolvedPlugins: string[] = [];
-
-  const pluginContext: PluginContext = {
-    plugins,
-    hooks: {
-      onInit: (callback) => initSubscriptions.add(callback),
-      onDestroy: (callback) => destroySubscriptions.add(callback),
+  const initSubscriptions = new Set<HookConsumerFunction>(),
+    destroySubscriptions = new Set<HookConsumerFunction>(),
+    resolvedPlugins: string[] = [],
+    pluginContext: PluginContext = {
+      plugins,
+      hooks: {
+        onInit: (callback) => initSubscriptions.add(callback),
+        onDestroy: (callback) => destroySubscriptions.add(callback),
+      },
+      metadata: new Map<string, unknown>(),
     },
-    metadata: new Map<string, unknown>(),
-  };
-
-  const resolvedStore = factory();
-
-  pluginContext.metadata.set('core/resolvedPlugins', resolvedPlugins);
+    resolvedStore = factory();
 
   for (const extensionCreator of plugins) {
     const createExtension =

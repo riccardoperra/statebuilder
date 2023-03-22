@@ -26,19 +26,24 @@ export interface ApiDefinitionCreator<
   >;
 }
 
+export interface ApiDefinitionInternalCreator<
+  TStoreApi extends GenericStoreApi,
+  TStoreExtension = unknown,
+> {
+  name: string;
+  plugins: Array<
+    | PluginCreatorFunction<TStoreApi, TStoreExtension>
+    | Plugin<TStoreApi, TStoreExtension>
+  >;
+  owner: Owner | null;
+  factory: () => TStoreApi;
+}
+
 export interface StoreApiDefinition<
   TStoreApi extends GenericStoreApi,
   TStoreExtension = unknown,
 > {
-  [$CREATOR]: {
-    name: string;
-    plugins: Array<
-      | PluginCreatorFunction<TStoreApi, TStoreExtension>
-      | Plugin<TStoreApi, TStoreExtension>
-    >;
-    owner: Owner | null;
-    factory: () => TStoreApi;
-  };
+  [$CREATOR]: ApiDefinitionInternalCreator<TStoreApi, TStoreExtension>;
 }
 
 type MergeStoreProps<

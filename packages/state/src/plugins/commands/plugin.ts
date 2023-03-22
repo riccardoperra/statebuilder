@@ -3,16 +3,9 @@ import {
   ExecuteCommandCallback,
   makeCommandNotifier,
 } from '~/plugins/commands/notifier';
-import {
-  CommandPayload,
-  createCommand,
-  GenericStateCommand,
-  MapCommandToActions,
-  StateCommand,
-} from '~/plugins/commands/command';
+import { GenericStateCommand } from '~/plugins/commands/command';
 import { makePlugin } from '~/api';
 import {
-  GenericCommandsMap,
   ProxifyCommands,
   StoreWithProxyCommands,
 } from '~/plugins/commands/types';
