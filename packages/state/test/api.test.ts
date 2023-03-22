@@ -136,4 +136,34 @@ describe('resolve', () => {
       `[statebuilder] The dependency 'missingPlugin' of plugin 'plugin1' is missing`,
     );
   });
+
+  it('will listen for hooks after resolution', () => {
+    const initHook = vi.fn();
+    const destroyHook = vi.fn();
+
+    const state = defineSignal(() => 0)
+      .extend((api, context) => {
+        context.hooks.onInit(() => initHook('first-plugin'));
+        return {};
+      })
+      .extend((api, context) => {
+        context.hooks.onInit(() => initHook('second-plugin'));
+        context.hooks.onDestroy(() => destroyHook('destroy'));
+        return {};
+      });
+
+    createRoot((dispose) => {
+      expect(initHook).toHaveBeenCalledTimes(0);
+      expect(destroyHook).toHaveBeenCalledTimes(0);
+
+      resolve(state);
+
+      expect(initHook).toHaveBeenCalledTimes(2);
+      expect(destroyHook).not.toHaveBeenCalled();
+
+      dispose();
+
+      expect(destroyHook).toHaveBeenCalledWith('destroy');
+    });
+  });
 });
