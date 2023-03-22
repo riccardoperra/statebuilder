@@ -44,26 +44,30 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
   >();
 
   createEffect(
-    on(latestCommand, (command) => {
-      if (!command) return;
+    on(
+      latestCommand,
+      (command) => {
+        if (!command) return;
 
-      const resolvedCallbacks = callbacks.get(command.identity) ?? [];
+        const resolvedCallbacks = callbacks.get(command.identity) ?? [];
 
-      batch(() => {
-        untrack(() => {
-          for (const callback of resolvedCallbacks) {
-            const result = callback(command.consumerValue, {
-              set: ctx.set,
-              state: ctx(),
-            });
+        batch(() => {
+          untrack(() => {
+            for (const callback of resolvedCallbacks) {
+              const result = callback(command.consumerValue, {
+                set: ctx.set,
+                state: ctx(),
+              });
 
-            if (result !== undefined) {
-              ctx.set(() => result);
+              if (result !== undefined) {
+                ctx.set(() => result);
+              }
             }
-          }
+          });
         });
-      });
-    }),
+      },
+      { defer: true },
+    ),
   );
 
   function retrieveCommand(
