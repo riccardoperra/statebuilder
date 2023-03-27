@@ -7,6 +7,8 @@ export interface StateCommand<
 
   readonly silent?: boolean;
 
+  clone(): StateCommand<Identity, T>;
+
   withPayload<TPayload>(): StateCommand<
     Identity,
     unknown extends T ? TPayload : T | TPayload
@@ -24,8 +26,9 @@ export type ExecutedStateCommand<
   T,
   TStateCommand extends StateCommand<Identity, T>,
 > = Readonly<
-  Omit<TStateCommand, 'withPayload' | 'execute'> & {
+  Omit<TStateCommand, 'execute' | 'with' | 'clone' | 'withPayload'> & {
     consumerValue: T;
+    executionDate: string;
   }
 >;
 
@@ -49,6 +52,23 @@ export type CommandIdentity<T extends GenericStateCommand> =
 export type CommandPayload<T extends GenericStateCommand> =
   GetCommandInfo<T>['payload'];
 
+function clone<TStateCommand extends StateCommand<any, any>>(
+  command: TStateCommand,
+  readonly: boolean,
+): TStateCommand {
+  const base = readonly ? {} : createCommand(command.identity);
+  return Object.assign(base, JSON.parse(JSON.stringify(command)));
+}
+
+function extend<TStateCommand extends StateCommand<any, any>, T>(
+  command: TStateCommand,
+  metadata: T,
+  readonly: boolean,
+) {
+  const clonedCommand = clone(command, readonly);
+  return Object.assign(clonedCommand, metadata);
+}
+
 export function createCommand<Identity extends string, T = unknown>(
   identity: Identity,
 ): StateCommand<Identity, T> {
@@ -57,13 +77,23 @@ export function createCommand<Identity extends string, T = unknown>(
     withPayload() {
       return this;
     },
+    clone(): StateCommand<Identity, T> {
+      return clone(this, false);
+    },
     with(metadata) {
-      return Object.assign(this, metadata);
+      return extend(this, metadata, false);
     },
     execute<TValue extends T>(
       payload: TValue,
     ): ExecutedStateCommand<Identity, TValue, StateCommand<Identity, T>> {
-      return this.with({ consumerValue: payload });
+      return extend(
+        this,
+        {
+          consumerValue: payload,
+          executionDate: new Date().toISOString(),
+        },
+        true,
+      );
     },
   };
 }

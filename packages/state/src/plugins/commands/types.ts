@@ -32,6 +32,8 @@ export interface StoreWithProxyCommands<
 
   readonly actions: MapCommandToActions<Commands>;
 
+  watchCommand(regexp: RegExp): Accessor<GenericStateCommand>;
+
   watchCommand<Command extends GenericStateCommand>(
     commands?: readonly Command[],
   ): Accessor<Command>;

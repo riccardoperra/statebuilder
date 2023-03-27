@@ -10,6 +10,7 @@ import {
   StoreWithProxyCommands,
 } from '~/plugins/commands/types';
 import { makeProxyHandlers } from '~/plugins/commands/proxy';
+import { applyDevtools } from '~/plugins/commands/devtools';
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <
   TGenericApi extends GenericStoreApi,
@@ -51,8 +52,31 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   };
 }
 
-export function withProxyCommands<T extends Record<string, unknown>>() {
-  return makePlugin((store) => plugin<T>()(store), {
-    name: 'withProxyCommands',
-  });
+interface PluginOptions {
+  devtools?: { storeName: string };
+}
+
+export function withProxyCommands<T extends Record<string, unknown>>(
+  options?: PluginOptions,
+) {
+  return makePlugin(
+    (store, context) => {
+      const storeWithProxy = plugin<T>()(store);
+
+      if (options?.devtools) {
+        const { storeName } = options.devtools;
+        context.hooks.onInit(() => {
+          const unsubscribe = applyDevtools(store, storeWithProxy, {
+            storeName,
+          });
+          context.hooks.onDestroy(() => unsubscribe());
+        });
+      }
+
+      return storeWithProxy;
+    },
+    {
+      name: 'withProxyCommands',
+    },
+  );
 }
