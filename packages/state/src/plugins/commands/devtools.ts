@@ -33,13 +33,13 @@ export function applyDevtools(
   storeApi: GenericStoreApi,
   plugin: StoreWithProxyCommands<any, any>,
   options: WithReduxDevtoolsOptions,
-) {
+): () => void {
   if (!globalThis.window) {
-    return;
+    return () => void 0;
   }
   const { __REDUX_DEVTOOLS_EXTENSION__ } = window;
 
-  if (!__REDUX_DEVTOOLS_EXTENSION__) return;
+  if (!__REDUX_DEVTOOLS_EXTENSION__) return () => void 0;
 
   const devTools = __REDUX_DEVTOOLS_EXTENSION__.connect({
     name: options.storeName,
@@ -63,7 +63,7 @@ export function applyDevtools(
 
   devTools.init(untrack(storeApi));
 
-  devTools.subscribe((message) => {
+  return devTools.subscribe((message) => {
     if (message.type === 'DISPATCH') {
       const payloadType = message.payload.type;
       // TODO: handle commit type?

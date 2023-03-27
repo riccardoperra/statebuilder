@@ -53,21 +53,24 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 }
 
 interface PluginOptions {
-  devtools?: boolean;
+  devtools?: { storeName: string };
 }
 
 export function withProxyCommands<T extends Record<string, unknown>>(
   options?: PluginOptions,
 ) {
   return makePlugin(
-    (store) => {
+    (store, context) => {
       const storeWithProxy = plugin<T>()(store);
 
-      // TODO: add hooks
       if (options?.devtools) {
-        queueMicrotask(() =>
-          applyDevtools(store, storeWithProxy, { storeName: '@APP_STORE' }),
-        );
+        const { storeName } = options.devtools;
+        context.hooks.onInit(() => {
+          const unsubscribe = applyDevtools(store, storeWithProxy, {
+            storeName,
+          });
+          context.hooks.onDestroy(() => unsubscribe());
+        });
       }
 
       return storeWithProxy;

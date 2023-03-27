@@ -134,7 +134,7 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
       executeCommand(() => resolvedCommand);
 
       executeCommand(() =>
-        createCommand('@@AFTER/' + command.identity)
+        createCommand(`@@AFTER/${command.identity}`)
           .with({
             identity: `@@AFTER/${command.identity}`,
             correlate: resolvedCommand,
