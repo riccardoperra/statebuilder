@@ -1,0 +1,44 @@
+import {
+  NoInfer,
+  ResourceFetcher,
+  ResourceOptions,
+  Setter,
+  Signal,
+  createResource,
+  Resource as InternalResource,
+} from 'solid-js';
+import { GenericStoreApi, create } from '..';
+
+export type Resource<T> = GenericStoreApi<T, Setter<T>> & InternalResource<T>;
+
+function makeResource<T>(
+  resourceFetcher: ResourceFetcher<true, T, true>,
+  options?: ResourceOptions<NoInfer<T>, true>,
+): Resource<T> {
+  const [state, { mutate, refetch }] = createResource(
+    resourceFetcher.bind(resourceFetcher),
+    options ?? {},
+  );
+
+  Reflect.set(state, 'set', mutate);
+  Reflect.set(state, 'refetch', refetch);
+
+  return state as unknown as Resource<T>;
+}
+
+export const experimental__defineResource = create('resource', makeResource);
+
+export function experimental__withResourceStorage<T>(
+  store: GenericStoreApi<T>,
+) {
+  return function (_: T | undefined): Signal<T | undefined> {
+    return [
+      () => store(),
+      (v: T) => {
+        const value = typeof v === 'function' ? v(store()) : v;
+        store.set(value);
+        return store;
+      },
+    ] as Signal<T | undefined>;
+  };
+}
