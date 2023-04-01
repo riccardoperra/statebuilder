@@ -1,5 +1,5 @@
 ---
-"statebuilder": patch
+"statebuilder": minor
 ---
 
 feat: store resource
