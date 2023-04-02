@@ -1,5 +1,17 @@
 # plustate
 
+## 0.4.0
+
+### Minor Changes
+
+- ffd7c02: feat: store resource
+
+### Patch Changes
+
+- 293f497: perf: refactor commands plugin removing RxJS
+- 3af22fa: feat: add store definition init/destroy hooks. support local owner
+- 80393f4: feat: command devtools
+
 ## 0.3.1
 
 ### Patch Changes
