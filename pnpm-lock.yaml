@@ -4,12 +4,14 @@ importers:
 
   .:
     specifiers:
+      '@changesets/changelog-git': ^0.1.14
       '@changesets/cli': ^2.26.0
       prettier: ^2.8.1
       rxjs: ^7.8.0
       solid-js: ^1.6.7
       typescript: ^4.9.4
     dependencies:
+      '@changesets/changelog-git': 0.1.14
       rxjs: 7.8.0
       solid-js: 1.6.7
     devDependencies:
@@ -1210,7 +1212,6 @@ packages:
     resolution: {integrity: sha512-+vRfnKtXVWsDDxGctOfzJsPhaCdXRYoe+KyWYoq5X/GqoISREiat0l3L8B0a453B2B4dfHGcZaGyowHbp9BSaA==}
     dependencies:
       '@changesets/types': 5.2.1
-    dev: true
 
   /@changesets/cli/2.26.0:
     resolution: {integrity: sha512-0cbTiDms+ICTVtEwAFLNW0jBNex9f5+fFv3I771nBvdnV/mOjd1QJ4+f8KtVSOrwD9SJkk9xbDkWFb0oXd8d1Q==}
@@ -1349,7 +1350,6 @@ packages:
 
   /@changesets/types/5.2.1:
     resolution: {integrity: sha512-myLfHbVOqaq9UtUKqR/nZA/OY7xFjQMdfgfqeZIBK4d0hA6pgxArvdv8M+6NUzzBsjWLOtvApv8YHr4qM+Kpfg==}
-    dev: true
 
   /@changesets/write/0.2.3:
     resolution: {integrity: sha512-Dbamr7AIMvslKnNYsLFafaVORx4H0pvCA2MHqgtNCySMe1blImEyAEOzDmcgKAkgz4+uwoLz7demIrX+JBr/Xw==}
