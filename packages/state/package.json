@@ -27,8 +27,8 @@
   },
   "version": "0.4.1",
   "source": "src/index.ts",
-  "module": "dist/index.mjs",
-  "main": "dist/index.mjs",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -36,34 +36,34 @@
   "private": false,
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "browser": "./dist/index.mjs",
-      "node": "./dist/index.mjs",
-      "default": "./dist/index.mjs"
+      "import": "./dist/index.js",
+      "browser": "./dist/index.js",
+      "node": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./asyncAction": {
-      "import": "./dist/plugins/asyncAction.mjs",
-      "browser": "./dist/plugins/asyncAction.mjs",
-      "node": "./dist/plugins/asyncAction.mjs",
-      "default": "./dist/plugins/asyncAction.mjs"
+      "import": "./dist/plugins/asyncAction.js",
+      "browser": "./dist/plugins/asyncAction.js",
+      "node": "./dist/plugins/asyncAction.js",
+      "default": "./dist/plugins/asyncAction.js"
     },
     "./commands": {
-      "import": "./dist/plugins/commands.mjs",
-      "browser": "./dist/plugins/commands.mjs",
-      "node": "./dist/plugins/commands.mjs",
-      "default": "./dist/plugins/commands.mjs"
+      "import": "./dist/plugins/commands.js",
+      "browser": "./dist/plugins/commands.js",
+      "node": "./dist/plugins/commands.js",
+      "default": "./dist/plugins/commands.js"
     },
     "./devtools": {
-      "import": "./dist/plugins/devtools.mjs",
-      "browser": "./dist/plugins/devtools.mjs",
-      "node": "./dist/plugins/devtools.mjs",
-      "default": "./dist/plugins/devtools.mjs"
+      "import": "./dist/plugins/devtools.js",
+      "browser": "./dist/plugins/devtools.js",
+      "node": "./dist/plugins/devtools.js",
+      "default": "./dist/plugins/devtools.js"
     },
     "./reducer": {
-      "import": "./dist/plugins/reducer.mjs",
-      "browser": "./dist/plugins/reducer.mjs",
-      "node": "./dist/plugins/reducer.mjs",
-      "default": "./dist/plugins/reducer.mjs"
+      "import": "./dist/plugins/reducer.js",
+      "browser": "./dist/plugins/reducer.js",
+      "node": "./dist/plugins/reducer.js",
+      "default": "./dist/plugins/reducer.js"
     }
   },
   "typesVersions": {
