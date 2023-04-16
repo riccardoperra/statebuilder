@@ -41,7 +41,6 @@ export function withReduxDevtools(options: WithReduxDevtoolsOptions) {
       const devTools = __REDUX_DEVTOOLS_EXTENSION__.connect({
         name: options.storeName,
       });
-      console.log(devTools);
 
       const originalSet = storeApi.set;
 
@@ -60,7 +59,6 @@ export function withReduxDevtools(options: WithReduxDevtoolsOptions) {
       };
 
       devTools.subscribe((message) => {
-        console.log('message', message);
         if (message.type === 'DISPATCH') {
           const payloadType = message.payload.type;
           // TODO: handle commit type?

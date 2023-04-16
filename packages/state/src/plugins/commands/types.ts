@@ -6,7 +6,7 @@ import {
 } from '~/plugins/commands/command';
 import { GenericStoreApi } from '~/types';
 import { ExecuteCommandCallback } from '~/plugins/commands/notifier';
-import { Accessor } from 'solid-js';
+import { ObservableObserver } from 'solid-js';
 
 export type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
@@ -32,13 +32,21 @@ export interface StoreWithProxyCommands<
 
   readonly actions: MapCommandToActions<Commands>;
 
-  watchCommand(regexp: RegExp): Accessor<GenericStateCommand>;
+  watchCommand(regexp: RegExp): Observable<GenericStateCommand>;
 
   watchCommand<Command extends GenericStateCommand>(
     commands?: readonly Command[],
-  ): Accessor<Command>;
+  ): Observable<Command>;
 }
 
 export type ProxifyCommands<T extends Record<string, unknown>> = {
   [K in keyof T]: StateCommand<K & string, T[K]>;
 };
+
+export interface Observable<T> {
+  subscribe(observer: ObservableObserver<T>): {
+    unsubscribe(): void;
+  };
+
+  [Symbol.observable](): Observable<T>;
+}

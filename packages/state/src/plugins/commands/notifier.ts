@@ -1,12 +1,4 @@
-import {
-  Accessor,
-  batch,
-  createEffect,
-  createMemo,
-  createSignal,
-  on,
-  untrack,
-} from 'solid-js';
+import { batch, ObservableObserver, untrack } from 'solid-js';
 import { GenericStoreApi } from '~/types';
 import { createTrackObserver } from './track';
 import {
@@ -16,6 +8,8 @@ import {
   GenericStateCommand,
   StateCommand,
 } from './command';
+import { createEventBus } from '@solid-primitives/event-bus';
+import { Observable } from './types';
 
 export type ExecuteCommandCallback<
   T,
@@ -33,42 +27,31 @@ export const [track, untrackCommand] = createTrackObserver();
 
 export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
   const initCommand = createCommand('@@INIT');
-
-  const [latestCommand, executeCommand] = createSignal<
-    ExecutedGenericStateCommand | undefined
-  >(initCommand.execute(void 0), { equals: false });
+  const bus = createEventBus<ExecutedGenericStateCommand>();
+  bus.emit(initCommand.execute(void 0));
 
   const callbacks = new Map<
     string,
     ReadonlyArray<ExecuteCommandCallback<T, GenericStateCommand>>
   >();
 
-  createEffect(
-    on(
-      latestCommand,
-      (command) => {
-        if (!command) return;
-
-        const resolvedCallbacks = callbacks.get(command.identity) ?? [];
-
-        batch(() => {
-          untrack(() => {
-            for (const callback of resolvedCallbacks) {
-              const result = callback(command.consumerValue, {
-                set: ctx.set,
-                state: ctx(),
-              });
-
-              if (result !== undefined) {
-                ctx.set(() => result);
-              }
-            }
+  bus.listen((command) => {
+    const resolvedCallbacks = callbacks.get(command.identity) ?? [];
+    batch(() => {
+      untrack(() => {
+        for (const callback of resolvedCallbacks) {
+          const result = callback(command.consumerValue, {
+            set: ctx.set,
+            state: ctx(),
           });
-        });
-      },
-      { defer: true },
-    ),
-  );
+
+          if (result !== undefined) {
+            ctx.set(() => result);
+          }
+        }
+      });
+    });
+  });
 
   function retrieveCommand(
     commandOrRegexp: readonly GenericStateCommand[] | RegExp | undefined,
@@ -94,34 +77,47 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
   }
 
   return {
-    executeCommand,
+    executeCommand<T extends ExecutedGenericStateCommand>(command: T) {
+      bus.emit(command);
+    },
     callbacks,
     track,
     untrackCommand,
     watchCommand<Commands extends GenericStateCommand>(
       commands?: readonly Commands[] | RegExp,
-    ): Accessor<Commands> {
-      const [watchedCommand, watchCommand] =
-        createSignal<ExecutedGenericStateCommand | null>(
-          retrieveCommand(commands, latestCommand()),
-          { equals: false },
-        );
+    ): Observable<Commands> {
+      return {
+        [Symbol.observable || '@@observable']() {
+          return this;
+        },
+        subscribe(observer: ObservableObserver<Commands>): {
+          unsubscribe(): void;
+        } {
+          const handler =
+            typeof observer === 'function'
+              ? observer
+              : observer.next && observer.next.bind(observer);
 
-      createEffect(
-        on(
-          latestCommand,
-          (command) => {
-            if (!command) return;
+          if (!handler) {
+            return {
+              unsubscribe() {},
+            };
+          }
 
+          const clear = bus.listen((command) => {
             const resolvedCommand = retrieveCommand(commands, command);
             if (resolvedCommand) {
-              watchCommand(() => command);
+              handler(resolvedCommand as unknown as Commands);
             }
-          },
-          { defer: true },
-        ),
-      );
-      return createMemo(watchedCommand) as unknown as Accessor<Commands>;
+          });
+
+          return {
+            unsubscribe() {
+              clear();
+            },
+          };
+        },
+      };
     },
     dispatch<Command extends GenericStateCommand>(
       command: Command,
@@ -131,9 +127,9 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
         .with(track() ? {} : { silent: true })
         .execute(payload);
 
-      executeCommand(() => resolvedCommand);
+      bus.emit(resolvedCommand);
 
-      executeCommand(() =>
+      bus.emit(
         createCommand(`@@AFTER/${command.identity}`)
           .with({
             identity: `@@AFTER/${command.identity}`,
