@@ -2,7 +2,6 @@
   "name": "statebuilder",
   "version": "0.4.0",
   "source": "src/index.ts",
-  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
@@ -13,33 +12,32 @@
     ".": {
       "import": "./dist/index.mjs",
       "browser": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "node": "./dist/index.js",
-      "types": "./dist/plugins/commands.d.ts"
+      "node": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./asyncAction": {
       "import": "./dist/plugins/asyncAction.mjs",
       "browser": "./dist/plugins/asyncAction.mjs",
-      "require": "./dist/plugins/asyncAction.js",
-      "node": "./dist/plugins/asyncAction.js"
+      "node": "./dist/plugins/asyncAction.mjs",
+      "default": "./dist/plugins/asyncAction.mjs"
     },
     "./commands": {
       "import": "./dist/plugins/commands.mjs",
       "browser": "./dist/plugins/commands.mjs",
-      "require": "./dist/plugins/commands.js",
-      "node": "./dist/plugins/commands.js"
+      "node": "./dist/plugins/commands.mjs",
+      "default": "./dist/plugins/commands.mjs"
     },
     "./devtools": {
       "import": "./dist/plugins/devtools.mjs",
       "browser": "./dist/plugins/devtools.mjs",
-      "require": "./dist/plugins/devtools.js",
-      "node": "./dist/plugins/devtools.js"
+      "node": "./dist/plugins/devtools.mjs",
+      "default": "./dist/plugins/devtools.mjs"
     },
     "./reducer": {
       "import": "./dist/plugins/reducer.mjs",
       "browser": "./dist/plugins/reducer.mjs",
-      "require": "./dist/plugins/reducer.js",
-      "node": "./dist/plugins/reducer.js"
+      "node": "./dist/plugins/reducer.mjs",
+      "default": "./dist/plugins/reducer.mjs"
     }
   },
   "typesVersions": {
@@ -81,9 +79,13 @@
   },
   "dependencies": {
     "rxjs": "^7.8.0",
-    "solid-js": "^1.6.7"
+    "solid-js": "^1.6.7",
+    "@solid-primitives/event-bus": "^1.0.5"
   },
   "peerDependenciesMeta": {
+    "@solid-primitives/event-bus": {
+      "optional": true
+    },
     "rxjs": {
       "optional": true
     }

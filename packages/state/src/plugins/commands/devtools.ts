@@ -1,4 +1,4 @@
-import { createEffect, on, untrack } from 'solid-js';
+import { untrack } from 'solid-js';
 import { GenericStoreApi } from '~/types';
 import { StoreWithProxyCommands } from '~/plugins/commands/types';
 import { isAfterCommand } from '~/plugins/commands/notifier';
@@ -45,8 +45,9 @@ export function applyDevtools(
     name: options.storeName,
   });
 
-  createEffect(
-    on(plugin.watchCommand(/@@AFTER.*/), (command) => {
+  const commandsSubscription = plugin
+    .watchCommand(/@@AFTER.*/)
+    .subscribe((command) => {
       if (!command) return;
 
       if (isAfterCommand(command)) {
@@ -58,16 +59,13 @@ export function applyDevtools(
           storeApi(),
         );
       }
-    }),
-  );
+    });
 
   devTools.init(untrack(storeApi));
 
-  return devTools.subscribe((message) => {
+  const unsubscribeDevtools = devTools.subscribe((message) => {
     if (message.type === 'DISPATCH') {
       const payloadType = message.payload.type;
-      // TODO: handle commit type?
-
       if (
         payloadType === 'JUMP_TO_STATE' ||
         payloadType === 'JUMP_TO_ACTION' ||
@@ -78,4 +76,9 @@ export function applyDevtools(
       }
     }
   });
+
+  return () => {
+    unsubscribeDevtools();
+    commandsSubscription.unsubscribe();
+  };
 }
