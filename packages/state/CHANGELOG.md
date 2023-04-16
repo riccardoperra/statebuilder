@@ -1,5 +1,11 @@
 # plustate
 
+## 0.4.1
+
+### Patch Changes
+
+- 1f20a6d: refactor command listener with @solid-primitives/event-bus
+
 ## 0.4.0
 
 ### Minor Changes
