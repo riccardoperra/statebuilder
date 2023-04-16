@@ -1,8 +1,34 @@
 {
   "name": "statebuilder",
+  "license": "MIT",
+  "homepage": "https://github.com/riccardoperra/statebuilder",
+  "description": "Experimental pluggable state management system powered by SolidJS reactivity",
+  "type": "module",
+  "keywords": [
+    "solid-js",
+    "reactivity",
+    "state-management",
+    "solidjs",
+    "state",
+    "plugins"
+  ],
+  "author": {
+    "name": "Riccardo Perra",
+    "email": "riccardo.perra@icloud.com",
+    "url": "https://github.com/riccardoperra"
+  },
+  "bugs": {
+    "email": "riccardo.perra@icloud.com",
+    "url": "https://github.com/riccardoperra/statebuilder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/riccardoperra/statebuilder"
+  },
   "version": "0.4.0",
   "source": "src/index.ts",
   "module": "dist/index.mjs",
+  "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -56,7 +82,6 @@
       ]
     }
   },
-  "description": "",
   "scripts": {
     "build": "tsup",
     "test": "vitest",
@@ -64,7 +89,6 @@
     "typecheck": "vitest typecheck",
     "coverage": "vitest run --coverage"
   },
-  "license": "MIT",
   "devDependencies": {
     "@solidjs/testing-library": "^0.5.1",
     "@vitest/coverage-c8": "^0.26.3",
