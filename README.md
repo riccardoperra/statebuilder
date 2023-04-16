@@ -1,6 +1,6 @@
 # StateBuilder
 
-<img src="./banner.png">
+<img alt="StateBuilder" src="./banner.png">
 
 > **Warning** This library has been built for experimental purposes for my needs while building apps that need an
 > agnostic state manager and a certain complexity.
