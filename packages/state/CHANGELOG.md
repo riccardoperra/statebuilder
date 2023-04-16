@@ -1,5 +1,11 @@
 # plustate
 
+## 0.4.2
+
+### Patch Changes
+
+- 19ef469: missing esm export package.json
+
 ## 0.4.1
 
 ### Patch Changes
