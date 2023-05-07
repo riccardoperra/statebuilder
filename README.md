@@ -327,6 +327,14 @@ function Counter() {
 - [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and observables
 - [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux devtools integration
 
-## Demo
+## Demo / Examples
+
+// TODO
+
+- LocalStoragePlugin: https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/plugins/local-storage.ts
+- EntityPlugin: https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/plugins/withEntityPlugin.ts
+- IndexedDBPlugin: https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/plugins/withIndexedDbPlugin.ts
 
 https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/editor/frame.ts
+https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/presets/presets.ts
+https://github.com/riccardoperra/codeimage/blob/main/apps/codeimage/src/state/presets/bridge.ts
