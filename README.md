@@ -93,7 +93,7 @@ Once the Container is created, you can define the store state through the `defin
 import { defineSignal } from 'statebuilder';
 import { createEffect } from 'solid-js';
 
-const $count = defineSignal(() => 0)
+const CountStore = defineSignal(() => 0)
   .extend((state) => ({
     increment: () => state.set((prev) => prev + 1),
     decrement: () => state.set((prev) => prev - 1),
@@ -123,9 +123,9 @@ The next step is to initialize it using the container we created earlier.
 
 ```ts
 import { stateContainer } from './container.ts';
-import { $count } from './count';
+import { CountStore } from './count';
 
-const count = stateContainer.get($count);
+const count = stateContainer.get(CountStore);
 
 count(); // get the state accessor
 
@@ -159,7 +159,7 @@ when you have to reuse some business logic, and prefers the `makePlugin` API whe
 ```ts
 import { createEffect, on } from 'solid-js';
 
-const $count = defineSignal(() => 0).extend((state) => {
+const CountStore = defineSignal(() => 0).extend((state) => {
   if (localStorage.has('count')) {
     state.set(JSON.parse(localStorage.get('count')));
   }
@@ -199,7 +199,7 @@ const withLocalStorage = (key: string) =>
     { name: 'withLocalStorage' },
   );
 
-const $count = defineSignal(() => 0)
+const CountStore = defineSignal(() => 0)
   .extend(withLocalStorage('count'))
   .extend((state) => {
     return {
@@ -261,12 +261,12 @@ function appReducer(state: AppState, action: AppActions) {
   }
 }
 
-const appState = defineStore<AppState>(() => ({ counter: 0 })).extend(
+const AppState = defineStore<AppState>(() => ({ counter: 0 })).extend(
   (context) => withReducer(context, appReducer),
 );
 
 function Counter() {
-  const { get: state, dispatch } = provideState(appState);
+  const { get: state, dispatch } = provideState(AppState);
 
   return (
     <>
@@ -304,10 +304,10 @@ Once your store definition is ready, you can inject the store in your components
 
 ```tsx
 import { provideState } from 'statebuilder';
-import { $count } from './count';
+import { CountStore } from './count';
 
 function Counter() {
-  const count = provideState($count);
+  const count = provideState(CountStore);
 
   return (
     <>
