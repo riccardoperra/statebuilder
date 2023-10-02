@@ -1,8 +1,4 @@
-export interface StateCommand<
-  Identity extends string,
-  T,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-> {
+export interface StateCommand<Identity extends string, T> {
   identity: string;
 
   readonly silent?: boolean;
@@ -52,50 +48,71 @@ export type CommandIdentity<T extends GenericStateCommand> =
 export type CommandPayload<T extends GenericStateCommand> =
   GetCommandInfo<T>['payload'];
 
-function clone<TStateCommand extends StateCommand<any, any>>(
-  command: TStateCommand,
-  readonly: boolean,
-): TStateCommand {
-  const base = readonly ? {} : createCommand(command.identity);
-  return Object.assign(base, JSON.parse(JSON.stringify(command)));
-}
+class StateCommandImpl<Identity extends string, T>
+  implements StateCommand<Identity, T>
+{
+  readonly silent?: boolean | undefined;
 
-function extend<TStateCommand extends StateCommand<any, any>, T>(
-  command: TStateCommand,
-  metadata: T,
-  readonly: boolean,
-) {
-  const clonedCommand = clone(command, readonly);
-  return Object.assign(clonedCommand, metadata);
+  constructor(public readonly identity: Identity) {}
+
+  clone(): StateCommand<Identity, T> {
+    return this.#clone(this, false);
+  }
+
+  withPayload<TPayload>(): StateCommand<
+    Identity,
+    unknown extends T ? TPayload : T | TPayload
+  > {
+    return this as {} as StateCommand<
+      Identity,
+      unknown extends T ? TPayload : T | TPayload
+    >;
+  }
+
+  execute<TValue extends T>(
+    payload: TValue,
+  ): Readonly<
+    Omit<this, 'execute' | 'with' | 'clone' | 'withPayload'> & {
+      consumerValue: TValue;
+      executionDate: string;
+    }
+  > {
+    return this.#extend(
+      this,
+      {
+        consumerValue: payload,
+        executionDate: new Date().toISOString(),
+      },
+      true,
+    );
+  }
+
+  with<TMetadata extends object>(metadata: TMetadata): this & TMetadata {
+    return this.#extend(this, metadata, false);
+  }
+
+  #extend<TStateCommand extends StateCommand<any, any>, T>(
+    command: TStateCommand,
+    metadata: T,
+    readonly: boolean,
+  ) {
+    const clonedCommand = this.#clone(command, readonly);
+    return Object.assign(clonedCommand, metadata);
+  }
+
+  #clone<TStateCommand extends StateCommand<any, any>>(
+    command: TStateCommand,
+    readonly: boolean,
+  ): TStateCommand {
+    const base = readonly ? {} : createCommand(command.identity);
+    return Object.assign(base, JSON.parse(JSON.stringify(command)));
+  }
 }
 
 export function createCommand<Identity extends string, T = unknown>(
   identity: Identity,
 ): StateCommand<Identity, T> {
-  return {
-    identity,
-    withPayload() {
-      return this;
-    },
-    clone(): StateCommand<Identity, T> {
-      return clone(this, false);
-    },
-    with(metadata) {
-      return extend(this, metadata, false);
-    },
-    execute<TValue extends T>(
-      payload: TValue,
-    ): ExecutedStateCommand<Identity, TValue, StateCommand<Identity, T>> {
-      return extend(
-        this,
-        {
-          consumerValue: payload,
-          executionDate: new Date().toISOString(),
-        },
-        true,
-      );
-    },
-  };
+  return new StateCommandImpl(identity);
 }
 
 export type MapCommandToActions<T extends Record<string, GenericStateCommand>> =
