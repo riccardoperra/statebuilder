@@ -30,7 +30,11 @@ const $store = defineStore(() => ({
   count: 0,
 }))
   .extend(withAsyncAction())
-  .extend(withProxyCommands<{ increment: void }>())
+  .extend(
+    withProxyCommands<{ increment: void }>({
+      devtools: { storeName: 'counter' },
+    }),
+  )
   .extend(withReduxDevtools({ storeName: 'countStore' }))
   .extend(withReducer(appReducer))
   .extend((ctx) => {

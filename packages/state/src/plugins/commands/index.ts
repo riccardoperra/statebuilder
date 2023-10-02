@@ -18,4 +18,13 @@ export {
   type ExecuteCommandCallback,
 } from './notifier';
 
+export type {
+  GenericCommandsMap,
+  Observable,
+  ProxifyCommands,
+  StoreWithProxyCommands,
+} from './types';
+
+import './devtools';
+
 export { createTrackObserver } from './track';

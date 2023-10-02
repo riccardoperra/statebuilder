@@ -1,4 +1,4 @@
-import { untrack } from 'solid-js';
+import { mergeProps, untrack } from 'solid-js';
 import { GenericStoreApi } from '~/types';
 import { StoreWithProxyCommands } from '~/plugins/commands/types';
 import { isAfterCommand } from '~/plugins/commands/notifier';
@@ -29,6 +29,12 @@ declare global {
   }
 }
 
+let globalState: Record<string, unknown> = {};
+let globalStoreName = 'statebuilder/commands';
+let devTools: ReturnType<
+  typeof window['__REDUX_DEVTOOLS_EXTENSION__']['connect']
+>;
+
 export function applyDevtools(
   storeApi: GenericStoreApi,
   plugin: StoreWithProxyCommands<any, any>,
@@ -41,9 +47,16 @@ export function applyDevtools(
 
   if (!__REDUX_DEVTOOLS_EXTENSION__) return () => void 0;
 
-  const devTools = __REDUX_DEVTOOLS_EXTENSION__.connect({
-    name: options.storeName,
-  });
+  if (!devTools) {
+    devTools = __REDUX_DEVTOOLS_EXTENSION__.connect({
+      name: globalStoreName,
+    });
+  }
+  const { storeName } = options;
+
+  globalState = untrack(() =>
+    mergeProps(globalState, { [storeName]: storeApi() }),
+  );
 
   const commandsSubscription = plugin
     .watchCommand(/@@AFTER.*/)
@@ -51,17 +64,18 @@ export function applyDevtools(
       if (!command) return;
 
       if (isAfterCommand(command)) {
+        globalState = mergeProps(globalState, { [storeName]: storeApi() });
         devTools.send(
           {
-            type: 'Execute: ' + command.correlate.identity,
+            type: `[${storeName}] Execute: ` + command.correlate.identity,
             payload: command.correlate.consumerValue,
           },
-          storeApi(),
+          globalState,
         );
       }
     });
 
-  devTools.init(untrack(storeApi));
+  devTools.init(globalState);
 
   const unsubscribeDevtools = devTools.subscribe((message) => {
     if (message.type === 'DISPATCH') {
