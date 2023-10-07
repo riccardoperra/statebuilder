@@ -1,5 +1,12 @@
 # plustate
 
+## 0.4.3
+
+### Patch Changes
+
+- 01b51ae: rework on commands devtools
+- ba05d21: improve state commands memory usage
+
 ## 0.4.2
 
 ### Patch Changes
