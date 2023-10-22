@@ -1,4 +1,4 @@
-import { getOwner, Owner, runWithOwner } from 'solid-js';
+import { getOwner, type Owner, runWithOwner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 import { $CREATOR, resolve } from './api';
 
@@ -48,7 +48,7 @@ export class Container {
     const resolvedOwner = this.#resolveOwner(state, owner);
     const store = runWithOwner(resolvedOwner, () => {
       try {
-        return resolve(state);
+        return resolve(state, this);
       } catch (e) {
         error = e as Error;
       }
