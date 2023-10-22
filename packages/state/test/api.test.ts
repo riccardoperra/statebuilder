@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { $CREATOR, $PLUGIN, create, makePlugin, resolve } from '../src/api';
-import { createRoot, createSignal } from 'solid-js';
+import { createRoot, createSignal, getOwner } from 'solid-js';
 import { Container } from '../src/container';
 import { GenericStoreApi } from '~/types';
 import { SetStoreFunction } from 'solid-js/store';
@@ -164,6 +164,37 @@ describe('resolve', () => {
       dispose();
 
       expect(destroyHook).toHaveBeenCalledWith('destroy');
+    });
+  });
+});
+
+describe('inject', () => {
+  const initHook = vi.fn();
+  const destroyHook = vi.fn();
+
+  it('should inject state inside another state', () => {
+    createRoot((dispose) => {
+      const containerState = Container.create(getOwner()!);
+
+      const State1 = defineSignal(() => 0).extend((_, context) => {
+        context.hooks.onInit(() => initHook('first-plugin'));
+        context.hooks.onDestroy(() => destroyHook('first-plugin'));
+      });
+
+      const State2 = defineSignal(() => 1).extend((_, context) => {
+        const state1 = context.inject(State1);
+        return { state1 };
+      });
+
+      const state2 = containerState.get(State2);
+      const state1 = containerState.get(State1);
+
+      expect(initHook).toHaveBeenCalledTimes(1);
+      expect(state2.state1).toEqual(state1);
+
+      dispose();
+
+      expect(destroyHook).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -30,7 +30,7 @@ export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   }
 
   extend<TExtendedSignal extends {} | void>(
-    createPlugin: (ctx: T & E, context: PluginContext) => TExtendedSignal,
+    createPlugin: (ctx: T & E, context: PluginContext<T>) => TExtendedSignal,
   ): ApiDefinitionCreator<T, TExtendedSignal & Omit<E, keyof TExtendedSignal>> {
     if (
       typeof createPlugin === 'function' &&

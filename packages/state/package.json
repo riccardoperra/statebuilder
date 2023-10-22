@@ -102,9 +102,9 @@
     "vitest": "^0.26.3"
   },
   "dependencies": {
+    "@solid-primitives/event-bus": "^1.0.8",
     "rxjs": "^7.8.0",
-    "solid-js": "^1.7.0",
-    "@solid-primitives/event-bus": "^1.0.8"
+    "solid-js": "^1.7.0"
   },
   "peerDependenciesMeta": {
     "@solid-primitives/event-bus": {

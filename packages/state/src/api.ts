@@ -1,7 +1,6 @@
 import {
   ApiDefinitionCreator,
   GenericStoreApi,
-  HookConsumerFunction,
   Plugin,
   PluginContext,
   PluginOf,
@@ -9,6 +8,8 @@ import {
 } from '~/types';
 import { onCleanup } from 'solid-js';
 import { ApiDefinition } from '~/apiDefinition';
+import { Container } from '~/container';
+import { ResolvedPluginContext } from '~/resolved-plugin-context';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
@@ -56,26 +57,18 @@ function checkDependencies(
  *
  * @template TDefinition - The type of the store API definition.
  * @param definition - The store API definition to resolve.
+ * @param container - The StateContainer in the plugin context.
  * @returns The resolved store API with all the extensions applied.
  */
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
->(definition: TDefinition) {
+>(definition: TDefinition, container?: Container) {
   const api = definition[$CREATOR];
 
   const { factory, plugins } = api;
 
-  const initSubscriptions = new Set<HookConsumerFunction>(),
-    destroySubscriptions = new Set<HookConsumerFunction>(),
-    resolvedPlugins: string[] = [],
-    pluginContext: PluginContext = {
-      plugins,
-      hooks: {
-        onInit: (callback) => initSubscriptions.add(callback),
-        onDestroy: (callback) => destroySubscriptions.add(callback),
-      },
-      metadata: new Map<string, unknown>(),
-    },
+  const resolvedPlugins: string[] = [],
+    pluginContext = new ResolvedPluginContext(container, plugins),
     resolvedStore = factory();
 
   for (const extensionCreator of plugins) {
@@ -99,17 +92,8 @@ export function resolve<
     resolvedPlugins.push(extensionCreator.name);
   }
 
-  for (const listener of initSubscriptions) {
-    listener(resolvedStore);
-    initSubscriptions.delete(listener);
-  }
-
-  onCleanup(() => {
-    for (const listener of destroySubscriptions) {
-      listener(resolvedStore);
-      destroySubscriptions.delete(listener);
-    }
-  });
+  pluginContext.runInitSubscriptions(resolvedStore);
+  onCleanup(() => pluginContext.runDestroySubscriptions(resolvedStore));
 
   return resolvedStore;
 }
@@ -131,7 +115,7 @@ type PluginCreatorOptions = {
 function _makePlugin<
   TCallback extends <S extends GenericStoreApi>(
     store: S,
-    context: PluginContext,
+    context: PluginContext<S>,
   ) => unknown,
 >(
   pluginCallback: TCallback,
