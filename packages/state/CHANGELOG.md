@@ -1,5 +1,21 @@
 # plustate
 
+## 0.5.0
+
+### Minor Changes
+
+- 8d627ba: feat: allow to inject states inside builders
+
+  Since this version, you can inject other states into plugins (`.extend`).
+
+  ```ts
+  const AppState = defineSignal(() => ({}));
+
+  const CounterState = defineSignal(() => 1).extend((_, context) => {
+    const appState = context.inject(AppState);
+  });
+  ```
+
 ## 0.4.3
 
 ### Patch Changes
