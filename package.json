@@ -5,6 +5,15 @@
   "description": "Statebuilder Monorepo - Experimental pluggable state management system powered by SolidJS reactivity",
   "homepage": "https://github.com/riccardoperra/statebuilder",
   "license": "MIT",
+  "scripts": {
+    "build": "pnpm --filter=statebuilder build",
+    "test": "pnpm --filter=statebuilder test",
+    "typecheck": "pnpm --filter=statebuilder typecheck",
+    "changeset": "changeset",
+    "prepublish": "cp ./README.md ./packages/state",
+    "ci:publish": "changeset publish",
+    "ci:version": "changeset version"
+  },
   "keywords": [
     "solid-js",
     "reactivity",
@@ -25,15 +34,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/riccardoperra/statebuilder"
-  },
-  "scripts": {
-    "build": "pnpm --filter=statebuilder build",
-    "test": "pnpm --filter=statebuilder test",
-    "typecheck": "pnpm --filter=statebuilder typecheck",
-    "changeset": "changeset",
-    "prepublish": "cp ./README.md ./packages/state",
-    "ci:publish": "changeset publish",
-    "ci:version": "changeset version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
