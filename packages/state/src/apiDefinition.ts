@@ -14,19 +14,14 @@ import { $CREATOR, $PLUGIN } from '~/api';
 export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   implements ApiDefinitionCreator<T, E>
 {
-  [$CREATOR]: ApiDefinitionInternalCreator<T, E>;
+  readonly [$CREATOR]: ApiDefinitionInternalCreator<T, E>;
   #customPluginId: number = 0;
-  #plugins: Array<Plugin<any, any>> = [];
+  readonly #id: number = 0;
+  readonly #plugins: Array<Plugin<any, any>> = [];
 
   constructor(name: string, id: number, factory: () => T) {
-    const owner = getOwner();
-
-    this[$CREATOR] = {
-      name,
-      plugins: this.#plugins,
-      owner,
-      factory,
-    };
+    this[$CREATOR] = { name, plugins: this.#plugins, factory };
+    this.#id = id;
   }
 
   extend<TExtendedSignal extends {} | void>(

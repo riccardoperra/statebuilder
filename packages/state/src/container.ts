@@ -2,6 +2,11 @@ import { getOwner, type Owner, runWithOwner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 import { $CREATOR, resolve } from './api';
 
+export const enum InjectFlags {
+  global,
+  local,
+}
+
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
 
@@ -17,8 +22,15 @@ export class Container {
     return new Container(resolvedOwner);
   }
 
+  remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
+    state: TStoreDefinition,
+  ): void {
+    this.states.delete(state[$CREATOR].name);
+  }
+
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
+    flags?: InjectFlags,
   ): ExtractStore<TStoreDefinition> {
     type TypedStore = ExtractStore<TStoreDefinition>;
 
@@ -28,7 +40,8 @@ export class Container {
       if (instance) {
         return instance as unknown as TypedStore;
       }
-      const store = this.#resolveStore(this.owner, state);
+      const owner = this.#resolveOwner(flags ?? InjectFlags.global);
+      const store = this.#resolveStore(owner!, state);
       this.states.set(name, store!);
       return store as TypedStore;
     } catch (exception) {
@@ -45,8 +58,7 @@ export class Container {
     state: TStoreDefinition,
   ) {
     let error: Error | undefined;
-    const resolvedOwner = this.#resolveOwner(state, owner);
-    const store = runWithOwner(resolvedOwner, () => {
+    const store = runWithOwner(owner, () => {
       try {
         return resolve(state, this);
       } catch (e) {
@@ -57,11 +69,12 @@ export class Container {
     return store;
   }
 
-  #resolveOwner<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    state: TStoreDefinition,
-    fallbackOwner: Owner,
-  ) {
-    const metadata = state[$CREATOR];
-    return metadata.owner ?? fallbackOwner;
+  #resolveOwner(flags: InjectFlags) {
+    switch (flags) {
+      case InjectFlags.global:
+        return this.owner;
+      case InjectFlags.local:
+        return getOwner();
+    }
   }
 }

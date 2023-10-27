@@ -92,6 +92,10 @@ export function resolve<
     resolvedPlugins.push(extensionCreator.name);
   }
 
+  if (!!container) {
+    pluginContext.hooks.onDestroy(() => container.remove(definition));
+  }
+
   pluginContext.runInitSubscriptions(resolvedStore);
   onCleanup(() => pluginContext.runDestroySubscriptions(resolvedStore));
 

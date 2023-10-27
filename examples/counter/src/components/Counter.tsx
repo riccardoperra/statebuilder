@@ -1,5 +1,5 @@
 import './Counter.css';
-import { defineStore, provideState } from 'statebuilder';
+import { defineStore, InjectFlags, provideState } from 'statebuilder';
 import { withProxyCommands } from 'statebuilder/commands';
 import { withReduxDevtools } from 'statebuilder/devtools';
 import { withAsyncAction } from 'statebuilder/asyncAction';
@@ -26,7 +26,7 @@ function appReducer(state: AppState, action: AppActions) {
   }
 }
 
-const $store = defineStore(() => ({
+const CountStore = defineStore(() => ({
   count: 0,
 }))
   .extend(withAsyncAction())
@@ -37,21 +37,25 @@ const $store = defineStore(() => ({
   )
   .extend(withReduxDevtools({ storeName: 'countStore' }))
   .extend(withReducer(appReducer))
-  .extend((ctx) => {
-    ctx.hold(ctx.commands.increment, () =>
-      ctx.set('count', (count) => count + 1),
+  .extend((state, context) => {
+    state.hold(state.commands.increment, () =>
+      state.set('count', (count) => count + 1),
     );
+
+    context.hooks.onInit(() => console.log('init'));
+    context.hooks.onDestroy(() => console.log('destroy'));
+
     return {
-      incrementAfter1S: ctx.asyncAction(async (payload: number) => {
+      incrementAfter1S: state.asyncAction(async (payload: number) => {
         await new Promise((r) => setTimeout(r, 3000));
-        ctx.set('count', (count) => count + 1);
+        state.set('count', (count) => count + 1);
         return payload;
       }),
     };
   });
 
 export default function Counter() {
-  const store = provideState($store);
+  const store = provideState(CountStore, InjectFlags.global);
 
   return (
     <>

@@ -1,4 +1,4 @@
-export { Container } from './container';
+export { Container, InjectFlags } from './container';
 
 export {
   StateProvider,
