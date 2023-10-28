@@ -1,13 +1,16 @@
-export { Container, InjectFlags } from './container';
+export { Container } from './container';
 
 export {
   StateProvider,
   provideState,
+  getStateContext,
   defineSignal,
   defineStore,
+  ɵdefineResource,
+  ɵWithResourceStorage,
 } from './solid';
 
-export type { Signal, Store } from './solid';
+export type { Signal, Store, Resource } from './solid';
 
 export { create, makePlugin } from './api';
 

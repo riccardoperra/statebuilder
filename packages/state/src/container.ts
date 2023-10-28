@@ -1,18 +1,15 @@
-import { getOwner, type Owner, runWithOwner } from 'solid-js';
+import { getOwner, type Owner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 import { $CREATOR, resolve } from './api';
-
-export const enum InjectFlags {
-  global,
-  local,
-}
+import { runInSubRoot } from '~/root';
+import { getOptionalStateContext } from '~/solid/provider';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
 
-  protected constructor(private readonly owner: Owner) {}
+  protected constructor(private readonly owner: typeof Owner) {}
 
-  static create(owner?: Owner) {
+  static create(owner?: typeof Owner) {
     const resolvedOwner = owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
@@ -30,18 +27,20 @@ export class Container {
 
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
-    flags?: InjectFlags,
   ): ExtractStore<TStoreDefinition> {
     type TypedStore = ExtractStore<TStoreDefinition>;
-
+    if (!state[$CREATOR]) {
+      throw new Error('[statebuilder] No state $CREATOR found.', {
+        cause: { state: state },
+      });
+    }
     try {
       const name = state[$CREATOR].name;
-      const instance = this.states.get(name);
+      const instance = this.recursivelySearchStateFromContainer(name);
       if (instance) {
-        return instance as unknown as TypedStore;
+        return instance as TypedStore;
       }
-      const owner = this.#resolveOwner(flags ?? InjectFlags.global);
-      const store = this.#resolveStore(owner!, state);
+      const store = this.#resolveStore(this.owner, state);
       this.states.set(name, store!);
       return store as TypedStore;
     } catch (exception) {
@@ -54,27 +53,27 @@ export class Container {
   }
 
   #resolveStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    owner: Owner,
+    owner: typeof Owner,
     state: TStoreDefinition,
-  ) {
-    let error: Error | undefined;
-    const store = runWithOwner(owner, () => {
-      try {
-        return resolve(state, this);
-      } catch (e) {
-        error = e as Error;
-      }
-    });
-    if (error) throw error;
-    return store;
+  ): GenericStoreApi {
+    return runInSubRoot(() => resolve(state, this), owner);
   }
 
-  #resolveOwner(flags: InjectFlags) {
-    switch (flags) {
-      case InjectFlags.global:
-        return this.owner;
-      case InjectFlags.local:
-        return getOwner();
+  private recursivelySearchStateFromContainer(
+    name: string,
+  ): GenericStoreApi | null {
+    let instance: GenericStoreApi | null;
+    instance = this.states.get(name) ?? null;
+    if (!instance && this.owner?.owner) {
+      const parentContainer = runInSubRoot((dispose) => {
+        const value = getOptionalStateContext();
+        dispose();
+        return value;
+      }, this.owner.owner);
+      if (parentContainer) {
+        instance = parentContainer.recursivelySearchStateFromContainer(name);
+      }
     }
+    return instance || null;
   }
 }

@@ -5,15 +5,17 @@ import {
   getOwner,
   useContext,
 } from 'solid-js';
-import { Container, InjectFlags } from '~/container';
-import { StoreApiDefinition, ExtractStore } from '~/types';
+import { Container } from '~/container';
+import { ExtractStore, StoreApiDefinition } from '~/types';
 
 const StateProviderContext = createContext<Container>();
 
 export function StateProvider(props: FlowProps) {
   const owner = getOwner();
   if (!owner) {
-    throw new Error('Owner missing');
+    throw new Error(
+      '[statebuilder] Owner is missing. Cannot construct instance of Container',
+    );
   }
   const container = Container.create(owner);
   return createComponent(StateProviderContext.Provider, {
@@ -24,20 +26,21 @@ export function StateProvider(props: FlowProps) {
   });
 }
 
-function useStateContext() {
-  const ctx = useContext(StateProviderContext);
-  if (ctx) {
-    return ctx;
+export function getOptionalStateContext() {
+  return useContext(StateProviderContext) ?? null;
+}
+
+export function getStateContext() {
+  const container = useContext(StateProviderContext);
+  if (!container) {
+    throw new Error('No <StateProvider> found in component tree');
   }
-  throw new Error('No <StateProvider> found in component tree');
+  return container;
 }
 
 export function provideState<
   TStoreDefinition extends StoreApiDefinition<any, any>,
->(
-  definition: TStoreDefinition,
-  flags?: InjectFlags,
-): ExtractStore<TStoreDefinition> {
-  const context = useStateContext();
-  return context.get(definition, flags);
+>(definition: TStoreDefinition): ExtractStore<TStoreDefinition> {
+  const context = getStateContext();
+  return context.get(definition);
 }

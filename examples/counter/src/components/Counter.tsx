@@ -1,5 +1,10 @@
 import './Counter.css';
-import { defineStore, InjectFlags, provideState } from 'statebuilder';
+import {
+  defineSignal,
+  defineStore,
+  provideState,
+  StateProvider,
+} from 'statebuilder';
 import { withProxyCommands } from 'statebuilder/commands';
 import { withReduxDevtools } from 'statebuilder/devtools';
 import { withAsyncAction } from 'statebuilder/asyncAction';
@@ -25,6 +30,11 @@ function appReducer(state: AppState, action: AppActions) {
       return state;
   }
 }
+
+const GlobalCount = defineSignal(() => 1).extend((_, context) => {
+  context.hooks.onInit(() => console.log('init count2'));
+  context.hooks.onDestroy(() => console.log('destroy count2'));
+});
 
 const CountStore = defineStore(() => ({
   count: 0,
@@ -54,11 +64,19 @@ const CountStore = defineStore(() => ({
     };
   });
 
-export default function Counter() {
-  const store = provideState(CountStore, InjectFlags.global);
+function Counter() {
+  const store = provideState(CountStore);
+  const globalCount = provideState(GlobalCount);
 
   return (
     <>
+      <button
+        class="increment"
+        onClick={() => globalCount.set((count) => count + 1)}
+      >
+        Global Count Clicks: {globalCount()}
+      </button>
+
       <button
         class="increment"
         onClick={() => store.actions.increment()}
@@ -81,5 +99,14 @@ export default function Counter() {
         Increment with reducer
       </button>
     </>
+  );
+}
+
+export default function CounterRoot() {
+  const globalCount = provideState(GlobalCount);
+  return (
+    <StateProvider>
+      <Counter />
+    </StateProvider>
   );
 }
