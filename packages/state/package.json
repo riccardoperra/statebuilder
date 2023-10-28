@@ -25,7 +25,7 @@
     "type": "git",
     "url": "https://github.com/riccardoperra/statebuilder"
   },
-  "version": "0.0.0-20231027182437",
+  "version": "0.0.0-20231028092513",
   "source": "src/index.ts",
   "module": "dist/index.js",
   "main": "dist/index.js",
