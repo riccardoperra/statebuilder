@@ -5,7 +5,6 @@ import {
   Plugin,
   PluginContext,
 } from '~/types';
-import { getOwner } from 'solid-js';
 import { $CREATOR, $PLUGIN } from '~/api';
 
 /**

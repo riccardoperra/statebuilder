@@ -7,7 +7,7 @@ import {
   StoreApiDefinition,
 } from '~/types';
 import { onCleanup } from 'solid-js';
-import { ApiDefinition } from '~/apiDefinition';
+import { ApiDefinition } from '~/api-definition';
 import { Container } from '~/container';
 import { ResolvedPluginContext } from '~/resolved-plugin-context';
 
