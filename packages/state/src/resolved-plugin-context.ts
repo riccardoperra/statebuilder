@@ -8,6 +8,7 @@ import {
   StoreApiDefinition,
 } from '~/types';
 import { Container } from '~/container';
+import { StateBuilderError } from '~/error';
 
 export class ResolvedPluginContext implements PluginContext {
   readonly initSubscriptions = new Set<HookConsumerFunction>();
@@ -28,7 +29,7 @@ export class ResolvedPluginContext implements PluginContext {
     storeDefinition: TStoreDefinition,
   ): ExtractStore<TStoreDefinition> {
     if (!this.container) {
-      throw new Error('[statebuilder] No container set in current context.');
+      throw new StateBuilderError('No container set in current context.');
     }
     return this.container.get(storeDefinition);
   }

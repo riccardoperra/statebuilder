@@ -7,14 +7,15 @@ import {
 } from 'solid-js';
 import { Container } from '~/container';
 import { ExtractStore, StoreApiDefinition } from '~/types';
+import { StateBuilderError } from '~/error';
 
 const StateProviderContext = createContext<Container>();
 
 export function StateProvider(props: FlowProps) {
   const owner = getOwner();
   if (!owner) {
-    throw new Error(
-      '[statebuilder] Owner is missing. Cannot construct instance of Container',
+    throw new StateBuilderError(
+      'Owner is missing. Cannot construct instance of Container',
     );
   }
   const container = Container.create(owner);
