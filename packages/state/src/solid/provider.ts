@@ -18,17 +18,14 @@ export function StateProvider(props: FlowProps) {
       'Owner is missing. Cannot construct instance of Container',
     );
   }
-  const container = Container.create(owner);
+  const parentContainer = useContext(StateProviderContext);
+  const container = Container.create(owner, parentContainer);
   return createComponent(StateProviderContext.Provider, {
     value: container,
     get children() {
       return props.children;
     },
   });
-}
-
-export function getOptionalStateContext() {
-  return useContext(StateProviderContext) ?? null;
 }
 
 export function getStateContext() {

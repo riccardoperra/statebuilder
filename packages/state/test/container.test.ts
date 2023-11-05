@@ -1,22 +1,38 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, it } from 'vitest';
 import { Container, defineStore } from '../src';
-import { getOwner } from 'solid-js';
+import { createRoot, getOwner } from 'solid-js';
 
 describe('Container', () => {
-  const owner = getOwner()!;
+  it('should create container', () =>
+    createRoot(() => {
+      const owner = getOwner()!;
+      const container = Container.create(owner);
+      assert.instanceOf(container, Container);
+    }));
 
-  it('should create container', function() {
-    const container = Container.create(owner);
-    expect(container).toBeInstanceOf(Container);
-  });
+  it('should create state', () =>
+    createRoot(() => {
+      const owner = getOwner()!;
+      const container = Container.create(owner);
+      const stateDef = defineStore(() => ({}));
 
-  it('should create state', function() {
-    const container = Container.create(owner);
-    const stateDef = defineStore(() => ({}));
+      const state = container.get(stateDef);
 
-    const state = container.get(stateDef);
+      assert.instanceOf(state, Function);
+      assert.ok(container['states'].size === 1);
+    }));
 
-    expect(state).toBeInstanceOf(Function);
-    expect(container['states'].size).toEqual(1);
+  it('should inject state from parent container', () => {
+    createRoot(() => {
+      const owner = getOwner()!;
+      const parentContainer = Container.create(owner);
+      const container = Container.create(owner, parentContainer);
+      const def = defineStore(() => ({}));
+      const stateFromParentContainer = parentContainer.get(def);
+      const stateFromContainer = container.get(def);
+      assert.strictEqual(stateFromContainer, stateFromParentContainer);
+      assert.isTrue(container['states'].size === 0);
+      assert.isTrue(parentContainer['states'].size === 1);
+    });
   });
 });

@@ -2,21 +2,24 @@ import { getOwner, type Owner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 import { $CREATOR, resolve } from './api';
 import { runInSubRoot } from '~/root';
-import { getOptionalStateContext } from '~/solid/provider';
+import { StateBuilderError } from '~/error';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
 
-  protected constructor(private readonly owner: Owner) {}
+  protected constructor(
+    private readonly owner: Owner,
+    private readonly parent?: Container,
+  ) {}
 
-  static create(owner?: Owner) {
+  static create(owner?: Owner, parentContainer?: Container) {
     const resolvedOwner = owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
         '[statebuilder] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged',
       );
     }
-    return new Container(resolvedOwner);
+    return new Container(resolvedOwner, parentContainer);
   }
 
   remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
@@ -30,13 +33,13 @@ export class Container {
   ): ExtractStore<TStoreDefinition> {
     type TypedStore = ExtractStore<TStoreDefinition>;
     if (!state[$CREATOR]) {
-      throw new Error('[statebuilder] No state $CREATOR found.', {
+      throw new StateBuilderError('No state $CREATOR found.', {
         cause: { state: state },
       });
     }
     try {
       const name = state[$CREATOR].name;
-      const instance = this.recursivelySearchStateFromContainer(name);
+      const instance = this.#retrieveInstance(name);
       if (instance) {
         return instance as TypedStore;
       }
@@ -45,8 +48,8 @@ export class Container {
       return store as TypedStore;
     } catch (exception) {
       if (exception instanceof Error) throw exception;
-      throw new Error(
-        '[statebuilder] An error occurred during store initialization',
+      throw new StateBuilderError(
+        'An error occurred during store initialization',
         { cause: exception },
       );
     }
@@ -59,21 +62,19 @@ export class Container {
     return runInSubRoot(() => resolve(state, this), owner);
   }
 
-  private recursivelySearchStateFromContainer(
-    name: string,
-  ): GenericStoreApi | null {
-    let instance: GenericStoreApi | null;
-    instance = this.states.get(name) ?? null;
-    if (!instance && this.owner?.owner) {
-      const parentContainer = runInSubRoot((dispose) => {
-        const value = getOptionalStateContext();
-        dispose();
-        return value;
-      }, this.owner.owner);
-      if (parentContainer) {
-        instance = parentContainer.recursivelySearchStateFromContainer(name);
-      }
+  #retrieveInstance(name: string): GenericStoreApi | null {
+    let instance: GenericStoreApi | null = this.states.get(name) ?? null;
+    if (instance) {
+      return instance;
     }
-    return instance || null;
+    let currentParent = this.parent;
+    while (currentParent) {
+      instance = currentParent.states.get(name) ?? null;
+      if (!!instance) {
+        return instance;
+      }
+      currentParent = currentParent.parent;
+    }
+    return instance;
   }
 }
