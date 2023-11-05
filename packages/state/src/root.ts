@@ -10,7 +10,7 @@ type Disposable<T> = (dispoe: () => void) => T;
 
 function createSubRoot<T>(
   fn: Disposable<T>,
-  owner: typeof Owner = getOwner(),
+  owner: Owner | null = getOwner(),
 ): T {
   return createRoot((dispose) => {
     owner && runWithOwner(owner, onCleanup.bind(void 0, dispose));
@@ -18,7 +18,7 @@ function createSubRoot<T>(
   }, owner!);
 }
 
-export function runInSubRoot<T>(fn: Disposable<T>, owner?: typeof Owner): T {
+export function runInSubRoot<T>(fn: Disposable<T>, owner?: Owner): T {
   let error: unknown;
   const result = createSubRoot((dispose) => {
     try {

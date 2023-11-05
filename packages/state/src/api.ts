@@ -63,10 +63,7 @@ function checkDependencies(
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition, container?: Container) {
-  const api = definition[$CREATOR];
-
-  const { factory, plugins } = api;
-
+  const { factory, plugins } = definition[$CREATOR];
   const resolvedPlugins: string[] = [],
     pluginContext = new ResolvedPluginContext(container, plugins),
     resolvedStore = factory();
@@ -96,8 +93,17 @@ export function resolve<
     pluginContext.hooks.onDestroy(() => container.remove(definition));
   }
 
-  pluginContext.runInitSubscriptions(resolvedStore);
-  onCleanup(() => pluginContext.runDestroySubscriptions(resolvedStore));
+  for (const listener of pluginContext.initSubscriptions) {
+    listener(resolvedStore);
+    pluginContext.initSubscriptions.delete(listener);
+  }
+
+  onCleanup(() => {
+    for (const listener of pluginContext.destroySubscriptions) {
+      listener(resolvedStore);
+      pluginContext.destroySubscriptions.delete(listener);
+    }
+  });
 
   return resolvedStore;
 }

@@ -7,9 +7,9 @@ import { getOptionalStateContext } from '~/solid/provider';
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
 
-  protected constructor(private readonly owner: typeof Owner) {}
+  protected constructor(private readonly owner: Owner) {}
 
-  static create(owner?: typeof Owner) {
+  static create(owner?: Owner) {
     const resolvedOwner = owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
@@ -53,7 +53,7 @@ export class Container {
   }
 
   #resolveStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    owner: typeof Owner,
+    owner: Owner,
     state: TStoreDefinition,
   ): GenericStoreApi {
     return runInSubRoot(() => resolve(state, this), owner);
