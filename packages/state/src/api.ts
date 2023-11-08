@@ -10,10 +10,10 @@ import { onCleanup } from 'solid-js';
 import { ApiDefinition } from '~/api-definition';
 import { Container } from '~/container';
 import { ResolvedPluginContext } from '~/resolved-plugin-context';
+import { StateBuilderError } from '~/error';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
-
 /**
  * A factory function that creates a store API definition creator.
  *
@@ -44,8 +44,8 @@ function checkDependencies(
 
   dependencies.forEach((dependency) => {
     if (!resolvedPlugins.includes(dependency)) {
-      throw new Error(
-        `[statebuilder] The dependency '${dependency}' of plugin '${meta.name}' is missing`,
+      throw new StateBuilderError(
+        `The dependency '${dependency}' of plugin '${meta.name}' is missing`,
         { cause: { resolvedDependencies: resolvedPlugins, plugin } },
       );
     }

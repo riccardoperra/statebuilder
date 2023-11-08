@@ -31,7 +31,7 @@ export function StateProvider(props: FlowProps) {
 export function getStateContext() {
   const container = useContext(StateProviderContext);
   if (!container) {
-    throw new Error('No <StateProvider> found in component tree');
+    throw new StateBuilderError('No <StateProvider> found in component tree');
   }
   return container;
 }
