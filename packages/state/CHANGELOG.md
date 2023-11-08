@@ -1,16 +1,4 @@
-# plustate
-
-## 0.0.0-20231028092513
-
-### Patch Changes
-
-- 4b03fb8: allows to inject states from parent context
-
-## 0.0.0-20231027182437
-
-### Patch Changes
-
-- cc23c8e: local owner context
+# statebuilder
 
 ## 0.5.0
 

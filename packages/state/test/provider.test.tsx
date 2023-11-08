@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { render } from '@solidjs/testing-library';
 import { provideState, StateProvider } from '../src/solid';
 import { defineStore } from '~/solid/store';
+import { StateBuilderError } from '~/error';
 
 describe('provider', () => {
   const counter = defineStore(() => ({ count: 0 })).extend((ctx) => ({
@@ -55,7 +56,7 @@ describe('provider', () => {
 
   it('should throw error', async () => {
     expect(() => render(() => <App />)).toThrowError(
-      new Error('No <StateProvider> found in component tree'),
+      new StateBuilderError('No <StateProvider> found in component tree'),
     );
   });
 });
