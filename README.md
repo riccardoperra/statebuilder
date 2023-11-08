@@ -9,7 +9,8 @@
 
 `StateBuilder` is an agnostic state management library built on the top of SolidJS reactivity.
 
-It's built to be an **extremely modular system**, with an API that allows you to add methods, utilities and custom behaviors to your store
+It's built to be an **extremely modular system**, with an API that allows you to add methods, utilities and custom
+behaviors to your store
 in an easier way. Of course, this come with a built-in TypeScript support.
 
 Solid already provides the primitives to build a state manager system thanks to signals and stores. What's missing is a
@@ -30,11 +31,13 @@ Thanks to `StateBuilder` you can **compose** the approach you like to handle you
 
 ### **State container**
 
-The state container it's a plain JavaScript object that collects all resolved store instances. Once created, every state container will have his own reactive scope, introduced by the `Owner` object from solid-js API.
+The state container it's a plain JavaScript object that collects all resolved store instances. Once created, every state
+container will have his own reactive scope, introduced by the `Owner` object from solid-js API.
 
 ### **Store definition creator**
 
-The store creator it's the function that define your **store api** implementation, which requires you to follow a specific signature to be complaint to `StateBuilder` API.
+The store creator it's the function that define your **store api** implementation, which requires you to follow a
+specific signature to be complaint to `StateBuilder` API.
 
 `StateBuilder` already comes with two built-in store creators:
 
@@ -50,7 +53,8 @@ Plugins are the **core** of `StateBuilder`. They are basically configurable obje
 functions that override your store's signature, adding new features or modifying existing ones.
 
 They are not only here to define your store internals or the pattern you want
-to use (persistance, redux-like, rxjs integration etc.), but you can also create mini-modules that can be reused in your app.
+to use (persistance, redux-like, rxjs integration etc.), but you can also create mini-modules that can be reused in your
+app.
 
 ```mermaid
 graph TD
@@ -107,9 +111,11 @@ const CountStore = defineSignal(() => 0)
 
 Both utilities basically use under the hood the [createSignal](https://www.solidjs.com/docs/latest#createsignal)
 and [createStore](https://www.solidjs.com/docs/latest#createstore)
-primitives from SolidJS. The main difference is that the `define*` api deals only to defining how these store will be created, then they will only be initialized once the state is injected.
+primitives from SolidJS. The main difference is that the `define*` api deals only to defining how these store will be
+created, then they will only be initialized once the state is injected.
 
-Next, the state can be injected through the `Container`. Each container collects stores as singletons, so once created the same instance of the definition will be shared.
+Next, the state can be injected through the `Container`. Each container collects stores as singletons, so once created
+the same instance of the definition will be shared.
 
 Both functions are used to define a store with a state. The first argument is the initial value of the state.
 Next, you can extend your store definition with the `.extend()` method.
@@ -152,7 +158,8 @@ Plugins can be defined in two ways:
 - Through a `Plugin` configuration object
 
 The first recommendation is to split your store extension in plugins where needed, for example
-when you have to reuse some business logic, and prefers the `makePlugin` API when you create generic plugins (e.g. `LocalStoragePlugin`), in order to simplify the TS typings.
+when you have to reuse some business logic, and prefers the `makePlugin` API when you create generic plugins (
+e.g. `LocalStoragePlugin`), in order to simplify the TS typings.
 
 ### Defining plugins through simple functions
 
@@ -322,9 +329,9 @@ function Counter() {
 
 // TODO
 
-- [statebuilder/commands](packages/state/src/plugins/commands): state management system with a command-event based
-  approach using RXJS
-- [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and observables
+- [statebuilder/commands](packages/state/src/plugins/commands): state management system with a command-event based approach
+- [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
+  observables
 - [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux devtools integration
 
 ## Demo / Examples
