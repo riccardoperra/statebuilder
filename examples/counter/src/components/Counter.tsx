@@ -1,5 +1,10 @@
 import './Counter.css';
-import { defineStore, provideState } from 'statebuilder';
+import {
+  defineSignal,
+  defineStore,
+  provideState,
+  StateProvider,
+} from 'statebuilder';
 import { withProxyCommands } from 'statebuilder/commands';
 import { withReduxDevtools } from 'statebuilder/devtools';
 import { withAsyncAction } from 'statebuilder/asyncAction';
@@ -26,7 +31,12 @@ function appReducer(state: AppState, action: AppActions) {
   }
 }
 
-const $store = defineStore(() => ({
+const GlobalCount = defineSignal(() => 1).extend((_, context) => {
+  context.hooks.onInit(() => console.log('init count2'));
+  context.hooks.onDestroy(() => console.log('destroy count2'));
+});
+
+const CountStore = defineStore(() => ({
   count: 0,
 }))
   .extend(withAsyncAction())
@@ -37,24 +47,36 @@ const $store = defineStore(() => ({
   )
   .extend(withReduxDevtools({ storeName: 'countStore' }))
   .extend(withReducer(appReducer))
-  .extend((ctx) => {
-    ctx.hold(ctx.commands.increment, () =>
-      ctx.set('count', (count) => count + 1),
+  .extend((state, context) => {
+    state.hold(state.commands.increment, () =>
+      state.set('count', (count) => count + 1),
     );
+
+    context.hooks.onInit(() => console.log('init'));
+    context.hooks.onDestroy(() => console.log('destroy'));
+
     return {
-      incrementAfter1S: ctx.asyncAction(async (payload: number) => {
+      incrementAfter1S: state.asyncAction(async (payload: number) => {
         await new Promise((r) => setTimeout(r, 3000));
-        ctx.set('count', (count) => count + 1);
+        state.set('count', (count) => count + 1);
         return payload;
       }),
     };
   });
 
-export default function Counter() {
-  const store = provideState($store);
+function Counter() {
+  const store = provideState(CountStore);
+  const globalCount = provideState(GlobalCount);
 
   return (
     <>
+      <button
+        class="increment"
+        onClick={() => globalCount.set((count) => count + 1)}
+      >
+        Global Count Clicks: {globalCount()}
+      </button>
+
       <button
         class="increment"
         onClick={() => store.actions.increment()}
@@ -77,5 +99,14 @@ export default function Counter() {
         Increment with reducer
       </button>
     </>
+  );
+}
+
+export default function CounterRoot() {
+  const globalCount = provideState(GlobalCount);
+  return (
+    <StateProvider>
+      <Counter />
+    </StateProvider>
   );
 }

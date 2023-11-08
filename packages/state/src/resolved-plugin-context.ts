@@ -8,11 +8,12 @@ import {
   StoreApiDefinition,
 } from '~/types';
 import { Container } from '~/container';
+import { StateBuilderError } from '~/error';
 
 export class ResolvedPluginContext implements PluginContext {
-  private readonly initSubscriptions = new Set<HookConsumerFunction>();
-  private readonly destroySubscriptions = new Set<HookConsumerFunction>();
-  public readonly metadata: Map<string, unknown> = new Map<string, unknown>();
+  readonly initSubscriptions = new Set<HookConsumerFunction>();
+  readonly destroySubscriptions = new Set<HookConsumerFunction>();
+  readonly metadata: Map<string, unknown> = new Map<string, unknown>();
 
   hooks: PluginHooks<GenericStoreApi> = {
     onInit: (callback) => this.initSubscriptions.add(callback),
@@ -28,22 +29,8 @@ export class ResolvedPluginContext implements PluginContext {
     storeDefinition: TStoreDefinition,
   ): ExtractStore<TStoreDefinition> {
     if (!this.container) {
-      throw new Error('[statebuilder] No container set in current context.');
+      throw new StateBuilderError('No container set in current context.');
     }
     return this.container.get(storeDefinition);
-  }
-
-  public runInitSubscriptions(resolvedStore: GenericStoreApi) {
-    for (const listener of this.initSubscriptions) {
-      listener(resolvedStore);
-      this.initSubscriptions.delete(listener);
-    }
-  }
-
-  public runDestroySubscriptions(resolvedStore: GenericStoreApi) {
-    for (const listener of this.destroySubscriptions) {
-      listener(resolvedStore);
-      this.destroySubscriptions.delete(listener);
-    }
   }
 }

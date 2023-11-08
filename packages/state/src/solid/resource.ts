@@ -1,15 +1,24 @@
 import {
+  createResource,
   NoInfer,
+  Resource as InternalResource,
+  ResourceActions as InternalResourceActions,
   ResourceFetcher,
   ResourceOptions,
   Setter,
   Signal,
-  createResource,
-  Resource as InternalResource,
 } from 'solid-js';
-import { GenericStoreApi, create } from '..';
+import { GenericStoreApi } from '~/types';
+import { create } from '~/api';
 
-export type Resource<T> = GenericStoreApi<T, Setter<T>> & InternalResource<T>;
+export interface ResourceActions<T> {
+  set: InternalResourceActions<T>['mutate'];
+  refetch: InternalResourceActions<T>['refetch'];
+}
+
+export type Resource<T> = GenericStoreApi<T, Setter<T>> &
+  InternalResource<T> &
+  ResourceActions<T>;
 
 function makeResource<T>(
   resourceFetcher: ResourceFetcher<true, T, true>,
@@ -26,11 +35,9 @@ function makeResource<T>(
   return state as unknown as Resource<T>;
 }
 
-export const experimental__defineResource = create('resource', makeResource);
+export const ɵdefineResource = create('resource', makeResource);
 
-export function experimental__withResourceStorage<T>(
-  store: GenericStoreApi<T>,
-) {
+export function ɵWithResourceStorage<T>(store: GenericStoreApi<T>) {
   return function (_: T | undefined): Signal<T | undefined> {
     return [
       () => store(),

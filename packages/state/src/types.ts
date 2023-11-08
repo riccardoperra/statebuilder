@@ -35,7 +35,6 @@ export interface ApiDefinitionInternalCreator<
     | PluginCreatorFunction<TStoreApi, TStoreExtension>
     | Plugin<TStoreApi, TStoreExtension>
   >;
-  owner: Owner | null;
   factory: () => TStoreApi;
 }
 

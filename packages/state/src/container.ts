@@ -1,40 +1,55 @@
-import { getOwner, type Owner, runWithOwner } from 'solid-js';
+import { getOwner, type Owner } from 'solid-js';
 import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 import { $CREATOR, resolve } from './api';
+import { runInSubRoot } from '~/root';
+import { StateBuilderError } from '~/error';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
 
-  protected constructor(private readonly owner: Owner) {}
+  protected constructor(
+    private readonly owner: Owner,
+    private readonly parent?: Container,
+  ) {}
 
-  static create(owner?: Owner) {
+  static create(owner?: Owner, parentContainer?: Container) {
     const resolvedOwner = owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
         '[statebuilder] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged',
       );
     }
-    return new Container(resolvedOwner);
+    return new Container(resolvedOwner, parentContainer);
+  }
+
+  remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
+    state: TStoreDefinition,
+  ): void {
+    this.states.delete(state[$CREATOR].name);
   }
 
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
   ): ExtractStore<TStoreDefinition> {
     type TypedStore = ExtractStore<TStoreDefinition>;
-
+    if (!state[$CREATOR]) {
+      throw new StateBuilderError('No state $CREATOR found.', {
+        cause: { state: state },
+      });
+    }
     try {
       const name = state[$CREATOR].name;
-      const instance = this.states.get(name);
+      const instance = this.#retrieveInstance(name);
       if (instance) {
-        return instance as unknown as TypedStore;
+        return instance as TypedStore;
       }
       const store = this.#resolveStore(this.owner, state);
       this.states.set(name, store!);
       return store as TypedStore;
     } catch (exception) {
       if (exception instanceof Error) throw exception;
-      throw new Error(
-        '[statebuilder] An error occurred during store initialization',
+      throw new StateBuilderError(
+        'An error occurred during store initialization',
         { cause: exception },
       );
     }
@@ -43,25 +58,23 @@ export class Container {
   #resolveStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
     owner: Owner,
     state: TStoreDefinition,
-  ) {
-    let error: Error | undefined;
-    const resolvedOwner = this.#resolveOwner(state, owner);
-    const store = runWithOwner(resolvedOwner, () => {
-      try {
-        return resolve(state, this);
-      } catch (e) {
-        error = e as Error;
-      }
-    });
-    if (error) throw error;
-    return store;
+  ): GenericStoreApi {
+    return runInSubRoot(() => resolve(state, this), owner);
   }
 
-  #resolveOwner<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    state: TStoreDefinition,
-    fallbackOwner: Owner,
-  ) {
-    const metadata = state[$CREATOR];
-    return metadata.owner ?? fallbackOwner;
+  #retrieveInstance(name: string): GenericStoreApi | null {
+    let instance: GenericStoreApi | null = this.states.get(name) ?? null;
+    if (instance) {
+      return instance;
+    }
+    let currentParent = this.parent;
+    while (currentParent) {
+      instance = currentParent.states.get(name) ?? null;
+      if (!!instance) {
+        return instance;
+      }
+      currentParent = currentParent.parent;
+    }
+    return instance;
   }
 }
