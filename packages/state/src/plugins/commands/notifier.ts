@@ -123,6 +123,15 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
       command: Command,
       payload: CommandPayload<Command>,
     ): void {
+      bus.emit(
+        createCommand(`@@BEFORE/${command.identity}`)
+          .with({
+            identity: `@@BEFORE/${command.identity}`,
+            internal: true,
+          })
+          .execute(void 0),
+      );
+
       const resolvedCommand = command
         .with(track() ? {} : { silent: true })
         .execute(payload);
