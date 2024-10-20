@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.6.2
+
+### Patch Changes
+
+- 321645c: fix reactivity - add solid exports
+
 ## 0.6.1
 
 ### Patch Changes
