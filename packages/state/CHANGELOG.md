@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.6.1
+
+### Patch Changes
+
+- 46892dd10b64f0a9c6570a69aad71d153a5cd2ee: add before event to command plugin
+
 ## 0.6.0
 
 ### Minor Changes
