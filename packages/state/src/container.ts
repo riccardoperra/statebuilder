@@ -1,8 +1,9 @@
 import { getOwner, type Owner } from 'solid-js';
-import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
-import { $CREATOR, resolve } from './api';
-import { runInSubRoot } from '~/root';
 import { StateBuilderError } from '~/error';
+import { runInSubRoot } from '~/root';
+import { $CREATOR, resolve } from './api';
+import { $SB_DEV, __devRegisterContainer } from './dev';
+import { ExtractStore, GenericStoreApi, StoreApiDefinition } from './types';
 
 export class Container {
   private readonly states = new Map<string, GenericStoreApi>();
@@ -10,7 +11,9 @@ export class Container {
   protected constructor(
     private readonly owner: Owner,
     private readonly parent?: Container,
-  ) {}
+  ) {
+    $SB_DEV && __devRegisterContainer(this);
+  }
 
   static create(owner?: Owner, parentContainer?: Container) {
     const resolvedOwner = owner ?? getOwner()!;

@@ -21,8 +21,8 @@
     "@solidjs/router": "^0.6.0",
     "solid-js": "^1.6.2",
     "solid-start": "^0.2.0",
-    "undici": "^5.11.0",
-    "statebuilder": "workspace:*"
+    "statebuilder": "workspace:*",
+    "undici": "^5.11.0"
   },
   "engines": {
     "node": ">=16.8"

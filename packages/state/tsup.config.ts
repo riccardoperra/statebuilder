@@ -20,11 +20,17 @@ export default defineConfig((options) => {
         '@solid-primitives/event-bus',
         '@solid-primitives/utils',
       ],
-      clean: true,
       sourcemap: true,
       minify: false,
       dts: true,
       splitting: true,
+    },
+    {
+      entry: ['./vite/index.ts'],
+      outDir: './dist/vite',
+      format: 'esm',
+      platform: 'node',
+      dts: true,
     },
   ];
 });

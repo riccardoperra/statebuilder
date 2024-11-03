@@ -23,3 +23,5 @@ export type {
   GetStoreApiState,
   Plugin,
 } from './types';
+
+export { $SB_DEV } from './dev';
