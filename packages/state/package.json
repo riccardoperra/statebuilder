@@ -1,6 +1,6 @@
 {
   "name": "statebuilder",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "license": "MIT",
   "homepage": "https://github.com/riccardoperra/statebuilder",
   "description": "Experimental pluggable state management system powered by SolidJS reactivity",

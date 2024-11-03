@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.1
+
+### Patch Changes
+
+- c5c7042: Statebuilder vite plugin with autokey options
+
 ## 0.7.0
 
 ### Minor Changes
