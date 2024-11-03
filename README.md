@@ -32,29 +32,27 @@ Thanks to `StateBuilder` you can **compose** the approach you like to handle you
 ### **State container**
 
 The state container it's a plain JavaScript object that collects all resolved store instances. Once created, every state
-container will have his own reactive scope, introduced by the `Owner` object from solid-js API.
+container will have it's own reactive scope, defined by the `Owner` object from solid-js API.
 
 ### **Store definition creator**
 
-The store creator it's the function that define your **store api** implementation, which requires you to follow a
+The store creator it's the function that define the **store api** implementation, which requires you to follow a
 specific signature to be complaint to `StateBuilder` API.
 
-`StateBuilder` already comes with two built-in store creators:
+`StateBuilder` already have with two built-in store creators:
 
 - defineStore
 - defineSignal
 
-Using the store definition creator, you can define where you want your state, that will be
-**lazy evaluated** only once you inject it.
+Using the store definition creator, you can define your state business logic, which will be
+**lazy evaluated** once the state is injected the first time.
 
 ### **Plugin**
 
-Plugins are the **core** of `StateBuilder`. They are basically configurable objects or
+Plugins are the **core** concept of `StateBuilder` composable system. They are configurable objects or
 functions that override your store's signature, adding new features or modifying existing ones.
 
-They are not only here to define your store internals or the pattern you want
-to use (persistance, redux-like, rxjs integration etc.), but you can also create mini-modules that can be reused in your
-app.
+They can also be used to create mini-modules that can be reused across the app or other libraries.
 
 ```mermaid
 graph TD
@@ -76,21 +74,29 @@ Install `StateBuilder` by running the following command of the following:
 pnpm i statebuilder # or npm or yarn
 ```
 
-### Creating the `Store container`
+### Enable compiler / plugin (Vite Only)
 
-Create the store container with the `Container.create()` api.
+If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin, which allows to debug easily in dev.
 
 ```ts
-// container.ts
-import { Container } from 'statebuilder';
-import { createRoot } from 'solid-js';
+import { defineConfig } from 'vite';
 
-export const stateContainer = createRoot(() => Container.create());
+export default defineConfig({
+  // your vite config
+  plugins: [
+    statebuilder({
+      autoKey: true,
+    }),
+  ],
+});
 ```
 
 ### Defining the store
 
-Once the Container is created, you can define the store state through the `defineStore` or `defineSignal` function.
+Define the store state through the definition creator function, such as `defineStore` or `defineSignal`.
+Those utilities wrap under the hood the [createSignal](https://www.solidjs.com/docs/latest#createsignal)
+and [createStore](https://www.solidjs.com/docs/latest#createstore)
+primitives from SolidJS, but they will be lazy initialized once the state is injected the first time.
 
 ```ts
 // count.ts
@@ -109,27 +115,21 @@ const CountStore = defineSignal(() => 0)
   });
 ```
 
-Both utilities basically use under the hood the [createSignal](https://www.solidjs.com/docs/latest#createsignal)
-and [createStore](https://www.solidjs.com/docs/latest#createstore)
-primitives from SolidJS. The main difference is that the `define*` api deals only to defining how these store will be
-created, then they will only be initialized once the state is injected.
+Note that first argument is an arrow function that defines the initial value of the state.
+Next, you can extend your store definition with the `.extend()` method, which is typesafe and chainable, allowing
+you to use multiple plugin at once.
 
-Next, the state can be injected through the `Container`. Each container collects stores as singletons, so once created
-the same instance of the definition will be shared.
+### Creating the `Store container`
 
-Both functions are used to define a store with a state. The first argument is the initial value of the state.
-Next, you can extend your store definition with the `.extend()` method.
-
-> **Note** The `.extend()` method is fully typesafe and chainable, allowing you to the use multiple plugin at once.
-
-### Injecting the store
-
-As anticipated, at the moment we have only defined the configuration of the store.
-The next step is to initialize it using the container we created earlier.
+The state can be injected through the `Container`. Each container collects stores as singletons, so once it is mounted,
+the same instance of the store will be shared across it's boundaries.
 
 ```ts
-import { stateContainer } from './container.ts';
-import { CountStore } from './count';
+// container.ts
+import { Container } from 'statebuilder';
+import { createRoot } from 'solid-js';
+
+export const stateContainer = createRoot(() => Container.create());
 
 const count = stateContainer.get(CountStore);
 
@@ -142,11 +142,14 @@ count.set((count) => count++); // set the state manually
 count.increment(); // increment;
 
 count.decrement(); // decrement;
-
-createEffect(() => {
-  console.log('state changed', count());
-});
 ```
+
+> [!WARNING]
+>
+> Currently the most safe way to create a Container in solid-js is using context, in order to fully support
+> SSR mode and avoid global state pollution.
+>
+> [Read more about solid-js integration](#usage-in-solidjs)
 
 ## Creating plugins
 
