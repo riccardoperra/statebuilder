@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.0
+
+### Minor Changes
+
+- b57ac51: Add statebuilder vite plugin and dev mode
+
 ## 0.6.2
 
 ### Patch Changes
