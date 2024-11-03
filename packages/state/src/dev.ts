@@ -15,8 +15,10 @@ if ($SB_DEV) {
 }
 
 export function __devRegisterContainer(container: Container) {
-  statebuilder.containers.push(container);
-  console.groupCollapsed(`[StateBuilder] - Register container`);
-  console.log(containers);
-  console.groupEnd();
+  containers.push(container);
+  if ('window' in globalThis) {
+    console.groupCollapsed(`[statebuilder] - Register container`);
+    console.log(containers);
+    console.groupEnd();
+  }
 }

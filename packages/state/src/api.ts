@@ -14,6 +14,11 @@ import { StateBuilderError } from '~/error';
 
 export const $CREATOR = Symbol('store-creator-api'),
   $PLUGIN = Symbol('store-plugin');
+
+export interface CreateOptions {
+  key: string;
+}
+
 /**
  * A factory function that creates a store API definition creator.
  *
@@ -27,8 +32,14 @@ export function create<P extends any[], T extends GenericStoreApi>(
 ): (...args: P) => ApiDefinitionCreator<T> {
   let id = 0;
   return (...args) => {
-    const resolvedName = `${name}-${++id}`;
-    return new ApiDefinition<T, {}>(resolvedName, id, () => creator(...args));
+    let options = args.at(-1) as Partial<CreateOptions> | undefined;
+    let resolvedName = options?.key;
+    if (!resolvedName) {
+      resolvedName = `${name}-${++id}`;
+    }
+    return new ApiDefinition<T, {}>(resolvedName, id, () =>
+      creator(...(args as unknown as P)),
+    );
   };
 }
 
