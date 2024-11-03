@@ -80,6 +80,7 @@ If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin,
 
 ```ts
 import { defineConfig } from 'vite';
+import { statebuilder } from 'statebuilder/vite';
 
 export default defineConfig({
   // your vite config
