@@ -2,6 +2,7 @@ import { Plugin } from 'vite';
 import { ConsolaInstance, createConsola } from 'consola';
 import { colors } from 'consola/utils';
 import { autoKey } from './autoKey';
+import { stateProviderDirective } from './stateProviderDirective';
 
 export interface StateBuilderPluginOptions {
   /**
@@ -17,7 +18,16 @@ export interface StateBuilderPluginOptions {
   /**
    * A set of custom primitives to be included into the plugin transform processor
    */
-  transformStores: string[];
+  transformStores?: string[];
+  /**
+   * Experimental features
+   */
+  experimental?: {
+    /**
+     * Transform components that make use of 'use stateprovider'.
+     */
+    transformStateProviderDirective: boolean;
+  };
 }
 
 export function statebuilder(options?: StateBuilderPluginOptions): Plugin[] {
@@ -37,12 +47,6 @@ export function statebuilder(options?: StateBuilderPluginOptions): Plugin[] {
     enforce: 'pre',
     config(userConfig, { command }) {
       isDev = options?.dev ?? command === 'serve';
-
-      const plugins: Plugin[] = [];
-      if (options?.autoKey) {
-        plugins.push(autoKey({ transformStores }));
-      }
-
       return {
         define: {
           __STATEBUILDER_DEV__: isDev,
@@ -56,12 +60,21 @@ export function statebuilder(options?: StateBuilderPluginOptions): Plugin[] {
       logProperties(consola, [
         ['mode', isDev ? 'DEV' : 'PROD', colors.magenta],
         ['autoKey', options?.autoKey ?? false, colors.blue],
+        [
+          'ɵtransformStateProviderDirective',
+          options?.experimental?.transformStateProviderDirective ?? false,
+          colors.yellow,
+        ],
       ]);
     },
   });
 
   if (options?.autoKey) {
     plugins.push(autoKey({ transformStores }));
+  }
+
+  if (options?.experimental?.transformStateProviderDirective) {
+    plugins.push(stateProviderDirective());
   }
 
   return plugins;

@@ -9,20 +9,20 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.19.64",
     "esbuild": "^0.14.54",
-    "postcss": "^8.4.18",
-    "solid-start-node": "^0.2.0",
-    "typescript": "^4.8.4",
-    "vite": "^3.1.8"
+    "postcss": "^8.4.47",
+    "solid-start-node": "^0.2.32",
+    "typescript": "^4.9.5",
+    "vite": "^3.2.11"
   },
   "dependencies": {
-    "@solidjs/meta": "^0.28.0",
+    "@solidjs/meta": "^0.28.7",
     "@solidjs/router": "^0.6.0",
-    "solid-js": "^1.6.2",
-    "solid-start": "^0.2.0",
+    "solid-js": "^1.9.3",
+    "solid-start": "^0.2.32",
     "statebuilder": "workspace:*",
-    "undici": "^5.11.0"
+    "undici": "^5.28.4"
   },
   "engines": {
     "node": ">=16.8"
