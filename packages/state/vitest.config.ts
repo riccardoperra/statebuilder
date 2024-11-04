@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import solidPlugin from 'vite-plugin-solid';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { statebuilder } from './vite/index';
 
 export default defineConfig({
   test: {
@@ -14,5 +15,5 @@ export default defineConfig({
     threads: false,
     isolate: false,
   },
-  plugins: [solidPlugin(), tsconfigPaths()],
+  plugins: [solidPlugin(), tsconfigPaths(), statebuilder()],
 });
