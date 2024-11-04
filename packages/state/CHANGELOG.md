@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.2
+
+### Patch Changes
+
+- 74b96d77ffe8f1b08d01110bfc4302ecc2e45ce4: State provider replace directive
+
 ## 0.7.1
 
 ### Patch Changes
