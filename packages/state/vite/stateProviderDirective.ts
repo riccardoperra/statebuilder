@@ -1,7 +1,7 @@
 import * as babel from '@babel/core';
 import { basename } from 'node:path';
 import { Plugin } from 'vite';
-import { babelReplaceStateProviderDirective } from './internal/replaceStateProviderDirective';
+import { babelReplaceStateProviderDirective } from './babel/replaceStateProviderDirective';
 
 export function stateProviderDirective(): Plugin {
   return {

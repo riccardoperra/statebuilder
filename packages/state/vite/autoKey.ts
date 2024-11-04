@@ -1,5 +1,5 @@
 import { Plugin } from 'vite';
-import { astAddAutoNaming } from './internal/astAutoNaming';
+import { astAddAutoNaming } from './babel/astAutoNaming';
 import { parseModule } from 'magicast';
 
 interface StatebuilderAutonamingOptions {

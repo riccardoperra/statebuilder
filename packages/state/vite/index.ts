@@ -26,7 +26,7 @@ export interface StateBuilderPluginOptions {
     /**
      * Transform components that make use of 'use stateprovider'.
      */
-    transformStateProviderDirective: boolean;
+    transformStateProviderDirective?: boolean;
   };
 }
 

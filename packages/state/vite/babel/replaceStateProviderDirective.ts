@@ -1,6 +1,11 @@
 import * as t from '@babel/types';
 import type * as babel from '@babel/core';
 
+/**
+ * @experimental
+ *
+ * Search for components that use `use stateprovider` directive, then wrap them into StateProvider.
+ */
 export function babelReplaceStateProviderDirective(): babel.PluginObj<any> {
   return {
     name: 'statebuilder:stateprovider-directive',
