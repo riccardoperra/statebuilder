@@ -27,7 +27,7 @@ export default defineConfig((options) => {
     },
     {
       entry: ['./vite/index.ts'],
-      external: ['@babel/types'],
+      external: ['@babel/types', '@babel/core'],
       outDir: './dist/vite',
       format: 'esm',
       platform: 'node',

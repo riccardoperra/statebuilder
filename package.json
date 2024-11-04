@@ -36,13 +36,13 @@
     "url": "https://github.com/riccardoperra/statebuilder"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.26.0",
-    "prettier": "^2.8.1",
-    "typescript": "^4.9.4"
+    "@changesets/cli": "^2.27.9",
+    "prettier": "^2.8.8",
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "@changesets/changelog-git": "^0.1.14",
-    "rxjs": "^7.8.0",
-    "solid-js": "^1.6.7"
+    "rxjs": "^7.8.1",
+    "solid-js": "^1.9.3"
   }
 }
