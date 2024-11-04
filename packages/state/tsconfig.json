@@ -2,10 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "include": ["./src", "./test"]
+  "include": ["./**/*.ts"],
+  "exclude": ["dist", "node_modules"]
 }

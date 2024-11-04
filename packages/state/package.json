@@ -92,7 +92,7 @@
     "build": "tsup",
     "test": "vitest",
     "test:all": "pnpm test && pnpm typecheck",
-    "typecheck": "vitest typecheck",
+    "typecheck": "vitest --typecheck test/**/*.test-d.ts",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
