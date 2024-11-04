@@ -1,9 +1,6 @@
-import { Plugin } from 'vite';
-import * as magicast from 'magicast';
-import { Program, traverseFast } from '@babel/types';
 import * as babel from '@babel/core';
 import { basename } from 'node:path';
-import * as t from '@babel/types';
+import { Plugin } from 'vite';
 import { babelReplaceStateProviderDirective } from './internal/replaceStateProviderDirective';
 
 export function stateProviderDirective(): Plugin {
@@ -35,7 +32,6 @@ export function stateProviderDirective(): Plugin {
       });
 
       if (result) {
-        console.log(result.code);
         return {
           code: result.code || '',
           map: result.map,
