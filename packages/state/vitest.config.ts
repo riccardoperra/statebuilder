@@ -14,5 +14,5 @@ export default defineConfig({
     // threads: false,
     // isolate: false,
   },
-  plugins: [solidPlugin(), tsconfigPaths(), statebuilder()],
+  plugins: [solidPlugin(), tsconfigPaths()],
 });

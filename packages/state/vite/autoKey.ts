@@ -1,28 +1,45 @@
+import * as babel from '@babel/core';
+import { basename } from 'node:path';
 import { Plugin } from 'vite';
-import { astAddAutoNaming } from './babel/astAutoNaming';
-import { parseModule } from 'magicast';
+import {
+  babelAstAddAutoNaming,
+  BabelAstAddAutoNamingOptions,
+} from './babel/astAutoNaming';
+import { transformAsync } from './babel/transform';
 
 interface StatebuilderAutonamingOptions {
   transformStores: string[];
 }
 export function autoKey(options: StatebuilderAutonamingOptions): Plugin {
   const { transformStores } = options;
+  const findStoresTransformRegexp = new RegExp(transformStores.join('|'));
   return {
     name: 'statebuilder:autokey',
-    transform(code, id, options) {
-      if (!code.includes('statebuilder')) {
+    async transform(code, id, options) {
+      if (
+        !code.includes('statebuilder') ||
+        !findStoresTransformRegexp.test(code)
+      ) {
         return;
       }
-      const findStoresTransformRegexp = new RegExp(transformStores.join('|'));
-      if (findStoresTransformRegexp.test(code)) {
-        const module = parseModule(code);
-        const result = astAddAutoNaming(module.$ast, (functionName) =>
-          transformStores.includes(functionName),
-        );
-        if (result) {
-          return module.generate();
-        }
+      const result = await transformAsync(id, code, [
+        [
+          babelAstAddAutoNaming,
+          {
+            filterStores: (functionName) =>
+              transformStores.includes(functionName),
+          } as BabelAstAddAutoNamingOptions,
+        ],
+      ]);
+
+      if (!result) {
+        return;
       }
+
+      return {
+        code: result.code ?? '',
+        map: result.map,
+      };
     },
   };
 }

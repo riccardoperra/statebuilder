@@ -2,7 +2,9 @@
 
 <img alt="StateBuilder" src="./banner.png">
 
-> **Warning** This library has been built for experimental purposes for my needs while building apps that need an
+> [!WARNING]
+>
+> This library has been built for experimental purposes for my needs while building apps that need an
 > agnostic state manager and a certain complexity.
 
 [![NPM](https://img.shields.io/npm/v/statebuilder?style=for-the-badge)](https://www.npmjs.com/package/statebuilder)
@@ -10,13 +12,12 @@
 `StateBuilder` is an agnostic state management library built on the top of SolidJS reactivity.
 
 It's built to be an **extremely modular system**, with an API that allows you to add methods, utilities and custom
-behaviors to your store
-in an easier way. Of course, this come with a built-in TypeScript support.
+behaviors to your store in an easier way. Of course, this come with a built-in TypeScript support.
 
 Solid already provides the primitives to build a state manager system thanks to signals and stores. What's missing is a
 well-defined pattern to follow while building your application.
 
-Thanks to `StateBuilder` you can **compose** the approach you like to handle your state.
+Thanks to `StateBuilder` you can **compose** the approach you like to handle your state. You can also use some patterns already exposed by the library.
 
 ## Table of contents
 
@@ -27,12 +28,10 @@ Thanks to `StateBuilder` you can **compose** the approach you like to handle you
 
 ## Architecture
 
-`StateBuilder` come to the rescue introducing some concepts:
-
 ### **State container**
 
 The state container it's a plain JavaScript object that collects all resolved store instances. Once created, every state
-container will have it's own reactive scope, defined by the `Owner` object from solid-js API.
+container will have it's own reactive scope, bound into a `Owner` from solid-js API.
 
 ### **Store definition creator**
 
@@ -44,7 +43,7 @@ specific signature to be complaint to `StateBuilder` API.
 - defineStore
 - defineSignal
 
-Using the store definition creator, you can define your state business logic, which will be
+Using the store definition, you can define your state business logic, which will be
 **lazy evaluated** once the state is injected the first time.
 
 ### **Plugin**
@@ -74,9 +73,17 @@ Install `StateBuilder` by running the following command of the following:
 pnpm i statebuilder # or npm or yarn
 ```
 
-### Enable compiler / plugin (Vite Only)
+### Enable compiler (Vite Only)
 
-If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin, which allows to debug easily in dev.
+> [!NOTE]
+>
+> The statebuilder plugin is OPTIONAL. This means that all the core features works right out of the
+> box without a custom build step
+
+If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin, which provide debug and custom features through babel transforms.
+
+- `autoKey`: Allows to name your stores automatically, based on the constant name.
+- `stateProviderDirective`: Allows to wraps your SolidJS component into a StateProvider when they contains the `use stateprovider` directive.
 
 ```ts
 import { defineConfig } from 'vite';
@@ -87,6 +94,12 @@ export default defineConfig({
   plugins: [
     statebuilder({
       autoKey: true,
+      filterStores: [
+        // define your custom store name
+      ]
+      experimental: {
+        transformStateProviderDirective: true
+      }
     }),
   ],
 });
