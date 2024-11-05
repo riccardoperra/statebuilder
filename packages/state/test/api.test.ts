@@ -124,6 +124,23 @@ describe('resolve', () => {
     expect(setFn).toHaveBeenCalledWith(10);
   });
 
+  it('will preserve getters', () => {
+    const state = defineSignal(() => 0).extend((api) => {
+      return {
+        get fooGetter() {
+          return 'test';
+        },
+      };
+    });
+
+    const store = resolve(state);
+    expect(store).toHaveProperty('fooGetter');
+    expect(
+      Object.getOwnPropertyDescriptor(store, 'fooGetter')?.get,
+    ).toBeDefined();
+    expect(Reflect.get(store, 'fooGetter')).toEqual('test');
+  });
+
   it('will throw exception when dependency is missing', () => {
     const plugin1 = makePlugin(() => ({}), {
       name: 'plugin1',

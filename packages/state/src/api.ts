@@ -94,7 +94,9 @@ export function resolve<
     // full control of the property for future Plugin updates
     for (const p in resolvedContext) {
       if (p === 'set' && typeof resolvedContext[p] !== 'function') continue;
-      resolvedStore[p as keyof typeof resolvedStore] = resolvedContext[p];
+
+      const descriptor = Object.getOwnPropertyDescriptor(resolvedContext, p);
+      Object.defineProperty(resolvedStore, p, descriptor ?? resolvedContext[p]);
     }
 
     resolvedPlugins.push(extensionCreator.name);

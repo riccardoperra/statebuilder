@@ -14,5 +14,14 @@ export default defineConfig({
     // threads: false,
     // isolate: false,
   },
-  plugins: [solidPlugin(), tsconfigPaths()],
+  plugins: [
+    solidPlugin(),
+    tsconfigPaths(),
+    statebuilder({
+      autoKey: false,
+      experimental: {
+        transformStateProviderDirective: true,
+      },
+    }),
+  ],
 });

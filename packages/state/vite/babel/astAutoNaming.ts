@@ -4,9 +4,10 @@ export interface BabelAstAddAutoNamingOptions {
   filterStores: (callee: string) => boolean;
 }
 
-export function babelAstAddAutoNaming({
-  filterStores,
-}: BabelAstAddAutoNamingOptions): babel.PluginObj<any> {
+export function babelAstAddAutoNaming(
+  _: unknown,
+  { filterStores }: BabelAstAddAutoNamingOptions,
+): babel.PluginObj<any> {
   return {
     name: 'statebuilder:stateprovider-addAutoName',
     visitor: {
