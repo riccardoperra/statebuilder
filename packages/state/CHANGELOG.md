@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.3
+
+### Patch Changes
+
+- 3d9bd2a3fa122830bdedfca05fc02d1f512a3c8d: Preserve getters while resolving plugins
+
 ## 0.7.2
 
 ### Patch Changes
