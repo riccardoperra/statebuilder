@@ -96,10 +96,10 @@ export default defineConfig({
       autoKey: true,
       filterStores: [
         // define your custom store name
-      ]
+      ],
       experimental: {
-        transformStateProviderDirective: true
-      }
+        transformStateProviderDirective: true,
+      },
     }),
   ],
 });
