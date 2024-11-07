@@ -16,7 +16,6 @@ export function stateProviderDirective(): Plugin {
         [babelReplaceStateProviderDirective],
       ]);
       if (result) {
-        console.log(result.code);
         return {
           code: result.code || '',
           map: result.map,
