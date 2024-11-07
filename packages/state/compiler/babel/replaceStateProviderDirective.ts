@@ -42,9 +42,17 @@ export function babelReplaceStateProviderDirective(): babel.PluginObj<any> {
               path.node.body.directives = path.node.body.directives.filter(
                 (directive) => directive.value.value !== 'use stateprovider',
               );
+
+              const params = [...path.node.params];
+              const props = params.at(0) as t.Identifier | undefined;
+              const attributes: t.JSXAttribute | t.JSXSpreadAttribute[] = [];
+              if (props) {
+                attributes.push(t.jsxSpreadAttribute(props));
+              }
+
               const wrappedComponent = t.functionDeclaration(
                 t.identifier(originalName),
-                [],
+                params,
                 t.blockStatement([
                   t.returnStatement(
                     t.jsxElement(
@@ -52,7 +60,10 @@ export function babelReplaceStateProviderDirective(): babel.PluginObj<any> {
                       t.jsxClosingElement(t.jsxIdentifier('StateProvider')),
                       [
                         t.jsxElement(
-                          t.jsxOpeningElement(t.jsxIdentifier(wrappedName), []),
+                          t.jsxOpeningElement(
+                            t.jsxIdentifier(wrappedName),
+                            attributes,
+                          ),
                           t.jsxClosingElement(t.jsxIdentifier(wrappedName)),
                           [],
                           true,
