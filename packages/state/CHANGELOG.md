@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.4
+
+### Patch Changes
+
+- 5cd657b248c715861b608f38bbf45884593230cb: rename plugin
+
 ## 0.7.3
 
 ### Patch Changes
