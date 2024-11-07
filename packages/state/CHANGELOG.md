@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.6
+
+### Patch Changes
+
+- 951a1cedebcfdbbd3c12af8fb4c17675465d6e94: fix missing spread props in babel replace directive
+
 ## 0.7.5
 
 ### Patch Changes
