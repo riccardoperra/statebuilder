@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.5
+
+### Patch Changes
+
+- 5af8d1eba8b623536012aa57b2f371c254b3eee2: fix vite compiler output folder
+
 ## 0.7.4
 
 ### Patch Changes
