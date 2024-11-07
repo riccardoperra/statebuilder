@@ -43,9 +43,9 @@
       "node": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./vite": {
-      "import": "./dist/vite/index.js",
-      "types": "./dist/vite/index.d.mts"
+    "./compiler": {
+      "import": "./dist/compiler/index.js",
+      "types": "./dist/compiler/index.d.mts"
     },
     "./asyncAction": {
       "import": "./dist/plugins/asyncAction.js",

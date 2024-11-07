@@ -26,7 +26,7 @@ export default defineConfig((options) => {
       splitting: true,
     },
     {
-      entry: ['./vite/index.ts'],
+      entry: ['./compiler/index.ts'],
       external: ['@babel/types', '@babel/core'],
       outDir: './dist/vite',
       format: 'esm',
