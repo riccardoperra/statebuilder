@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.7
+
+### Patch Changes
+
+- 0f7bfb1a8d6ecfb2270f08bdc83a7f557ffa8ad7: remove console.logs in compiler
+
 ## 0.7.6
 
 ### Patch Changes
