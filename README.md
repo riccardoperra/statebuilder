@@ -77,11 +77,12 @@ pnpm i statebuilder # or npm or yarn
 
 > [!NOTE]
 >
-> The statebuilder plugin is OPTIONAL. This means that all the core features works right out of the
+> The statebuilder plugin is optional. This means that all the core features works right out of the
 > box without a custom build step
 
 If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin, which provide debug and custom features through babel transforms.
 
+- `dev`: Enable dev mode
 - `autoKey`: Allows to name your stores automatically, based on the constant name.
 - `stateProviderDirective`: Allows to wraps your SolidJS component into a StateProvider when they contains the `use stateprovider` directive.
 
@@ -94,6 +95,7 @@ export default defineConfig({
   plugins: [
     statebuilder({
       autoKey: true,
+      dev: true,
       filterStores: [
         // define your custom store name
       ],
