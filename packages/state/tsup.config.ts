@@ -28,7 +28,7 @@ export default defineConfig((options) => {
     {
       entry: ['./compiler/index.ts'],
       external: ['@babel/types', '@babel/core'],
-      outDir: './dist/vite',
+      outDir: './dist/compiler',
       format: 'esm',
       platform: 'node',
       dts: true,
