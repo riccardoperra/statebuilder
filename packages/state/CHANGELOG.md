@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.7.8
+
+### Patch Changes
+
+- e1210adb7204931012c50bb5e4ce47738e049e8d: Fix env variables transform
+
 ## 0.7.7
 
 ### Patch Changes
