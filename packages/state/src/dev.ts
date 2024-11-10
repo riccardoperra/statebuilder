@@ -1,8 +1,7 @@
 import type { Container } from './container';
 import { isServer } from 'solid-js/web';
 
-// @ts-expect-error This type will not be exported
-export const $SB_DEV = __STATEBUILDER_DEV__ || false;
+export const $SB_DEV = import.meta.env.STATEBUILDER_DEV || false;
 
 const containers: Container[] = [];
 const statebuilder = {

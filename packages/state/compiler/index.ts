@@ -49,7 +49,7 @@ export function statebuilder(options?: StateBuilderPluginOptions): Plugin[] {
       isDev = options?.dev ?? command === 'serve';
       return {
         define: {
-          __STATEBUILDER_DEV__: isDev,
+          'import.meta.env.STATEBUILDER_DEV': isDev,
         },
         plugins,
       };
