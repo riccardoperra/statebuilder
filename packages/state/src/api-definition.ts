@@ -1,11 +1,13 @@
 import {
   ApiDefinitionCreator,
   ApiDefinitionInternalCreator,
+  ExtractStore,
   GenericStoreApi,
   Plugin,
   PluginContext,
 } from '~/types';
 import { $CREATOR, $PLUGIN } from '~/api';
+import { provideState } from './solid';
 
 /**
  * @internal
@@ -42,5 +44,12 @@ export class ApiDefinition<T extends GenericStoreApi, E extends {}>
       T,
       TExtendedSignal & Omit<E, keyof TExtendedSignal>
     >;
+  }
+
+  /**
+   * Shorthand helper syntax for `provideState(MyStore)`
+   */
+  provide(): ExtractStore<this> {
+    return provideState(this);
   }
 }

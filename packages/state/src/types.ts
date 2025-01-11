@@ -24,6 +24,8 @@ export interface ApiDefinitionCreator<
     TStoreApi,
     TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>
   >;
+
+  provide(): ExtractStore<this>;
 }
 
 export interface ApiDefinitionInternalCreator<

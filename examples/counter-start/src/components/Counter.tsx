@@ -100,6 +100,6 @@ function Counter() {
 
 export default function CounterRoot() {
   'use stateprovider';
-  const globalCount = provideState(GlobalCount);
+  const globalCount = GlobalCount;
   return <Counter />;
 }
