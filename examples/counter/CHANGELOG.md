@@ -1,5 +1,12 @@
 # counter
 
+## 0.0.12
+
+### Patch Changes
+
+- Updated dependencies [48c76b202466795004f0b5d69b2524a49db40256]
+  - statebuilder@0.8.0
+
 ## 0.0.11
 
 ### Patch Changes

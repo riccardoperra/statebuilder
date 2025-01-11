@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.8.0
+
+### Minor Changes
+
+- 48c76b202466795004f0b5d69b2524a49db40256: add `provide` store syntax helper
+
 ## 0.7.8
 
 ### Patch Changes
