@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import solidPlugin from 'vite-plugin-solid';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { statebuilder } from './compiler/index';
+import { statebuilder } from './compiler';
 
 export default defineConfig({
   test: {
