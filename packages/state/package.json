@@ -30,9 +30,6 @@
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "private": false,
   "exports": {
     ".": {
@@ -99,20 +96,22 @@
     "@babel/core": "^7.26.0",
     "@babel/traverse": "^7.25.9",
     "@babel/types": "^7.26.0",
-    "@solidjs/testing-library": "^0.5.2",
+    "@solidjs/testing-library": "^0.8.10",
     "@types/babel__core": "^7.20.5",
     "@vitest/coverage-c8": "^0.33.0",
     "consola": "^3.4.2",
-    "happy-dom": "^17.4.4",
     "prettier": "^3.5.3",
     "tsup": "^8.4.0",
+    "happy-dom": "^17.4.4",
     "typescript": "^5.8.3",
     "vite": "^6.2.5",
     "vite-plugin-solid": "^2.11.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.1"
   },
+
   "dependencies": {
+    "@statebuilder/container": "workspace:*",
     "@babel/parser": "^7.27.0",
     "@solid-primitives/event-bus": "^1.1.0",
     "rxjs": "^7.8.2",

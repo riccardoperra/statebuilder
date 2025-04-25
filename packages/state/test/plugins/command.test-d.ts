@@ -5,7 +5,7 @@ import {
   StateCommand,
   withProxyCommands,
 } from '../../src/plugins/commands';
-import { defineSignal, defineStore } from '~/solid';
+import { defineSignal, defineStore } from 'src/solid';
 import { Setter } from 'solid-js';
 import { SetStoreFunction } from 'solid-js/store';
 

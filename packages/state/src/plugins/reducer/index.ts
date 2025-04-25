@@ -1,7 +1,7 @@
-import { makePlugin } from '~/api';
-import { Store } from '~/solid/store';
-import { Signal } from '~/solid/signal';
-import { GenericStoreApi } from '~/types';
+import { makePlugin } from '@statebuilder/container';
+import { Store } from '../../solid/store';
+import { Signal } from '../../solid/signal';
+import { GenericStoreApi } from '@statebuilder/container';
 
 interface StoreWithReducer<T, Action> {
   dispatch(action: Action): void;

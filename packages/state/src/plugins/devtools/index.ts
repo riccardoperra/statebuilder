@@ -1,6 +1,6 @@
-import { makePlugin } from '~/api';
+import { makePlugin } from '@statebuilder/container';
 import { untrack } from 'solid-js';
-import { GenericStoreApi } from '~/types';
+import { GenericStoreApi } from '@statebuilder/container';
 
 interface WithReduxDevtoolsOptions {
   storeName: string;

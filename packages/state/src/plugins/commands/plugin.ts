@@ -1,15 +1,13 @@
-import { GenericStoreApi, GetStoreApiSetter, GetStoreApiState } from '~/types';
 import {
-  ExecuteCommandCallback,
-  makeCommandNotifier,
-} from '~/plugins/commands/notifier';
-import { GenericStateCommand } from '~/plugins/commands/command';
-import { makePlugin } from '~/api';
-import {
-  ProxifyCommands,
-  StoreWithProxyCommands,
-} from '~/plugins/commands/types';
-import { makeProxyHandlers } from '~/plugins/commands/proxy';
+  GenericStoreApi,
+  GetStoreApiSetter,
+  GetStoreApiState,
+} from '@statebuilder/container';
+import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
+import { GenericStateCommand } from './command';
+import { makePlugin } from '@statebuilder/container';
+import type { ProxifyCommands, StoreWithProxyCommands } from './types';
+import { makeProxyHandlers } from './proxy';
 import { applyDevtools } from '~/plugins/commands/devtools';
 
 function plugin<ActionsMap extends Record<string, unknown>>(): <

@@ -1,5 +1,5 @@
 import { createSignal } from 'solid-js';
-import { makePlugin } from '~/api';
+import { makePlugin } from '@statebuilder/container';
 
 export function withAsyncAction() {
   return makePlugin(

@@ -22,8 +22,7 @@ export default defineConfig((options) => {
       ],
       sourcemap: true,
       minify: false,
-      dts: true,
-      splitting: true,
+      splitting: false,
     },
     {
       entry: ['./compiler/index.ts'],

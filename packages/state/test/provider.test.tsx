@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@solidjs/testing-library';
 import { provideState, StateProvider } from '../src/solid';
-import { defineStore } from '~/solid/store';
-import { StateBuilderError } from '~/error';
+import { defineStore } from '../src/solid';
+import { StateBuilderError } from '../src/index';
 
 describe('provider', () => {
   const counter = defineStore(() => ({ count: 0 })).extend((ctx) => ({
@@ -11,6 +11,7 @@ describe('provider', () => {
 
   function App() {
     const state = provideState(counter);
+    console.log(state());
     return (
       <button
         data-testId="button"
