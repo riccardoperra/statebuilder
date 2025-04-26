@@ -34,9 +34,6 @@ describe('create', () => {
       decrement: () => ctx.set(ctx() - 1),
     }));
 
-    expect(definition[$CREATOR].plugins).length(1);
-    expect(definition[$CREATOR].name).toEqual('custom-1');
-
     const state = container.get(definition);
 
     expect(state()).toEqual(1);
@@ -75,7 +72,6 @@ describe('makePlugin', () => {
     const store = Container.create().get(state);
 
     expect(withCountSetter.name).toEqual('countSetter');
-    expect((withCountSetter as any)[$PLUGIN]).toBeDefined();
     expect(store).toHaveProperty('increment');
   });
 });
@@ -166,12 +162,12 @@ describe('resolve', () => {
 
     const state = defineSignal(() => 0)
       .extend((api, context) => {
-        context.hooks.onInit(() => initHook('first-plugin'));
+        context.onMount(() => initHook('first-plugin'));
         return {};
       })
       .extend((api, context) => {
-        context.hooks.onInit(() => initHook('second-plugin'));
-        context.hooks.onDestroy(() => destroyHook('destroy'));
+        context.onMount(() => initHook('second-plugin'));
+        context.onDispose(() => destroyHook('destroy'));
         return {};
       });
 
@@ -200,8 +196,8 @@ describe('inject', () => {
       const containerState = Container.create(getOwner()!);
 
       const State1 = defineSignal(() => 0).extend((_, context) => {
-        context.hooks.onInit(() => initHook('first-plugin'));
-        context.hooks.onDestroy(() => destroyHook('first-plugin'));
+        context.onMount(() => initHook('first-plugin'));
+        context.onDispose(() => destroyHook('first-plugin'));
       });
 
       const State2 = defineSignal(() => 1).extend((_, context) => {

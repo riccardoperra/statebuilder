@@ -16,7 +16,8 @@
 
 export { Container } from './container';
 
-export { create, makePlugin, resolve, $CREATOR, $PLUGIN } from './api';
+export type { Plugin, StatebuilderSystem } from './system';
+export { create, makePlugin, resolve, $CREATOR } from './api';
 
 export { ApiDefinition } from './api-definition';
 
@@ -33,5 +34,4 @@ export type {
   ApiDefinitionCreator,
   GetStoreApiSetter,
   GetStoreApiState,
-  Plugin,
 } from './types';

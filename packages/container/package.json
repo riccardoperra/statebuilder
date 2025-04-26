@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:all": "pnpm test && pnpm typecheck",
+    "typecheck": "vitest --typecheck test/**/*.test-d.ts"
   },
   "exports": {
     ".": {
@@ -23,6 +25,7 @@
     "vitest": "^3.1.1"
   },
   "dependencies": {
+    "tsplug": "link:/Users/riccardoperra/WebstormProjects/tsplug",
     "typescript": "^5.8.3"
   }
 }

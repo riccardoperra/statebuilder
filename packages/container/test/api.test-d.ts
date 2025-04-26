@@ -19,6 +19,7 @@ import { $CREATOR, create, makePlugin } from '../src';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container, GenericStoreApi } from '../src';
 import { SetStoreFunction } from 'solid-js/store';
+import { defineSignal } from './utils/signal';
 
 const container = createRoot(() => Container.create());
 

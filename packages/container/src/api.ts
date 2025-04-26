@@ -17,9 +17,7 @@
 import type {
   ApiDefinitionCreator,
   GenericStoreApi,
-  Plugin,
-  PluginContext,
-  PluginOf,
+  ContainerPluginContext,
   StoreApiDefinition,
 } from './types';
 import { onCleanup } from 'solid-js';
@@ -28,8 +26,11 @@ import { Container } from './container';
 import { ResolvedPluginContext } from './resolved-plugin-context';
 import { StateBuilderError } from './error';
 
-export const $CREATOR = Symbol('store-creator-api'),
-  $PLUGIN = Symbol('store-plugin');
+import { $PLUGIN, type CreatePluginOptions } from 'tsplug';
+
+import { createPlugin, resolve as $resolve, type Plugin } from './system';
+
+export const $CREATOR = Symbol('store-creator-api');
 
 export interface CreateOptions {
   key: string;
@@ -53,23 +54,16 @@ export function create<P extends any[], T extends GenericStoreApi>(
     if (!resolvedName) {
       resolvedName = `${name}-${++id}`;
     }
-    return new ApiDefinition<T, {}>(resolvedName, id, () =>
+    return new ApiDefinition<T, {}>(resolvedName, () =>
       creator(...(args as unknown as P)),
     );
   };
 }
 
-function checkDependencies(
-  resolvedPlugins: string[],
-  plugin: Plugin<GenericStoreApi, any>,
-) {
+function checkDependencies(resolvedPlugins: string[], plugin: Plugin) {
   const meta = plugin[$PLUGIN];
-  if (!meta) return;
-
-  const { dependencies } = meta;
-  if (!dependencies) return;
-
-  dependencies.forEach((dependency) => {
+  if (!meta || !meta.dependencies) return;
+  meta.dependencies.forEach((dependency) => {
     if (!resolvedPlugins.includes(dependency)) {
       throw new StateBuilderError(
         `The dependency '${dependency}' of plugin '${meta.name}' is missing`,
@@ -90,57 +84,37 @@ function checkDependencies(
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition, container?: Container) {
-  const { factory, plugins } = definition[$CREATOR];
+  const { factory, plugins, composer } = definition[$CREATOR];
+
   const resolvedPlugins: string[] = [],
     pluginContext = new ResolvedPluginContext(container, plugins),
     resolvedStore = factory();
 
-  for (const extensionCreator of plugins) {
-    const createExtension =
-      typeof extensionCreator === 'function'
-        ? extensionCreator(resolvedStore)
-        : extensionCreator;
-
-    checkDependencies(resolvedPlugins, extensionCreator);
-
-    const resolvedContext = createExtension.apply(resolvedStore, pluginContext);
-
-    if (!resolvedContext) continue;
-    // We should avoid Object.assign in order to not override accessor and have
-    // full control of the property for future Plugin updates
-    for (const p in resolvedContext) {
-      if (p === 'set' && typeof resolvedContext[p] !== 'function') continue;
-
-      const descriptor = Object.getOwnPropertyDescriptor(resolvedContext, p);
-      Object.defineProperty(resolvedStore, p, descriptor ?? resolvedContext[p]);
-    }
-
-    resolvedPlugins.push(extensionCreator.name);
-  }
-
-  if (!!container) {
-    pluginContext.hooks.onDestroy(() => container.remove(definition));
-  }
-
-  for (const listener of pluginContext.initSubscriptions) {
-    listener(resolvedStore);
-    pluginContext.initSubscriptions.delete(listener);
-  }
+  const composedObject = $resolve(composer, resolvedStore, {
+    createContext: () => ({
+      inject: pluginContext.inject.bind(pluginContext),
+    }),
+    beforePluginMount: (context, plugin, index) => {
+      checkDependencies(resolvedPlugins, plugin);
+    },
+    afterPluginMount: (context, data, index) => {
+      resolvedPlugins.push(data.plugin[$PLUGIN].name);
+    },
+  });
 
   onCleanup(() => {
-    for (const listener of pluginContext.destroySubscriptions) {
-      listener(resolvedStore);
-      pluginContext.destroySubscriptions.delete(listener);
+    composedObject.dispose();
+    if (container) {
+      container.remove(definition);
     }
   });
 
   return resolvedStore;
 }
 
-type PluginCreatorOptions = {
-  name: string;
+export interface PluginCreatorOptions extends CreatePluginOptions {
   dependencies?: string[];
-};
+}
 
 /**
  * A function that creates a plugin for a generic store API.
@@ -152,35 +126,12 @@ type PluginCreatorOptions = {
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
 function _makePlugin<
-  TCallback extends <S extends GenericStoreApi>(
-    store: S,
-    context: PluginContext<S>,
-  ) => unknown,
->(
-  pluginCallback: TCallback,
-  options: PluginCreatorOptions,
-): PluginOf<TCallback> {
-  const pluginFactory: () => Plugin<any, any> = () => ({
-    [$PLUGIN]: {
-      name: options.name,
-      dependencies: options.dependencies ?? [],
-      apply: pluginCallback,
-    },
-    apply: pluginCallback,
+  TCallback extends (store: any, context: ContainerPluginContext) => any,
+>(pluginCallback: TCallback, options: PluginCreatorOptions): Plugin<TCallback> {
+  return createPlugin(pluginCallback as any, {
     name: options.name,
+    dependencies: options.dependencies ?? [],
   });
-
-  Object.defineProperties(pluginFactory, {
-    [$PLUGIN]: {
-      value: {
-        name: options.name,
-        dependencies: options.dependencies ?? [],
-      },
-    },
-    name: { value: options.name },
-  });
-
-  return pluginFactory as unknown as TCallback;
 }
 
 export const makePlugin = Object.assign(_makePlugin, {

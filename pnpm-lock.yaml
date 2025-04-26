@@ -91,6 +91,9 @@ importers:
 
   packages/container:
     dependencies:
+      tsplug:
+        specifier: link:/Users/riccardoperra/WebstormProjects/tsplug
+        version: link:../../../tsplug
       typescript:
         specifier: ^5.8.3
         version: 5.8.3

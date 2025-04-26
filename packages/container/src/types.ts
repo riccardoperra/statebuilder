@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { $CREATOR, $PLUGIN } from './api';
+import { $CREATOR } from './api';
+import type { Composer, PluginContext } from 'tsplug';
 
 export type GenericStoreApi<
   T = any,
@@ -31,7 +32,7 @@ export interface ApiDefinitionCreator<
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (
       ctx: TStoreApi & TSignalExtension,
-      context: PluginContext<TStoreApi>,
+      context: ContainerPluginContext,
     ) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
@@ -49,6 +50,7 @@ export interface ApiDefinitionInternalCreator<
     | Plugin<TStoreApi, TStoreExtension>
   >;
   factory: () => TStoreApi;
+  composer: Composer<{}>;
 }
 
 export interface StoreApiDefinition<
@@ -74,15 +76,9 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
 
 export type Lazy<T> = () => T;
 
-export type PluginMetadata = {
-  name: string;
-  dependencies: string[];
-};
-
 export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
-  [$PLUGIN]?: PluginMetadata;
   name: string;
-  apply(storeApi: TStoreApi, options: PluginContext): R;
+  apply(storeApi: TStoreApi, options: ContainerPluginContext): R;
 };
 
 export type PluginOf<Callback> = Callback;
@@ -102,14 +98,10 @@ export interface PluginHooks<T extends GenericStoreApi> {
   onDestroy: (consumer: HookConsumerFunction<T>) => void;
 }
 
-export type PluginContext<T extends GenericStoreApi = GenericStoreApi> = {
-  plugins: readonly Plugin<any, any>[];
-  metadata: Map<string, unknown>;
-  hooks: PluginHooks<T>;
-
-  inject<TStoreDefinition extends StoreApiDefinition<any, any>>(
+export type ContainerPluginContext = PluginContext & {
+  inject: <TStoreDefinition extends StoreApiDefinition<any, any>>(
     storeDefinition: TStoreDefinition,
-  ): ExtractStore<TStoreDefinition>;
+  ) => ExtractStore<TStoreDefinition>;
 };
 
 export type PluginCreatorFunction<

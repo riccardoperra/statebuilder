@@ -19,14 +19,20 @@ import type {
   GenericStoreApi,
   HookConsumerFunction,
   Plugin,
-  PluginContext,
+  ContainerPluginContext,
   PluginHooks,
   StoreApiDefinition,
 } from './types';
 import { Container } from './container';
 import { StateBuilderError } from './error';
 
-export class ResolvedPluginContext implements PluginContext {
+export interface PluginContext {
+  inject<TStoreDefinition extends StoreApiDefinition<any, any>>(
+    storeDefinition: TStoreDefinition,
+  ): ExtractStore<TStoreDefinition>;
+}
+
+export class ResolvedPluginContext {
   readonly initSubscriptions = new Set<HookConsumerFunction>();
   readonly destroySubscriptions = new Set<HookConsumerFunction>();
   readonly metadata: Map<string, unknown> = new Map<string, unknown>();

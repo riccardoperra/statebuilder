@@ -19,37 +19,35 @@ import type {
   ApiDefinitionInternalCreator,
   GenericStoreApi,
   Plugin,
-  PluginContext,
+  ContainerPluginContext,
 } from './types';
-import { $CREATOR, $PLUGIN } from './api';
+import { $CREATOR } from './api';
+import { Composer } from 'tsplug';
 
 export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   implements ApiDefinitionCreator<T, E>
 {
   readonly [$CREATOR]: ApiDefinitionInternalCreator<T, E>;
-  #customPluginId: number = 0;
-  readonly #id: number = 0;
   readonly #plugins: Array<Plugin<any, any>> = [];
 
-  constructor(name: string, id: number, factory: () => T) {
-    this[$CREATOR] = { name, plugins: this.#plugins, factory };
-    this.#id = id;
+  composer = new Composer();
+
+  constructor(name: string, factory: () => T) {
+    this[$CREATOR] = {
+      name,
+      plugins: this.#plugins,
+      factory,
+      composer: this.composer,
+    };
   }
 
   extend<TExtendedSignal extends {} | void>(
-    createPlugin: (ctx: T & E, context: PluginContext<T>) => TExtendedSignal,
+    createPlugin: (
+      ctx: T & E,
+      context: ContainerPluginContext,
+    ) => TExtendedSignal,
   ): ApiDefinitionCreator<T, TExtendedSignal & Omit<E, keyof TExtendedSignal>> {
-    if (
-      typeof createPlugin === 'function' &&
-      !createPlugin.hasOwnProperty($PLUGIN)
-    ) {
-      this.#plugins.push({
-        name: `custom-${++this.#customPluginId}`,
-        apply: createPlugin,
-      });
-    } else {
-      this.#plugins.push(createPlugin);
-    }
+    this.composer.with(createPlugin as any);
 
     return this as unknown as ApiDefinitionCreator<
       T,
