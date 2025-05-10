@@ -18,8 +18,6 @@ import type {
   ExtractStore,
   GenericStoreApi,
   HookConsumerFunction,
-  Plugin,
-  ContainerPluginContext,
   PluginHooks,
   StoreApiDefinition,
 } from './types';
@@ -42,10 +40,7 @@ export class ResolvedPluginContext {
     onDestroy: (callback) => this.destroySubscriptions.add(callback),
   };
 
-  constructor(
-    private readonly container: Container | undefined,
-    public readonly plugins: Plugin<any, any>[],
-  ) {}
+  constructor(private readonly container: Container | undefined) {}
 
   inject<TStoreDefinition extends StoreApiDefinition<any, any>>(
     storeDefinition: TStoreDefinition,

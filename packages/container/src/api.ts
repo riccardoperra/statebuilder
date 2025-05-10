@@ -26,7 +26,7 @@ import { Container } from './container';
 import { ResolvedPluginContext } from './resolved-plugin-context';
 import { StateBuilderError } from './error';
 
-import { $PLUGIN, type CreatePluginOptions } from 'tsplug';
+import { $PLUGIN, type CreatePluginOptions } from 'pluggino';
 
 import { createPlugin, resolve as $resolve, type Plugin } from './system';
 
@@ -84,10 +84,10 @@ function checkDependencies(resolvedPlugins: string[], plugin: Plugin) {
 export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition, container?: Container) {
-  const { factory, plugins, composer } = definition[$CREATOR];
+  const { factory, composer } = definition[$CREATOR];
 
   const resolvedPlugins: string[] = [],
-    pluginContext = new ResolvedPluginContext(container, plugins),
+    pluginContext = new ResolvedPluginContext(container),
     resolvedStore = factory();
 
   const composedObject = $resolve(composer, resolvedStore, {

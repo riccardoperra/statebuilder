@@ -30,7 +30,7 @@ describe('Store', () => {
         .extend((ctx) => {})
         .extend((ctx) => {});
 
-      expect(def[$CREATOR].plugins.length).toEqual(2);
+      expect(def[$CREATOR].composer.context.plugins.length).toEqual(2);
     });
   });
 

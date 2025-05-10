@@ -22,20 +22,18 @@ import type {
   ContainerPluginContext,
 } from './types';
 import { $CREATOR } from './api';
-import { Composer } from 'tsplug';
+import { Composer } from 'pluggino';
 
 export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   implements ApiDefinitionCreator<T, E>
 {
   readonly [$CREATOR]: ApiDefinitionInternalCreator<T, E>;
-  readonly #plugins: Array<Plugin<any, any>> = [];
 
   composer = new Composer();
 
   constructor(name: string, factory: () => T) {
     this[$CREATOR] = {
       name,
-      plugins: this.#plugins,
       factory,
       composer: this.composer,
     };

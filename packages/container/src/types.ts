@@ -15,7 +15,7 @@
  */
 
 import { $CREATOR } from './api';
-import type { Composer, PluginContext } from 'tsplug';
+import type { Composer, PluginContext } from 'pluggino';
 
 export type GenericStoreApi<
   T = any,
@@ -45,12 +45,9 @@ export interface ApiDefinitionInternalCreator<
   TStoreExtension = unknown,
 > {
   name: string;
-  plugins: Array<
-    | PluginCreatorFunction<TStoreApi, TStoreExtension>
-    | Plugin<TStoreApi, TStoreExtension>
-  >;
   factory: () => TStoreApi;
   composer: Composer<{}>;
+  __tStoreExtension?: TStoreExtension;
 }
 
 export interface StoreApiDefinition<

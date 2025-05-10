@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Composable, SystemFactoryTypes } from 'tsplug';
-import { createSystem, type Plugin as $Plugin } from 'tsplug';
+import type { Composable, SystemFactoryTypes } from 'pluggino';
+import { createSystem, type Plugin as $Plugin } from 'pluggino';
 import type { PluginCreatorOptions } from './api';
 import type { PluginContext } from './resolved-plugin-context';
 

@@ -91,9 +91,9 @@ importers:
 
   packages/container:
     dependencies:
-      tsplug:
-        specifier: link:/Users/riccardoperra/WebstormProjects/tsplug
-        version: link:../../../tsplug
+      pluggino:
+        specifier: 0.0.1-alpha.1
+        version: 0.0.1-alpha.1
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -4002,6 +4002,9 @@ packages:
 
   pkg-types@2.1.0:
     resolution: {integrity: sha512-wmJwA+8ihJixSoHKxZJRBQG1oY8Yr9pGLzRmSsNms0iNWyHHAlZCa7mmKiFR10YPZuz/2k169JiS/inOjBCZ2A==}
+
+  pluggino@0.0.1-alpha.1:
+    resolution: {integrity: sha512-41c4u5dqHBoLhcBUMljSflPaAbklqP2BLNtJdreWUM6gm4I7+mwDIG370bcuFBsThrcCs7eeO1MVaimJRQ5HoA==}
 
   polka@1.0.0-next.22:
     resolution: {integrity: sha512-a7tsZy5gFbJr0aUltZS97xCkbPglXuD67AMvTyZX7BTDBH384FWf0ZQF6rPvdutSxnO1vUlXM2zSLf5tCKk5RA==}
@@ -9139,6 +9142,8 @@ snapshots:
       confbox: 0.2.2
       exsolve: 1.0.4
       pathe: 2.0.3
+
+  pluggino@0.0.1-alpha.1: {}
 
   polka@1.0.0-next.22:
     dependencies:
