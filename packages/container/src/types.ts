@@ -32,7 +32,7 @@ export interface ApiDefinitionCreator<
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (
       ctx: TStoreApi & TSignalExtension,
-      context: ContainerPluginContext,
+      context: ContainerPluginContext<TStoreApi>,
     ) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
@@ -75,7 +75,7 @@ export type Lazy<T> = () => T;
 
 export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
   name: string;
-  apply(storeApi: TStoreApi, options: ContainerPluginContext): R;
+  apply(storeApi: TStoreApi, options: ContainerPluginContext<TStoreApi>): R;
 };
 
 export type PluginOf<Callback> = Callback;
@@ -95,11 +95,12 @@ export interface PluginHooks<T extends GenericStoreApi> {
   onDestroy: (consumer: HookConsumerFunction<T>) => void;
 }
 
-export type ContainerPluginContext = PluginContext & {
-  inject: <TStoreDefinition extends StoreApiDefinition<any, any>>(
-    storeDefinition: TStoreDefinition,
-  ) => ExtractStore<TStoreDefinition>;
-};
+export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
+  PluginContext & {
+    inject: <TStoreDefinition extends StoreApiDefinition<any>>(
+      storeDefinition: TStoreDefinition,
+    ) => ExtractStore<TStoreDefinition>;
+  };
 
 export type PluginCreatorFunction<
   TStoreApi extends GenericStoreApi,

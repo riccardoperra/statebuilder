@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
-import { $CREATOR, create, makePlugin } from '~/api';
+import { $CREATOR, create, makePlugin } from '../src';
 import { createRoot, createSignal, Setter } from 'solid-js';
 import { Container } from '@statebuilder/container';
 import { SetStoreFunction } from 'solid-js/store';
@@ -129,6 +129,8 @@ describe('extend', () => {
       .extend(withProxyCommands<{ increment: void }>())
       .extend(withReduxDevtools({ storeName: 'store' }))
       .extend((ctx) => {
+        ctx.hold(ctx.commands.increment, (a, { state }) => {});
+
         expectTypeOf(ctx.set).toEqualTypeOf<Setter<number>>();
         expectTypeOf(ctx).toHaveProperty('commands');
         expectTypeOf(ctx).toHaveProperty('asyncAction');

@@ -42,7 +42,7 @@ export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (
       ctx: T & E,
-      context: ContainerPluginContext,
+      context: ContainerPluginContext<T>,
     ) => TExtendedSignal,
   ): ApiDefinitionCreator<T, TExtendedSignal & Omit<E, keyof TExtendedSignal>> {
     this.composer.with(createPlugin as any);

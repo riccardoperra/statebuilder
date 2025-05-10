@@ -1,14 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  $CREATOR,
-  $PLUGIN,
+  Container,
   create,
+  GenericStoreApi,
   makePlugin,
   resolve,
 } from '@statebuilder/container';
 import { createRoot, createSignal, getOwner } from 'solid-js';
-import { Container } from '@statebuilder/container';
-import { GenericStoreApi } from '@statebuilder/container';
 import { SetStoreFunction } from 'solid-js/store';
 import { defineStore } from '~/solid/store';
 import { defineSignal } from '~/solid/signal';

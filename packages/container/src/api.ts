@@ -26,7 +26,11 @@ import { Container } from './container';
 import { ResolvedPluginContext } from './resolved-plugin-context';
 import { StateBuilderError } from './error';
 
-import { $PLUGIN, type CreatePluginOptions } from 'pluggino';
+import {
+  $PLUGIN,
+  type CreatePluginOptions,
+  type Plugin as $Plugin,
+} from 'pluggino';
 
 import { createPlugin, resolve as $resolve, type Plugin } from './system';
 
@@ -126,8 +130,11 @@ export interface PluginCreatorOptions extends CreatePluginOptions {
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
 function _makePlugin<
-  TCallback extends (store: any, context: ContainerPluginContext) => any,
->(pluginCallback: TCallback, options: PluginCreatorOptions): Plugin<TCallback> {
+  TCallback extends <S extends GenericStoreApi>(
+    store: S,
+    context: ContainerPluginContext<S>,
+  ) => unknown,
+>(pluginCallback: TCallback, options: PluginCreatorOptions): TCallback {
   return createPlugin(pluginCallback as any, {
     name: options.name,
     dependencies: options.dependencies ?? [],

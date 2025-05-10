@@ -63,11 +63,11 @@ export function withProxyCommands<T extends Record<string, unknown>>(
 
       if (options?.devtools) {
         const { storeName } = options.devtools;
-        context.hooks.onInit(() => {
+        context.onMount(() => {
           const unsubscribe = applyDevtools(store, storeWithProxy, {
             storeName,
           });
-          context.hooks.onDestroy(() => unsubscribe());
+          context.onDispose(() => unsubscribe());
         });
       }
 
