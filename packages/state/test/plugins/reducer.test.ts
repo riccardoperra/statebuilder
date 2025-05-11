@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { defineStore } from '~/solid/store';
 import { withReducer } from '~/plugins/reducer';
 import { Container } from '@statebuilder/container';
 import { defineSignal } from '~/solid/signal';
