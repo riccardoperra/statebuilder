@@ -1,4 +1,4 @@
-export { Container } from './container';
+export * from '@statebuilder/container';
 
 export {
   StateProvider,
@@ -8,20 +8,6 @@ export {
   defineStore,
   ɵdefineResource,
   ɵWithResourceStorage,
-} from './solid';
+} from './solid/index';
 
-export type { Signal, Store, Resource } from './solid';
-
-export { create, makePlugin } from './api';
-
-export type {
-  GenericStoreApi,
-  ExtractStore,
-  StoreApiDefinition,
-  ApiDefinitionCreator,
-  GetStoreApiSetter,
-  GetStoreApiState,
-  Plugin,
-} from './types';
-
-export { $SB_DEV } from './dev';
+export type { Signal, Store, Resource } from './solid/index';

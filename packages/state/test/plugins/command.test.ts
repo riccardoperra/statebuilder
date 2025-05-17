@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { defineStore } from '~/solid/store';
-import { createCommand, withProxyCommands } from '~/plugins/commands';
-import { Container } from '~/container';
+import { defineStore } from '../../src';
+import { createCommand, withProxyCommands } from '../../src/plugins/commands';
+import { Container } from '../../src';
 
 type Commands = {
   setFirstName: string;

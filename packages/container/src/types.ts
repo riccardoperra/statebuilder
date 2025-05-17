@@ -1,7 +1,21 @@
-import { $CREATOR, $PLUGIN } from '~/api';
-import { Owner } from 'solid-js';
+/*
+ * Copyright 2025 Riccardo Perra
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-export type Wrap<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
+import { $CREATOR } from './api';
+import type { Composer, PluginContext } from 'pluggino';
 
 export type GenericStoreApi<
   T = any,
@@ -18,14 +32,12 @@ export interface ApiDefinitionCreator<
   extend<TExtendedSignal extends {} | void>(
     createPlugin: (
       ctx: TStoreApi & TSignalExtension,
-      context: PluginContext<TStoreApi>,
+      context: ContainerPluginContext<TStoreApi>,
     ) => TExtendedSignal,
   ): ApiDefinitionCreator<
     TStoreApi,
     TExtendedSignal & Omit<TSignalExtension, keyof TExtendedSignal>
   >;
-
-  provide(): ExtractStore<this>;
 }
 
 export interface ApiDefinitionInternalCreator<
@@ -33,11 +45,9 @@ export interface ApiDefinitionInternalCreator<
   TStoreExtension = unknown,
 > {
   name: string;
-  plugins: Array<
-    | PluginCreatorFunction<TStoreApi, TStoreExtension>
-    | Plugin<TStoreApi, TStoreExtension>
-  >;
   factory: () => TStoreApi;
+  composer: Composer<{}>;
+  __tStoreExtension?: TStoreExtension;
 }
 
 export interface StoreApiDefinition<
@@ -63,15 +73,9 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
 
 export type Lazy<T> = () => T;
 
-export type PluginMetadata = {
-  name: string;
-  dependencies: string[];
-};
-
 export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
-  [$PLUGIN]?: PluginMetadata;
   name: string;
-  apply(storeApi: TStoreApi, options: PluginContext): R;
+  apply(storeApi: TStoreApi, options: ContainerPluginContext<TStoreApi>): R;
 };
 
 export type PluginOf<Callback> = Callback;
@@ -91,15 +95,12 @@ export interface PluginHooks<T extends GenericStoreApi> {
   onDestroy: (consumer: HookConsumerFunction<T>) => void;
 }
 
-export type PluginContext<T extends GenericStoreApi = GenericStoreApi> = {
-  plugins: readonly Plugin<any, any>[];
-  metadata: Map<string, unknown>;
-  hooks: PluginHooks<T>;
-
-  inject<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    storeDefinition: TStoreDefinition,
-  ): ExtractStore<TStoreDefinition>;
-};
+export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
+  PluginContext & {
+    inject: <TStoreDefinition extends StoreApiDefinition<any>>(
+      storeDefinition: TStoreDefinition,
+    ) => ExtractStore<TStoreDefinition>;
+  };
 
 export type PluginCreatorFunction<
   TStoreApi extends GenericStoreApi,

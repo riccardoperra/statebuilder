@@ -5,9 +5,12 @@ import {
   getOwner,
   useContext,
 } from 'solid-js';
-import { Container } from '~/container';
-import { ExtractStore, StoreApiDefinition } from '~/types';
-import { StateBuilderError } from '~/error';
+import {
+  Container,
+  ExtractStore,
+  StateBuilderError,
+  StoreApiDefinition,
+} from '@statebuilder/container';
 
 const StateProviderContext = createContext<Container>();
 

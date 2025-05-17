@@ -8,8 +8,8 @@ import {
   Setter,
   Signal,
 } from 'solid-js';
-import { GenericStoreApi } from '~/types';
-import { create } from '~/api';
+import type { GenericStoreApi } from '@statebuilder/container';
+import { create } from '@statebuilder/container';
 
 export interface ResourceActions<T> {
   set: InternalResourceActions<T>['mutate'];

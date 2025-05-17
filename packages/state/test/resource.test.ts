@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { $CREATOR } from '~/api';
-import { Container } from '~/container';
+import { $CREATOR, Container } from '../src';
 import { ɵdefineResource, ɵWithResourceStorage } from '~/solid/resource';
 import { createResource, createRoot } from 'solid-js';
-import { defineSignal } from '~/solid';
+import { defineSignal } from '../src/solid';
 
 interface Todo {
   id: number;

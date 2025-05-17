@@ -4,7 +4,7 @@ import {
   MapCommandToActions,
   StateCommand,
 } from '~/plugins/commands/command';
-import { GenericStoreApi } from '~/types';
+import { GenericStoreApi } from '@statebuilder/container';
 import { ExecuteCommandCallback } from '~/plugins/commands/notifier';
 import { ObservableObserver } from 'solid-js';
 

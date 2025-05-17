@@ -1,5 +1,5 @@
 import { mergeProps, untrack } from 'solid-js';
-import { GenericStoreApi } from '~/types';
+import { GenericStoreApi } from '@statebuilder/container';
 import { StoreWithProxyCommands } from '~/plugins/commands/types';
 import { isAfterCommand } from '~/plugins/commands/notifier';
 
@@ -32,7 +32,7 @@ declare global {
 let globalState: Record<string, unknown> = {};
 let globalStoreName = 'statebuilder/commands';
 let devTools: ReturnType<
-  typeof window['__REDUX_DEVTOOLS_EXTENSION__']['connect']
+  (typeof window)['__REDUX_DEVTOOLS_EXTENSION__']['connect']
 >;
 
 export function applyDevtools(

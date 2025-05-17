@@ -1,5 +1,5 @@
 import { batch, ObservableObserver, untrack } from 'solid-js';
-import { GenericStoreApi } from '~/types';
+import { GenericStoreApi } from '@statebuilder/container';
 import { createTrackObserver } from './track';
 import {
   CommandPayload,

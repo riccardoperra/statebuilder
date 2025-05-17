@@ -1,55 +1,13 @@
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
-import { $CREATOR, create, makePlugin } from '~/api';
-import { createRoot, createSignal, Setter } from 'solid-js';
-import { Container } from '~/container';
+import { describe, expectTypeOf, test, vi } from 'vitest';
+import { create, makePlugin } from '../src';
+import { Setter } from 'solid-js';
+import { GenericStoreApi } from '@statebuilder/container';
 import { SetStoreFunction } from 'solid-js/store';
 import { defineSignal, Signal } from '~/solid/signal';
 import { defineStore, Store, StoreValue } from '~/solid/store';
-import { GenericStoreApi } from '~/types';
 import { withProxyCommands } from '~/plugins/commands';
 import { withReduxDevtools } from '~/plugins/devtools';
 import { withAsyncAction } from '~/plugins/asyncAction';
-
-const container = createRoot(() => Container.create());
-
-describe('create', () => {
-  test('custom counter signal that accepts only positive numbers', () => {
-    const notify = vi.fn().mockName('set callback mock');
-
-    const creatorFn = create('custom', (initialValue?: number) => {
-      const [state, setState] = createSignal(initialValue ?? 0);
-      return Object.assign(state, {
-        set: (value: number) => {
-          if (value < 0) return;
-          notify();
-          setState(value);
-        },
-      });
-    });
-
-    const definition = creatorFn(1).extend((ctx) => ({
-      decrement: () => ctx.set(ctx() - 1),
-    }));
-
-    expect(definition[$CREATOR].plugins).length(1);
-    expect(definition[$CREATOR].name).toEqual('custom-1');
-
-    const state = container.get(definition);
-
-    expect(state()).toEqual(1);
-
-    state.set(0);
-
-    expect(state()).toEqual(0);
-
-    state.decrement();
-    state.set(-1);
-
-    expect(state()).toEqual(0);
-
-    expect(notify).toHaveBeenCalledTimes(1);
-  });
-});
 
 describe('makePlugin', () => {
   test('make plugin supported only by store definition', () => {
@@ -129,6 +87,8 @@ describe('extend', () => {
       .extend(withProxyCommands<{ increment: void }>())
       .extend(withReduxDevtools({ storeName: 'store' }))
       .extend((ctx) => {
+        ctx.hold(ctx.commands.increment, (a, { state }) => {});
+
         expectTypeOf(ctx.set).toEqualTypeOf<Setter<number>>();
         expectTypeOf(ctx).toHaveProperty('commands');
         expectTypeOf(ctx).toHaveProperty('asyncAction');
@@ -151,6 +111,7 @@ describe('extend', () => {
         set2: ctx.set,
       };
     }
+
     const withPlugin = makePlugin((state) => plugin(state), {
       name: 'plugin',
     });
