@@ -7,7 +7,7 @@ describe('Container', () => {
     createRoot(() => {
       const owner = getOwner()!;
       const container = Container.create(owner);
-      assert.instanceOf(container, Container);
+      assert(container instanceof Container);
     }));
 
   it('should create state', () =>

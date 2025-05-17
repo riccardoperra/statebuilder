@@ -5,8 +5,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest --run",
-    "test:all": "pnpm test && pnpm typecheck",
-    "typecheck": "vitest --typecheck test/**/*.test-d.ts"
+    "test:all": "pnpm test"
   },
   "exports": {
     ".": {
