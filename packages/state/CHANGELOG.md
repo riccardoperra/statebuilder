@@ -1,5 +1,11 @@
 # statebuilder
 
+## 0.8.1
+
+### Patch Changes
+
+- 9796bab6794d76eb53ec203407d4094594049c2e: Fix memory leak when unmount solid component
+
 ## 0.8.0
 
 ### Minor Changes
