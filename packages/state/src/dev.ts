@@ -21,3 +21,12 @@ export function __devRegisterContainer(container: Container) {
     console.groupEnd();
   }
 }
+
+export function __devDestroyContainer(container: Container) {
+  containers.splice(containers.indexOf(container), 1);
+  if ('window' in globalThis) {
+    console.groupCollapsed(`[statebuilder] - Register container`);
+    console.log(containers);
+    console.groupEnd();
+  }
+}

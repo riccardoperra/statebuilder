@@ -3,6 +3,7 @@ import {
   createContext,
   FlowProps,
   getOwner,
+  onCleanup,
   useContext,
 } from 'solid-js';
 import { Container } from '~/container';
@@ -20,6 +21,10 @@ export function StateProvider(props: FlowProps) {
   }
   const parentContainer = useContext(StateProviderContext);
   const container = Container.create(owner, parentContainer);
+  onCleanup(() => {
+    container.destroy();
+  });
+
   return createComponent(StateProviderContext.Provider, {
     value: container,
     get children() {
