@@ -25,7 +25,7 @@ export type CreatePluginOptions = {
   name: string;
   onBeforeMount?: () => void;
   onMount?: () => void;
-  onDestroy?: () => void;
+  onDispose?: () => void;
 };
 
 /**
@@ -68,7 +68,7 @@ export const createPlugin: CreatePluginFactory = function createPlugin<
     name: options.name,
     onBeforeMount: options.onBeforeMount,
     onMount: options.onMount,
-    onDestroy: options.onDestroy,
+    onDispose: options.onDispose,
   };
 
   const plugin = Object.assign(composer, {
