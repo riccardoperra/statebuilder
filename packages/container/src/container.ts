@@ -18,7 +18,7 @@ import { getOwner, type Owner } from 'solid-js';
 import { StateBuilderError } from './error';
 import { runInSubRoot } from './root';
 import { $CREATOR, resolve } from './api';
-import { $SB_DEV, __devRegisterContainer } from './dev';
+import { $SB_DEV, __devDestroyContainer, __devRegisterContainer } from './dev';
 import type {
   ExtractStore,
   GenericStoreApi,
@@ -43,6 +43,11 @@ export class Container {
       );
     }
     return new Container(resolvedOwner, parentContainer);
+  }
+
+  destroy(): void {
+    this.states.clear();
+    $SB_DEV && __devDestroyContainer(this);
   }
 
   remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
