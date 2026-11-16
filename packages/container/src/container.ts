@@ -27,7 +27,10 @@ import type {
 } from './types';
 
 export class Container {
-  private readonly states = new Map<string, GenericStoreApi>();
+  private readonly states = new Map<
+    StoreApiDefinition<any, any>,
+    GenericStoreApi
+  >();
 
   protected constructor(
     private readonly owner: Owner,
@@ -54,7 +57,7 @@ export class Container {
   remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
   ): void {
-    this.states.delete(state[$CREATOR].name);
+    this.states.delete(state);
   }
 
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
@@ -67,13 +70,12 @@ export class Container {
       });
     }
     try {
-      const name = state[$CREATOR].name;
-      const instance = this.#retrieveInstance(name);
+      const instance = this.#retrieveInstance(state);
       if (instance) {
         return instance as TypedStore;
       }
       const store = this.#resolveStore(this.owner, state);
-      this.states.set(name, store!);
+      this.states.set(state, store!);
       return store as TypedStore;
     } catch (exception) {
       if (exception instanceof Error) throw exception;
@@ -91,14 +93,16 @@ export class Container {
     return runInSubRoot(() => resolve(state, this), owner);
   }
 
-  #retrieveInstance(name: string): GenericStoreApi | null {
-    let instance: GenericStoreApi | null = this.states.get(name) ?? null;
+  #retrieveInstance(
+    definition: StoreApiDefinition<any, any>,
+  ): GenericStoreApi | null {
+    let instance: GenericStoreApi | null = this.states.get(definition) ?? null;
     if (instance) {
       return instance;
     }
     let currentParent = this.parent;
     while (currentParent) {
-      instance = currentParent.states.get(name) ?? null;
+      instance = currentParent.states.get(definition) ?? null;
       if (!!instance) {
         return instance;
       }

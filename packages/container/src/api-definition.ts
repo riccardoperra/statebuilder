@@ -24,19 +24,14 @@ import type {
 import { $CREATOR } from './symbols';
 import { Composer } from './pluggino';
 
-export class ApiDefinition<T extends GenericStoreApi, E extends {}>
-  implements ApiDefinitionCreator<T, E>
-{
+export class ApiDefinition<
+  T extends GenericStoreApi,
+  E extends {},
+> implements ApiDefinitionCreator<T, E> {
   readonly [$CREATOR]: ApiDefinitionInternalCreator<T, E>;
 
-  composer = new Composer();
-
-  constructor(name: string, factory: () => T) {
-    this[$CREATOR] = {
-      name,
-      factory,
-      composer: this.composer,
-    };
+  constructor(name: string, factory: () => T, composer = new Composer<{}>()) {
+    this[$CREATOR] = { name, factory, composer };
   }
 
   extend<TExtendedSignal extends {} | void>(
@@ -45,11 +40,7 @@ export class ApiDefinition<T extends GenericStoreApi, E extends {}>
       context: ContainerPluginContext<T>,
     ) => TExtendedSignal,
   ): ApiDefinitionCreator<T, TExtendedSignal & Omit<E, keyof TExtendedSignal>> {
-    this.composer.with(createPlugin as any);
-
-    return this as unknown as ApiDefinitionCreator<
-      T,
-      TExtendedSignal & Omit<E, keyof TExtendedSignal>
-    >;
+    const { name, factory, composer } = this[$CREATOR];
+    return new ApiDefinition(name, factory, composer.with(createPlugin as any));
   }
 }

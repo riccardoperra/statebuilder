@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import { isPlugin } from "./plugin.js";
-import { createPlugin } from "./create-plugin.js";
-import type { $PLUGIN, Plugin, PluginContext } from "./plugin.js";
+import { isPlugin } from './plugin.js';
+import { createPlugin } from './create-plugin.js';
+import type { $PLUGIN, Plugin, PluginContext } from './plugin.js';
 
 export class Composer<TObject extends {}> implements Composable<TObject> {
-  readonly context: ComposerContext = {
-    plugins: [],
-  };
+  readonly context: ComposerContext;
+
+  constructor(plugins: ReadonlyArray<Plugin> = []) {
+    this.context = { plugins };
+  }
 
   with<T extends {} | void>(
     composerFn: (
       o: TObject,
       context: PluginContext,
     ) => Exclude<T, typeof $PLUGIN> | void,
-  ): void extends T ? this : Composer<TObject & T> {
-    const plugin = composePlugin(composerFn);
-    registerPlugin.call(this.context, plugin);
-    return this as void extends T ? this : Composer<TObject & T>;
+  ): Composer<void extends T ? TObject : TObject & T> {
+    return new Composer([...this.context.plugins, composePlugin(composerFn)]);
   }
 }
 
@@ -43,7 +43,7 @@ export interface Composable<TObject extends {}> {
       o: TObject,
       context: PluginContext,
     ) => Exclude<T, typeof $PLUGIN> | void,
-  ) => void extends T ? this : Composable<TObject & T>;
+  ) => Composable<void extends T ? TObject : TObject & T>;
 }
 
 export function composePlugin(
@@ -60,13 +60,5 @@ export function composePlugin(
 }
 
 export interface ComposerContext {
-  readonly plugins: Array<Plugin>;
-}
-
-export function registerPlugin<T extends Plugin>(
-  this: ComposerContext,
-  plugin: T,
-): ComposerContext {
-  this.plugins.push(plugin);
-  return this;
+  readonly plugins: ReadonlyArray<Plugin>;
 }

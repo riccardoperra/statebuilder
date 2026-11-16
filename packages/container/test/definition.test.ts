@@ -19,9 +19,9 @@ describe('extend', () => {
 
     inContainer((container) => {
       expect(Object.keys(container.get(base))).not.toContain('a');
-      expect(container.get(withA)).toMatchObject({ a: 'a' });
+      expect(container.get(withA).a).toBe('a');
       expect(Object.keys(container.get(withA))).not.toContain('b');
-      expect(container.get(withB)).toMatchObject({ b: 'b' });
+      expect(container.get(withB).b).toBe('b');
       expect(Object.keys(container.get(withB))).not.toContain('a');
     });
   });
