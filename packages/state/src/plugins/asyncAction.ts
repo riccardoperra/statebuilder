@@ -19,9 +19,11 @@ export interface AsyncAction<T, R> {
 
   (payload?: void): void;
 
-  loading: boolean;
+  readonly loading: boolean;
 
-  latestValue(): R | undefined;
+  readonly latestValue: R | undefined;
+
+  readonly error: unknown;
 }
 
 export function makeAsyncAction<T, R = void>(
@@ -29,13 +31,16 @@ export function makeAsyncAction<T, R = void>(
 ): AsyncAction<T, R> {
   const [loading, setLoading] = createSignal<boolean>(false);
   const [latestValue, setLatestValue] = createSignal<R>();
+  const [error, setError] = createSignal<unknown>();
 
   function notify(state?: T | void) {
     setLoading(true);
+    setError(undefined);
     effectGeneratorCallback(state as T)
-      .then((result) => {
-        setLatestValue(() => result);
-      })
+      .then(
+        (result) => setLatestValue(() => result),
+        (reason) => setError(() => reason),
+      )
       .finally(() => setLoading(false));
   }
 
@@ -48,6 +53,11 @@ export function makeAsyncAction<T, R = void>(
     latestValue: {
       get() {
         return latestValue();
+      },
+    },
+    error: {
+      get() {
+        return error();
       },
     },
   });
