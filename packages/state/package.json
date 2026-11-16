@@ -56,6 +56,12 @@
       "node": "./dist/plugins/asyncAction.js",
       "default": "./dist/plugins/asyncAction.js"
     },
+    "./commands": {
+      "import": "./dist/plugins/commands.js",
+      "browser": "./dist/plugins/commands.js",
+      "node": "./dist/plugins/commands.js",
+      "default": "./dist/plugins/commands.js"
+    },
     "./devtools": {
       "import": "./dist/plugins/devtools.js",
       "browser": "./dist/plugins/devtools.js",
@@ -82,6 +88,9 @@
       ],
       "reducer": [
         "dist/plugins/reducer.d.ts"
+      ],
+      "commands": [
+        "dist/plugins/commands.d.ts"
       ]
     }
   },
@@ -111,6 +120,7 @@
   "dependencies": {
     "@babel/core": "^7.29.13",
     "@babel/types": "^7.29.14",
+    "@solid-primitives/event-bus": "^1.1.4",
     "consola": "^3.4.2"
   },
   "peerDependenciesMeta": {
