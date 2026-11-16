@@ -16,6 +16,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build
         run: pnpm build
+      - name: Smoke
+        run: pnpm --filter statebuilder smoke
       - name: Test
         run: pnpm test
       - name: Typecheck

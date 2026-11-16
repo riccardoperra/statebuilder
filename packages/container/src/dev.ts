@@ -17,7 +17,12 @@
 import type { Container } from './container.js';
 
 // @ts-expect-error No types
-export const $SB_DEV = import.meta.env.STATEBUILDER_DEV || false;
+const env: unknown = import.meta.env;
+
+// @ts-expect-error No types
+const flag: unknown = env ? import.meta.env.STATEBUILDER_DEV : false;
+
+export const $SB_DEV: boolean = flag === true || flag === 'true';
 
 const containers: Container[] = [];
 
