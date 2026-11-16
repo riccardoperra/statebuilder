@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defineStore } from '../../src';
 import { createCommand, withProxyCommands } from '../../src/plugins/commands';
 import { Container } from '../../src';
+import { createRoot } from 'solid-js';
 
 type Commands = {
   setFirstName: string;
@@ -93,5 +94,40 @@ describe('proxyCommand', () => {
         return ctx.actions;
       });
     container.get(config);
+  });
+});
+
+describe('command payload', () => {
+  function setup() {
+    const definition = defineStore(() => ({ value: null as unknown })).extend(
+      withProxyCommands<{ setValue: unknown }>(),
+    );
+    return createRoot(() => Container.create().get(definition));
+  }
+
+  it('dispatches a payload that JSON cannot serialize', () => {
+    const store = setup();
+    const circular: { self?: unknown } = {};
+    circular.self = circular;
+    let received: unknown;
+    store.hold(store.commands.setValue, (payload) => {
+      received = payload;
+    });
+
+    store.actions.setValue(circular);
+
+    expect(received).toBe(circular);
+  });
+
+  it('keeps the payload identity in the @@AFTER command', () => {
+    const store = setup();
+    const payload = { date: new Date(0) };
+    const after: any[] = [];
+    store.watchCommand(/@@AFTER/).subscribe((command) => after.push(command));
+
+    store.actions.setValue(payload);
+
+    expect(after).toHaveLength(1);
+    expect(after[0].correlate.consumerValue).toBe(payload);
   });
 });
