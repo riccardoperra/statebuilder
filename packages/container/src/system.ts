@@ -18,7 +18,12 @@ import type { Composable, SystemFactoryTypes } from './pluggino';
 import { $PLUGIN, createSystem, type Plugin as $Plugin } from './pluggino';
 import type { PluginCreatorOptions } from './api';
 import type { Container } from './container';
-import type { ContainerPluginContext, StoreApiDefinition } from './types';
+import type {
+  ContainerPluginContext,
+  GenericStoreApi,
+  StoreApiDefinition,
+} from './types';
+import type { StoreWrites } from './writes';
 import { StateBuilderError } from './error';
 import { $CREATOR } from './symbols';
 
@@ -33,25 +38,38 @@ export type Plugin<
 export interface ResolveArgs {
   container: Container | undefined;
   definition: StoreApiDefinition<any, any>;
+  writes: StoreWrites;
 }
 
 export type StatebuilderSystem = SystemFactoryTypes<
   PluginCreatorOptions,
   Composable<any>,
-  Pick<ContainerPluginContext<any>, 'inject'>,
+  Pick<ContainerPluginContext<any>, 'inject' | 'onSet' | 'runInAction'>,
   Plugin,
   ResolveArgs
 >;
 
 export const { resolve, createPlugin } = createSystem<StatebuilderSystem>({
-  createContext: ({ container }) => ({
+  createContext: ({ container, writes }) => ({
     inject: (definition) => {
       if (!container) {
         throw new StateBuilderError('No container set in current context.');
       }
       return container.get(definition);
     },
+    onSet: writes.onSet,
+    runInAction: writes.runInAction,
   }),
+  afterPluginMount: (_, { result, object }, __, { writes }) => {
+    if (
+      typeof (result as Partial<GenericStoreApi> | undefined)?.set !==
+      'function'
+    ) {
+      return;
+    }
+    const store = object as GenericStoreApi;
+    store.set = writes.wrap(store.set);
+  },
   beforePluginMount: (_, plugin, index, { definition }) => {
     const dependencies = plugin[$PLUGIN].dependencies;
     if (!dependencies) return;

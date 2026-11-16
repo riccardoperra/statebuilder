@@ -26,6 +26,7 @@ import type { Container } from './container';
 import type { CreatePluginOptions } from './pluggino';
 import { createPlugin as $createPlugin, resolve as $resolve } from './system';
 import { $CREATOR } from './symbols';
+import { createStoreWrites } from './writes';
 
 export interface CreateOptions {
   key: string;
@@ -68,13 +69,17 @@ export function resolve<
 >(definition: TDefinition, container?: Container) {
   const { factory, composer } = definition[$CREATOR];
   const resolvedStore = factory();
+  const writes = createStoreWrites(resolvedStore);
+  resolvedStore.set = writes.wrap(resolvedStore.set);
   const composedObject = $resolve(composer, resolvedStore, {
     container,
     definition,
+    writes,
   });
 
   onCleanup(() => {
     composedObject.dispose();
+    writes.clear();
     container?.remove(definition);
   });
 

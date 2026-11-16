@@ -4,8 +4,8 @@ export default defineConfig([
   {
     entry: {
       index: 'src/index.ts',
+      'plugins/actions': 'src/plugins/actions.ts',
       'plugins/asyncAction': 'src/plugins/asyncAction.ts',
-      'plugins/commands': 'src/plugins/commands/index.ts',
       'plugins/devtools': 'src/plugins/devtools/index.ts',
       'plugins/reducer': 'src/plugins/reducer/index.ts',
     },

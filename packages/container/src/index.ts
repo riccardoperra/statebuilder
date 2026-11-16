@@ -36,6 +36,9 @@ export type {
   GetStoreApiSetter,
   GetStoreApiState,
   ContainerPluginContext,
+  ActionMeta,
+  SetMeta,
+  SetListener,
 } from './types';
 
 export type { PluginContext } from './pluggino';

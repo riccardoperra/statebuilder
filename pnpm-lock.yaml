@@ -242,9 +242,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.14
         version: 7.29.14
-      '@solid-primitives/event-bus':
-        specifier: ^1.1.4
-        version: 1.1.4(solid-js@1.9.19)
       consola:
         specifier: ^3.4.2
         version: 3.4.2
@@ -1058,16 +1055,6 @@ packages:
 
   '@shikijs/vscode-textmate@10.1.0':
     resolution: {integrity: sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ==}
-
-  '@solid-primitives/event-bus@1.1.4':
-    resolution: {integrity: sha512-5aYvB/kLiWhL6TmpH/QvFRjwIArknEEHDzxA7hvnJZ+/BFixGeB7yqWEJORYeig7kOzC+XqUbjDmpJhHriP4EA==}
-    peerDependencies:
-      solid-js: ^1.6.12
-
-  '@solid-primitives/utils@6.4.1':
-    resolution: {integrity: sha512-ISSB5QX1qP2ynrheIpYwc4oKR5Ny4siNuUyf1qZniy+Il+p/PtDB0QK1Dnle8noiHpwRD3gpPdubOC3qI/Zamg==}
-    peerDependencies:
-      solid-js: ^1.6.12
 
   '@solidjs/meta@0.29.8':
     resolution: {integrity: sha512-DkK5odQmnNJ/JlDFPf4rV6RaYN+G6ZtJyyb8jPmKAFT6HpRWnajYq4JaiDm/9UdY4rLKLVv+Q4ilkG1CD4x7mw==}
@@ -2893,15 +2880,6 @@ snapshots:
       '@types/hast': 3.0.5
 
   '@shikijs/vscode-textmate@10.1.0': {}
-
-  '@solid-primitives/event-bus@1.1.4(solid-js@1.9.19)':
-    dependencies:
-      '@solid-primitives/utils': 6.4.1(solid-js@1.9.19)
-      solid-js: 1.9.19
-
-  '@solid-primitives/utils@6.4.1(solid-js@1.9.19)':
-    dependencies:
-      solid-js: 1.9.19
 
   '@solidjs/meta@0.29.8(solid-js@1.9.19)':
     dependencies:

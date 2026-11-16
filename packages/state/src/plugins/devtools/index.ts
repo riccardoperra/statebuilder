@@ -1,86 +1,79 @@
-import { createPlugin } from '@statebuilder/container';
 import { untrack } from 'solid-js';
-import { GenericStoreApi } from '@statebuilder/container';
+import { createPlugin } from '@statebuilder/container';
 
-interface WithReduxDevtoolsOptions {
-  storeName: string;
+export interface WithDevtoolsOptions {
+  /** The instance name shown in Redux DevTools. */
+  name: string;
+}
+
+export interface DevtoolsMessage {
+  type: string;
+  payload: { type: string };
+  state: string;
+}
+
+export interface DevtoolsConnection {
+  init(state: unknown): void;
+  send(action: { type: string; payload?: unknown }, state: unknown): void;
+  subscribe(listener: (message: DevtoolsMessage) => void): () => void;
+  unsubscribe(): void;
+}
+
+export interface ReduxDevtoolsExtension {
+  connect(options: { name: string }): DevtoolsConnection;
 }
 
 declare global {
   interface Window {
-    __REDUX_DEVTOOLS_EXTENSION__: {
-      connect(options: any): {
-        send(
-          data: { type: string } & Record<string, any>,
-          state: Record<string, any>,
-        ): void;
-        init(state: Record<string, any>): void;
-        unsubscribe(): void;
-        subscribe(
-          cb: (message: {
-            type: string;
-            payload: { type: string };
-            state: string;
-          }) => void,
-        ): () => void;
-      };
-    };
+    __REDUX_DEVTOOLS_EXTENSION__?: ReduxDevtoolsExtension;
   }
 }
 
-export function withReduxDevtools(options: WithReduxDevtoolsOptions) {
+const TIME_TRAVEL = new Set(['JUMP_TO_STATE', 'JUMP_TO_ACTION', 'ROLLBACK']);
+
+/**
+ * Connects the store to Redux DevTools. Each write is sent with the name and
+ * args of the action that did it, or as `set`. Does nothing when the
+ * extension is not installed.
+ */
+export function withDevtools(options: WithDevtoolsOptions) {
   return createPlugin(
-    <S extends GenericStoreApi>(storeApi: S) => {
-      if (!globalThis.window) {
-        return;
-      }
-      const { __REDUX_DEVTOOLS_EXTENSION__ } = window;
+    (store, context) => {
+      const extension = globalThis.window?.__REDUX_DEVTOOLS_EXTENSION__;
+      if (!extension) return;
 
-      if (!__REDUX_DEVTOOLS_EXTENSION__) return;
+      const devtools = extension.connect({ name: options.name });
+      devtools.init(untrack(store));
 
-      const devTools = __REDUX_DEVTOOLS_EXTENSION__.connect({
-        name: options.storeName,
+      let travelling = false;
+      const offSet = context.onSet((value, meta) => {
+        if (travelling) return;
+        devtools.send(
+          {
+            type: meta.action ? meta.action.name : 'set',
+            payload: meta.action?.args,
+          },
+          value,
+        );
       });
 
-      const originalSet = storeApi.set;
-
-      // TODO: add state initializer with hook
-      devTools.init(untrack(storeApi));
-
-      const set: typeof storeApi.set = (...args: any[]) => {
-        originalSet(...args);
-        devTools.send(
-          {
-            type: 'Update',
-            payload: args,
-          },
-          untrack(storeApi),
-        );
-      };
-
-      devTools.subscribe((message) => {
-        if (message.type === 'DISPATCH') {
-          const payloadType = message.payload.type;
-          // TODO: handle commit type?
-
-          if (
-            payloadType === 'JUMP_TO_STATE' ||
-            payloadType === 'JUMP_TO_ACTION' ||
-            payloadType === 'ROLLBACK'
-          ) {
-            const state = JSON.parse(message.state);
-            originalSet(() => state);
-          }
+      const offMessage = devtools.subscribe((message) => {
+        if (message.type !== 'DISPATCH') return;
+        if (!TIME_TRAVEL.has(message.payload.type)) return;
+        const state = JSON.parse(message.state);
+        travelling = true;
+        try {
+          store.set(() => state);
+        } finally {
+          travelling = false;
         }
       });
 
-      // TODO: add helper to override setter or fix types
-      const result = {
-        set,
-      } as const;
-
-      return result as {};
+      context.onDispose(() => {
+        offSet();
+        offMessage();
+      });
     },
-    { name: 'reduxDevtools' },
+    { name: 'withDevtools' },
   );
 }

@@ -231,6 +231,26 @@ const CountStore = defineSignal(() => 0)
   });
 ```
 
+### Reacting to writes with `onSet`
+
+The plugin context has `onSet`, which runs synchronously after every write to the store, also when a plugin overrides
+`set`. It receives the state after the write and a `meta` object. Use the value it receives instead of reading the
+store again. It returns an unsubscribe function, and the listener is removed when the store is disposed.
+
+```ts
+const withLogger = createPlugin(
+  (store, context) => {
+    context.onSet((value, meta) => {
+      console.log(meta.action?.name ?? 'set', value);
+    });
+  },
+  { name: 'withLogger' },
+);
+```
+
+`meta.action` is the innermost action running on this store when the write happened. A plugin marks its own writes
+with `context.runInAction({ name, args }, fn)`: every write `fn` does synchronously carries that action.
+
 ### Example with reducer
 
 ```ts
@@ -361,10 +381,39 @@ can read any Solid context placed above that provider, and it is disposed with i
 
 // TODO
 
-- [statebuilder/commands](packages/state/src/plugins/commands): state management system with a command-event based approach
+- [statebuilder/actions](packages/state/src/plugins/actions.ts): named actions with `onAction` listeners
 - [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
   observables
-- [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux devtools integration
+- [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux DevTools integration, `withDevtools({ name })`
+
+### Actions
+
+```ts
+import { withActions } from 'statebuilder/actions';
+
+const FrameStore = defineStore(() => ({ padding: 64, visible: true })).extend(
+  withActions((store) => ({
+    setPadding(padding: number) {
+      store.set('padding', padding);
+    },
+    toggleVisibility() {
+      store.set('visible', (visible) => !visible);
+    },
+  })),
+);
+
+const frame = useStore(FrameStore);
+frame.actions.setPadding(32);
+frame.actions.setPadding.silent(32); // runs without calling onAction listeners
+frame.onAction('setPadding', ({ args }) => console.log(args[0]));
+frame.onAction(['setPadding', 'toggleVisibility'], ({ name }) => {});
+frame.onAction((event) => {}, { phase: 'before' }); // default phase is 'after'
+```
+
+Each action runs inside `batch` and `untrack` and returns what the function returns. `after` listeners run when the
+action returns, which for an async action is before its promise settles. Inside an action, `this` is the map of
+actions, so `this.toggleVisibility()` runs as a nested action. `onAction` returns an unsubscribe function and also
+unsubscribes on cleanup of the current owner. Using `withActions` again on the same definition adds to the same map.
 
 ## Demo / Examples
 

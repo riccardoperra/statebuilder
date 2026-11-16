@@ -5,8 +5,8 @@ import {
   StoreProvider,
   useStore,
 } from 'statebuilder';
-import { withProxyCommands } from 'statebuilder/commands';
-import { withReduxDevtools } from 'statebuilder/devtools';
+import { withActions } from 'statebuilder/actions';
+import { withDevtools } from 'statebuilder/devtools';
 import { withAsyncAction } from 'statebuilder/asyncAction';
 import { withReducer } from 'statebuilder/reducer';
 
@@ -41,17 +41,15 @@ const CountStore = defineStore(() => ({
 }))
   .extend(withAsyncAction())
   .extend(
-    withProxyCommands<{ increment: void }>({
-      devtools: { storeName: 'counter' },
-    }),
+    withActions((state) => ({
+      increment() {
+        state.set('count', (count) => count + 1);
+      },
+    })),
   )
-  .extend(withReduxDevtools({ storeName: 'countStore' }))
+  .extend(withDevtools({ name: 'countStore' }))
   .extend(withReducer(appReducer))
   .extend((state, context) => {
-    state.hold(state.commands.increment, () =>
-      state.set('count', (count) => count + 1),
-    );
-
     context.onMount(() => console.log('init'));
     context.onDispose(() => console.log('destroy'));
 

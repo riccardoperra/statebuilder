@@ -77,9 +77,36 @@ export type GetStoreApiSetter<T extends GenericStoreApi> =
 export type GetStoreApiState<T extends GenericStoreApi> =
   T extends GenericStoreApi<infer S, any> ? S : never;
 
+export interface ActionMeta {
+  readonly name: string;
+  readonly args: readonly unknown[];
+}
+
+export interface SetMeta {
+  /** The innermost action running on this store when the write happened. */
+  readonly action?: ActionMeta;
+}
+
+/**
+ * Receives the state after a write. Use `value` instead of reading the store
+ * again: with deferred reactivity a read can be stale until the next flush.
+ */
+export type SetListener<T> = (value: T, meta: SetMeta) => void;
+
 export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
   PluginContext & {
     inject: <TStoreDefinition extends StoreApiDefinition<any>>(
       storeDefinition: TStoreDefinition,
     ) => ExtractStore<TStoreDefinition>;
+    /**
+     * Calls `listener` synchronously after every write to this store, in
+     * registration order. Returns an unsubscribe function. Listeners are
+     * removed when the store is disposed.
+     */
+    onSet: (listener: SetListener<GetStoreApiState<TStoreApi>>) => () => void;
+    /**
+     * Runs `fn` with `action` as the current action of this store, so the
+     * writes `fn` does synchronously reach `onSet` with `meta.action`.
+     */
+    runInAction: <R>(action: ActionMeta, fn: () => R) => R;
   };

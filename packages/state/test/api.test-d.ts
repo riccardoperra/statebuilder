@@ -5,8 +5,8 @@ import { GenericStoreApi } from '@statebuilder/container';
 import { SetStoreFunction } from 'solid-js/store';
 import { defineSignal, Signal } from '~/solid/signal';
 import { defineStore, Store, StoreValue } from '~/solid/store';
-import { withProxyCommands } from '~/plugins/commands';
-import { withReduxDevtools } from '~/plugins/devtools';
+import { withActions } from '~/plugins/actions';
+import { withDevtools } from '~/plugins/devtools';
 import { withAsyncAction } from '~/plugins/asyncAction';
 
 describe('createPlugin', () => {
@@ -84,13 +84,13 @@ describe('extend', () => {
   test('infer with multiple plugin extensions', () => {
     defineSignal(() => 1)
       .extend(withAsyncAction())
-      .extend(withProxyCommands<{ increment: void }>())
-      .extend(withReduxDevtools({ storeName: 'store' }))
+      .extend(withActions((ctx) => ({ increment: () => ctx.set(ctx() + 1) })))
+      .extend(withDevtools({ name: 'store' }))
       .extend((ctx) => {
-        ctx.hold(ctx.commands.increment, (a, { state }) => {});
+        ctx.onAction('increment', ({ args }) => {});
 
         expectTypeOf(ctx.set).toEqualTypeOf<Setter<number>>();
-        expectTypeOf(ctx).toHaveProperty('commands');
+        expectTypeOf(ctx).toHaveProperty('actions');
         expectTypeOf(ctx).toHaveProperty('asyncAction');
       });
   });
