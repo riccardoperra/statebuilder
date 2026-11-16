@@ -1,0 +1,21 @@
+{
+  "name": "@statebuilder/registry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Copy-paste plugins for statebuilder. Not published.",
+  "scripts": {
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.19",
+    "statebuilder": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "typescript": "^7.0.2",
+    "vite-plugin-solid": "^2.11.16",
+    "vitest": "^5.1.0"
+  }
+}

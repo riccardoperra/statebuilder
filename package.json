@@ -8,8 +8,8 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --filter=./packages/* build",
-    "test": "pnpm --filter=./packages/* test",
-    "typecheck": "pnpm --filter=./packages/* typecheck",
+    "test": "pnpm --filter=./packages/* --filter=./registry test",
+    "typecheck": "pnpm --filter=./packages/* --filter=./registry typecheck",
     "changeset": "changeset",
     "prepublish": "cp ./README.md ./packages/state",
     "ci:publish": "changeset publish",

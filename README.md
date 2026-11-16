@@ -25,6 +25,7 @@ Thanks to `StateBuilder` you can **compose** the approach you like to handle you
 - [Getting started](#getting-started)
 - [Creating Plugins](#creating-plugins)
 - [Usage in SolidJS](#usage-in-solidjs)
+- [Copy-paste plugins](#copy-paste-plugins)
 
 ## Architecture
 
@@ -414,6 +415,17 @@ Each action runs inside `batch` and `untrack` and returns what the function retu
 action returns, which for an async action is before its promise settles. Inside an action, `this` is the map of
 actions, so `this.toggleVisibility()` runs as a nested action. `onAction` returns an unsubscribe function and also
 unsubscribes on cleanup of the current owner. Using `withActions` again on the same definition adds to the same map.
+
+## Copy-paste plugins
+
+The [plugin registry](registry/README.md) holds plugins that are not part of the package: you copy the file into your
+app and edit it. Each one is a single file built on `createPlugin` and `onSet`, with a test.
+
+- `withPersist`: saves the state to `localStorage` or an async storage and loads it back.
+- `withHistory`: undo and redo.
+- `withEntities`: `byId`, `add`, `update`, `remove` and `upsert` for a list of entities.
+- `withOptimisticAction`: writes at once and rolls back when the request fails.
+- `withSourceSwitch`: loads and saves through a local or a remote source, chosen on each call.
 
 ## Demo / Examples
 

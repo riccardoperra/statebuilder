@@ -1,6 +1,7 @@
 packages:
   - 'examples/**'
   - 'packages/**'
+  - 'registry'
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
