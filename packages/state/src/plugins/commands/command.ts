@@ -105,7 +105,7 @@ class StateCommandImpl<Identity extends string, T>
     readonly: boolean,
   ): TStateCommand {
     const base = readonly ? {} : createCommand(command.identity);
-    return Object.assign(base, JSON.parse(JSON.stringify(command)));
+    return Object.assign(base, command);
   }
 }
 
