@@ -99,8 +99,8 @@ export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
       storeDefinition: TStoreDefinition,
     ) => ExtractStore<TStoreDefinition>;
     /**
-     * Calls `listener` synchronously after every write to this store, in
-     * registration order. Returns an unsubscribe function. Listeners are
+     * Calls `listener` synchronously and untracked after every write to this
+     * store, in registration order. Returns an unsubscribe function. Listeners are
      * removed when the store is disposed.
      */
     onSet: (listener: SetListener<GetStoreApiState<TStoreApi>>) => () => void;
