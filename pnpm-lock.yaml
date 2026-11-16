@@ -245,9 +245,6 @@ importers:
       '@solid-primitives/event-bus':
         specifier: ^1.1.4
         version: 1.1.4(solid-js@1.9.19)
-      '@statebuilder/container':
-        specifier: workspace:*
-        version: link:../container
       consola:
         specifier: ^3.4.2
         version: 3.4.2
@@ -255,6 +252,9 @@ importers:
       '@solidjs/testing-library':
         specifier: ^0.8.10
         version: 0.8.10(@solidjs/router@1.0.3(solid-js@1.9.19))(solid-js@1.9.19)
+      '@statebuilder/container':
+        specifier: workspace:*
+        version: link:../container
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5

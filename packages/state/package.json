@@ -94,6 +94,7 @@
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
+    "@statebuilder/container": "workspace:*",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",
@@ -110,7 +111,6 @@
     "@babel/core": "^7.29.13",
     "@babel/types": "^7.29.14",
     "@solid-primitives/event-bus": "^1.1.4",
-    "@statebuilder/container": "workspace:*",
     "consola": "^3.4.2"
   },
   "peerDependenciesMeta": {
