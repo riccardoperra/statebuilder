@@ -30,7 +30,7 @@ import {
   $PLUGIN,
   type CreatePluginOptions,
   type Plugin as $Plugin,
-} from 'pluggino';
+} from './pluggino';
 
 import { createPlugin, resolve as $resolve, type Plugin } from './system';
 

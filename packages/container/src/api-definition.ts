@@ -22,7 +22,7 @@ import type {
   ContainerPluginContext,
 } from './types';
 import { $CREATOR } from './api';
-import { Composer } from 'pluggino';
+import { Composer } from './pluggino';
 
 export class ApiDefinition<T extends GenericStoreApi, E extends {}>
   implements ApiDefinitionCreator<T, E>

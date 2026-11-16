@@ -15,7 +15,7 @@
  */
 
 import { $CREATOR } from './api';
-import type { Composer, PluginContext } from 'pluggino';
+import type { Composer, PluginContext } from './pluggino';
 
 export type GenericStoreApi<
   T = any,
