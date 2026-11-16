@@ -385,7 +385,10 @@ can read any Solid context placed above that provider, and it is disposed with i
 - [statebuilder/actions](packages/state/src/plugins/actions.ts): named actions with `onAction` listeners
 - [statebuilder/asyncAction](packages/state/src/plugins/asyncAction.ts): asynchronous actions handler with promise and
   observables
+- [statebuilder/commands](packages/state/src/plugins/commands/): commands declared as a type, with handlers attached
+  through `hold`
 - [statebuilder/devtools](packages/state/src/plugins/devtools/): Redux DevTools integration, `withDevtools({ name })`
+- [statebuilder/reducer](packages/state/src/plugins/reducer/): `dispatch` with a reducer function
 
 ### Actions
 
@@ -415,6 +418,44 @@ Each action runs inside `batch` and `untrack` and returns what the function retu
 action returns, which for an async action is before its promise settles. Inside an action, `this` is the map of
 actions, so `this.toggleVisibility()` runs as a nested action. `onAction` returns an unsubscribe function and also
 unsubscribes on cleanup of the current owner. Using `withActions` again on the same definition adds to the same map.
+
+### Commands
+
+```ts
+import { withProxyCommands } from 'statebuilder/commands';
+
+type Commands = {
+  setPadding: number;
+  toggleVisibility: void;
+};
+
+const FrameStore = defineStore(() => ({ padding: 64, visible: true }))
+  .extend(withProxyCommands<Commands>())
+  .extend((store) => {
+    store
+      .hold(store.commands.setPadding, (padding, { state }) => ({
+        ...state,
+        padding,
+      }))
+      .hold(store.commands.toggleVisibility, (_, { set }) =>
+        set('visible', (visible) => !visible),
+      );
+  });
+
+const frame = useStore(FrameStore);
+frame.actions.setPadding(32);
+frame.dispatch(frame.commands.setPadding, 32);
+frame
+  .watchCommand([frame.commands.setPadding])
+  .subscribe((command) => console.log(command.consumerValue));
+```
+
+The `Commands` type is the contract of the store. Each key becomes a command object in `store.commands` and a function
+in `store.actions`. `hold` attaches a handler to a command, and a command can have more than one handler. A handler
+returns the new state or writes with `set`. `watchCommand` returns an observable of the executed commands.
+
+Use `withActions` when an action is one function. Use commands when you want to declare the contract apart from the
+handlers, pass a command around as a value, or attach several handlers.
 
 ## Copy-paste plugins
 

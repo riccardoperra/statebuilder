@@ -1,4 +1,5 @@
 import {
+  type ContainerPluginContext,
   GenericStoreApi,
   GetStoreApiSetter,
   GetStoreApiState,
@@ -14,6 +15,7 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
   TGenericApi extends GenericStoreApi,
 >(
   ctx: TGenericApi,
+  context?: ContainerPluginContext<TGenericApi>,
 ) => StoreWithProxyCommands<
   TGenericApi,
   GetStoreApiState<TGenericApi>,
@@ -21,12 +23,16 @@ function plugin<ActionsMap extends Record<string, unknown>>(): <
 > {
   return <TGenericApi extends GenericStoreApi>(
     ctx: TGenericApi,
+    context?: ContainerPluginContext<TGenericApi>,
   ): StoreWithProxyCommands<
     TGenericApi,
     GetStoreApiState<TGenericApi>,
     ProxifyCommands<ActionsMap>
   > => {
-    const { callbacks, watchCommand, dispatch } = makeCommandNotifier(ctx);
+    const { callbacks, watchCommand, dispatch } = makeCommandNotifier(
+      ctx,
+      context?.runInAction,
+    );
     const { commands, actions } = makeProxyHandlers<ActionsMap>(dispatch);
 
     return {
@@ -59,7 +65,7 @@ export function withProxyCommands<T extends Record<string, unknown>>(
 ) {
   return createPlugin(
     (store, context) => {
-      const storeWithProxy = plugin<T>()(store);
+      const storeWithProxy = plugin<T>()(store, context);
 
       if (options?.devtools) {
         const { storeName } = options.devtools;

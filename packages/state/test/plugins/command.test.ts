@@ -131,3 +131,26 @@ describe('command payload', () => {
     expect(after[0].correlate.consumerValue).toBe(payload);
   });
 });
+
+describe('commands and onSet', () => {
+  it('reports the command that did the write as meta.action', () => {
+    const writes: unknown[] = [];
+    const definition = defineStore(() => ({ firstName: '' }))
+      .extend(withProxyCommands<{ setFirstName: string }>())
+      .extend((store, context) => {
+        context.onSet((_, meta) => writes.push(meta.action));
+        store.hold(store.commands.setFirstName, (firstName, { set }) =>
+          set('firstName', firstName),
+        );
+      });
+    const store = createRoot(() => Container.create().get(definition));
+
+    store.actions.setFirstName('Ada');
+    store.set('firstName', 'direct');
+
+    expect(writes).toEqual([
+      { name: 'setFirstName', args: ['Ada'] },
+      undefined,
+    ]);
+  });
+});

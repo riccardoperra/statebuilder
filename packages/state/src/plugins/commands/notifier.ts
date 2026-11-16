@@ -25,7 +25,15 @@ export type ExecuteCommandCallback<
 
 export const [track, untrackCommand] = createTrackObserver();
 
-export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
+type RunInAction = <R>(
+  action: { name: string; args: readonly unknown[] },
+  fn: () => R,
+) => R;
+
+export function makeCommandNotifier<T>(
+  ctx: GenericStoreApi<T>,
+  runInAction: RunInAction = (_, fn) => fn(),
+) {
   const initCommand = createCommand('@@INIT');
   const bus = createEventBus<ExecutedGenericStateCommand>();
   bus.emit(initCommand.execute(void 0));
@@ -37,20 +45,24 @@ export function makeCommandNotifier<T>(ctx: GenericStoreApi<T>) {
 
   bus.listen((command) => {
     const resolvedCallbacks = callbacks.get(command.identity) ?? [];
-    batch(() => {
-      untrack(() => {
-        for (const callback of resolvedCallbacks) {
-          const result = callback(command.consumerValue, {
-            set: ctx.set,
-            state: ctx(),
-          });
+    if (resolvedCallbacks.length === 0) return;
+    const action = { name: command.identity, args: [command.consumerValue] };
+    runInAction(action, () =>
+      batch(() => {
+        untrack(() => {
+          for (const callback of resolvedCallbacks) {
+            const result = callback(command.consumerValue, {
+              set: ctx.set,
+              state: ctx(),
+            });
 
-          if (result !== undefined) {
-            ctx.set(() => result);
+            if (result !== undefined) {
+              ctx.set(() => result);
+            }
           }
-        }
-      });
-    });
+        });
+      }),
+    );
   });
 
   function retrieveCommand(
