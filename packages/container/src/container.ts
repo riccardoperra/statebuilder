@@ -31,6 +31,7 @@ export class Container {
     StoreApiDefinition<any, any>,
     GenericStoreApi
   >();
+  readonly #resolving: StoreApiDefinition<any, any>[] = [];
 
   protected constructor(
     private readonly owner: Owner,
@@ -74,9 +75,23 @@ export class Container {
       if (instance) {
         return instance as TypedStore;
       }
-      const store = this.#resolveStore(this.owner, state);
-      this.states.set(state, store!);
-      return store as TypedStore;
+      const cycleStart = this.#resolving.indexOf(state);
+      if (cycleStart !== -1) {
+        const cycle = [...this.#resolving.slice(cycleStart), state]
+          .map((definition) => definition[$CREATOR].name)
+          .join(' -> ');
+        throw new StateBuilderError(
+          `Circular dependency between stores: ${cycle}`,
+        );
+      }
+      this.#resolving.push(state);
+      try {
+        const store = this.#resolveStore(this.owner, state);
+        this.states.set(state, store);
+        return store as TypedStore;
+      } finally {
+        this.#resolving.pop();
+      }
     } catch (exception) {
       if (exception instanceof Error) throw exception;
       throw new StateBuilderError(
