@@ -17,8 +17,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { create, makePlugin, resolve } from '../src/api';
 import { createRoot, createSignal, getOwner } from 'solid-js';
-import { Container, GenericStoreApi } from '../src';
-import { SetStoreFunction } from 'solid-js/store';
+import { Container, type GenericStoreApi } from '../src';
+import type { SetStoreFunction } from 'solid-js/store';
 import { defineSignal } from './utils/signal';
 import { defineStore } from './utils/store';
 const container = createRoot(() => Container.create());

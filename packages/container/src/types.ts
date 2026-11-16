@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { $CREATOR } from './api';
+import { $CREATOR } from './symbols';
 import type { Composer, PluginContext } from './pluggino';
 
 export type GenericStoreApi<

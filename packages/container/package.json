@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "test": "vitest --run",
     "test:all": "pnpm test && pnpm typecheck",
-    "typecheck": "vitest --run --typecheck.only"
+    "typecheck": "tsc --noEmit && vitest --run --typecheck.only"
   },
   "exports": {
     ".": {
@@ -18,13 +18,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^18.19.64",
-    "tsup": "^8.4.0",
-    "vite-plugin-solid": "^2.11.6",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.1"
+    "@types/node": "^26.6.6",
+    "solid-js": "^1.9.19",
+    "tsdown": "^0.23.7",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   },
-  "dependencies": {
-    "typescript": "^5.8.3"
-  }
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "files": [
+    "dist"
+  ]
 }

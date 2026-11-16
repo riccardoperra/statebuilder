@@ -41,8 +41,8 @@
       "default": "./dist/index.js"
     },
     "./compiler": {
-      "import": "./dist/compiler/index.js",
-      "types": "./dist/compiler/index.d.mts"
+      "types": "./dist/compiler/index.d.ts",
+      "import": "./dist/compiler/index.js"
     },
     "./asyncAction": {
       "import": "./dist/plugins/asyncAction.js",
@@ -86,43 +86,40 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "test": "vitest --run",
     "test:all": "pnpm test && pnpm typecheck",
-    "typecheck": "vitest --typecheck test/**/*.test-d.ts",
+    "typecheck": "tsc --noEmit && vitest --run --typecheck.only",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/traverse": "^7.25.9",
-    "@babel/types": "^7.26.0",
     "@solidjs/testing-library": "^0.8.10",
     "@types/babel__core": "^7.20.5",
-    "@vitest/coverage-c8": "^0.33.0",
-    "consola": "^3.4.2",
-    "prettier": "^3.5.3",
-    "tsup": "^8.4.0",
-    "happy-dom": "^17.4.4",
-    "typescript": "^5.8.3",
-    "vite": "^6.2.5",
-    "vite-plugin-solid": "^2.11.6",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.1"
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "happy-dom": "^21.0.4",
+    "prettier": "^3.10.1",
+    "solid-js": "^1.9.19",
+    "tsdown": "^0.23.7",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vite-plugin-solid": "^2.11.16",
+    "vitest": "^5.1.0"
   },
-
   "dependencies": {
+    "@babel/core": "^7.29.13",
+    "@babel/types": "^7.29.14",
+    "@solid-primitives/event-bus": "^1.1.4",
     "@statebuilder/container": "workspace:*",
-    "@babel/parser": "^7.27.0",
-    "@solid-primitives/event-bus": "^1.1.0",
-    "rxjs": "^7.8.2",
-    "solid-js": "^1.9.5"
+    "consola": "^3.4.2"
   },
   "peerDependenciesMeta": {
-    "@solid-primitives/event-bus": {
-      "optional": true
-    },
-    "rxjs": {
+    "vite": {
       "optional": true
     }
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0",
+    "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   }
 }

@@ -17,7 +17,8 @@
 import { getOwner, type Owner } from 'solid-js';
 import { StateBuilderError } from './error';
 import { runInSubRoot } from './root';
-import { $CREATOR, resolve } from './api';
+import { resolve } from './api';
+import { $CREATOR } from './symbols';
 import { $SB_DEV, __devDestroyContainer, __devRegisterContainer } from './dev';
 import type {
   ExtractStore,

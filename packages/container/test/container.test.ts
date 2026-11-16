@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assert, describe, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { Container } from '../src';
 import { createRoot, getOwner } from 'solid-js';
 import { defineStore } from './utils/store';
@@ -24,7 +24,7 @@ describe('Container', () => {
     createRoot(() => {
       const owner = getOwner()!;
       const container = Container.create(owner);
-      assert.instanceOf(container, Container);
+      expect(container instanceof Container).toBe(true);
     }));
 
   it('should create state', () =>

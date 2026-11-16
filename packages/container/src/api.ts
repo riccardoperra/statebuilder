@@ -33,8 +33,7 @@ import {
 } from './pluggino';
 
 import { createPlugin, resolve as $resolve, type Plugin } from './system';
-
-export const $CREATOR = Symbol('store-creator-api');
+import { $CREATOR } from './symbols';
 
 export interface CreateOptions {
   key: string;

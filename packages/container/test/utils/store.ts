@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { Accessor, createSignal } from 'solid-js';
-import { createStore, SetStoreFunction } from 'solid-js/store';
-import { ApiDefinitionCreator, create, GenericStoreApi } from '../../src/index';
+import { type Accessor, createSignal } from 'solid-js';
+import { createStore, type SetStoreFunction } from 'solid-js/store';
+import {
+  type ApiDefinitionCreator,
+  create,
+  type GenericStoreApi,
+} from '../../src/index';
 import type { Lazy } from '../../src/types';
 
 export type StoreValue = {};

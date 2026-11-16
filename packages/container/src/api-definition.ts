@@ -21,7 +21,7 @@ import type {
   Plugin,
   ContainerPluginContext,
 } from './types';
-import { $CREATOR } from './api';
+import { $CREATOR } from './symbols';
 import { Composer } from './pluggino';
 
 export class ApiDefinition<T extends GenericStoreApi, E extends {}>

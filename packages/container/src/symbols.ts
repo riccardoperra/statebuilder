@@ -13,20 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { defineConfig } from 'tsup';
 
-export default defineConfig(() => {
-  return [
-    {
-      clean: true,
-      entry: ['./src/index.ts'],
-      format: ['esm'],
-      treeshake: false,
-      sourcemap: true,
-      external: ['solid-js', 'solid-js/store'],
-      minify: false,
-      dts: true,
-      splitting: true,
-    },
-  ];
-});
+export const $CREATOR = Symbol('store-creator-api');

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createSignal, Setter } from 'solid-js';
+import { createSignal, type Setter } from 'solid-js';
 import type { ApiDefinitionCreator, GenericStoreApi } from '../../src';
 import { create as fns } from '../../src';
 import type { Lazy } from '../../src/types';
