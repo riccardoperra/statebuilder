@@ -21,7 +21,6 @@ import {
   create,
   type GenericStoreApi,
 } from '../../src/index';
-import type { Lazy } from '../../src/types';
 
 export type StoreValue = {};
 
@@ -39,7 +38,7 @@ export type StoreDefinitionCreator<
 > = ApiDefinitionCreator<TStoreApi, TStoreExtension>;
 
 function makeStore<TState extends StoreValue>(
-  initialValue: Lazy<TState>,
+  initialValue: () => TState,
 ): Store<TState> {
   const [store, internalSetStore] = createStore(initialValue());
   const [track, notify] = createSignal([], { equals: false });

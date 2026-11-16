@@ -13,9 +13,6 @@ export default defineConfig({
     statebuilder({
       autoKey: false,
       dev: true,
-      experimental: {
-        transformStateProviderDirective: true,
-      },
     }),
   ],
 });

@@ -20,7 +20,7 @@ import {
   onCleanup,
   type Owner,
   runWithOwner,
-} from 'solid-js';
+} from './reactivity';
 
 type Disposable<T> = (dispoe: () => void) => T;
 

@@ -84,7 +84,6 @@ If you're using Vite with SolidJS, you can use the `statebuilder` custom plugin,
 
 - `dev`: Enable dev mode
 - `autoKey`: Allows to name your stores automatically, based on the constant name.
-- `stateProviderDirective`: Allows to wraps your SolidJS component into a StateProvider when they contains the `use stateprovider` directive.
 
 ```ts
 import { defineConfig } from 'vite';
@@ -99,9 +98,6 @@ export default defineConfig({
       filterStores: [
         // define your custom store name
       ],
-      experimental: {
-        transformStateProviderDirective: true,
-      },
     }),
   ],
 });
@@ -177,7 +173,7 @@ Plugins can be defined in two ways:
 - Through a `Plugin` configuration object
 
 The first recommendation is to split your store extension in plugins where needed, for example
-when you have to reuse some business logic, and prefers the `makePlugin` API when you create generic plugins (
+when you have to reuse some business logic, and prefers the `createPlugin` API when you create generic plugins (
 e.g. `LocalStoragePlugin`), in order to simplify the TS typings.
 
 ### Defining plugins through simple functions
@@ -199,7 +195,7 @@ const CountStore = defineSignal(() => 0).extend((state) => {
 });
 ```
 
-### Splitting plugins with `makePlugin`
+### Splitting plugins with `createPlugin`
 
 In the plugin created earlier, we could split the logic into two different plugins:
 
@@ -207,10 +203,10 @@ In the plugin created earlier, we could split the logic into two different plugi
 - A plugin which augments the state with the state methods
 
 ```ts
-import { makePlugin } from 'statebuilder';
+import { createPlugin } from 'statebuilder';
 
 const withLocalStorage = (key: string) =>
-  makePlugin(
+  createPlugin(
     (state) => {
       // Will be called once during state initialization
       if (localStorage.has(key)) {
@@ -238,7 +234,7 @@ const CountStore = defineSignal(() => 0)
 ### Example with reducer
 
 ```ts
-import { makePlugin } from 'statebuilder';
+import { createPlugin } from 'statebuilder';
 
 interface StoreWithReducer<T, Action> {
   dispatch(action: Action): void;
@@ -255,7 +251,7 @@ function reducerPlugin<T extends StoreValue, R>(
   };
 }
 
-export const withReducer = makePlugin(reducerPlugin, { name: 'withReducer' });
+export const withReducer = createPlugin(reducerPlugin, { name: 'withReducer' });
 ```
 
 In the example above, we get the state context, a reducer and we return a new object with a dispatch function that will
@@ -264,7 +260,7 @@ update the store thanks to the `.set()` method.
 Here is an example of what we have created.
 
 ```tsx
-import { defineStore, provideState } from 'statebuilder';
+import { defineStore, useStore } from 'statebuilder';
 
 type Increment = { type: 'increment'; payload: number };
 
@@ -292,7 +288,7 @@ const AppState = defineStore<AppState>(() => ({ counter: 0 })).extend(
 );
 
 function Counter() {
-  const { get: state, dispatch } = provideState(AppState);
+  const { get: state, dispatch } = useStore(AppState);
 
   return (
     <>
@@ -326,14 +322,14 @@ import { StoreProvider } from 'statebuilder';
 </StoreProvider>;
 ```
 
-Once your store definition is ready, you can inject the store in your components by using the `provideState` helper.
+Once your store definition is ready, you can inject the store in your components by using the `useStore` helper.
 
 ```tsx
-import { provideState } from 'statebuilder';
+import { useStore } from 'statebuilder';
 import { CountStore } from './count';
 
 function Counter() {
-  const count = provideState(CountStore);
+  const count = useStore(CountStore);
 
   return (
     <>
@@ -343,6 +339,23 @@ function Counter() {
   );
 }
 ```
+
+### Scoping stores with nested providers
+
+A store lives in the root `StoreProvider` by default, so every component reading it gets the same instance.
+To give a part of the tree its own instance, list the definition in the `provide` prop of a nested `StoreProvider`.
+
+```tsx
+<StoreProvider>
+  <StoreProvider provide={[EditorStore, CanvasStore]}>
+    <Editor />
+  </StoreProvider>
+</StoreProvider>
+```
+
+`useStore(def)` walks up from the closest provider and uses the first one that provides `def`, or the root when none
+does. The result does not depend on which component asks first. A provided store is created inside its provider, so it
+can read any Solid context placed above that provider, and it is disposed with it. `provide` is read once.
 
 ## Built-in plugins
 

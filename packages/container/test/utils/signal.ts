@@ -17,7 +17,6 @@
 import { createSignal, type Setter } from 'solid-js';
 import type { ApiDefinitionCreator, GenericStoreApi } from '../../src';
 import { create as fns } from '../../src';
-import type { Lazy } from '../../src/types';
 
 export type Signal<TState> = GenericStoreApi<TState, Setter<TState>>;
 
@@ -27,7 +26,7 @@ export type SignalDefinitionCreator<
   TSignalExtension extends {},
 > = ApiDefinitionCreator<TStoreApi, TSignalExtension>;
 
-function makeSignal<TState>(initialValue: Lazy<TState>): Signal<TState> {
+function makeSignal<TState>(initialValue: () => TState): Signal<TState> {
   const [signal, setSignal] = createSignal(initialValue());
 
   Object.defineProperty(signal, 'set', {

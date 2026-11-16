@@ -35,9 +35,9 @@ function makeResource<T>(
   return state as unknown as Resource<T>;
 }
 
-export const ɵdefineResource = create('resource', makeResource);
+export const defineAsync = create('resource', makeResource);
 
-export function ɵWithResourceStorage<T>(store: GenericStoreApi<T>) {
+export function withResourceStorage<T>(store: GenericStoreApi<T>) {
   return function (_: T | undefined): Signal<T | undefined> {
     return [
       () => store(),

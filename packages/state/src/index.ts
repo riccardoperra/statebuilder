@@ -1,13 +1,18 @@
 export * from '@statebuilder/container';
 
 export {
-  StateProvider,
-  provideState,
-  getStateContext,
+  StoreProvider,
+  useStore,
+  useContainer,
   defineSignal,
   defineStore,
-  ɵdefineResource,
-  ɵWithResourceStorage,
+  defineAsync,
+  withResourceStorage,
 } from './solid/index';
 
-export type { Signal, Store, Resource } from './solid/index';
+export type {
+  Signal,
+  Store,
+  Resource,
+  StoreProviderProps,
+} from './solid/index';

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export { Container } from './container';
+export { Container, type ContainerOptions } from './container';
 
 export type { Plugin, StatebuilderSystem } from './system';
-export { create, makePlugin, resolve } from './api';
+export { create, createPlugin, resolve } from './api';
 export { $CREATOR } from './symbols';
 
 export { ApiDefinition } from './api-definition';

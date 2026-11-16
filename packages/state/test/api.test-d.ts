@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, test, vi } from 'vitest';
-import { create, makePlugin } from '../src';
+import { create, createPlugin } from '../src';
 import { Setter } from 'solid-js';
 import { GenericStoreApi } from '@statebuilder/container';
 import { SetStoreFunction } from 'solid-js/store';
@@ -9,9 +9,9 @@ import { withProxyCommands } from '~/plugins/commands';
 import { withReduxDevtools } from '~/plugins/devtools';
 import { withAsyncAction } from '~/plugins/asyncAction';
 
-describe('makePlugin', () => {
+describe('createPlugin', () => {
   test('make plugin supported only by store definition', () => {
-    const onlyStorePlugin = makePlugin.typed<Store<{ count: number }>>()(
+    const onlyStorePlugin = createPlugin.typed<Store<{ count: number }>>()(
       (store) => {
         expectTypeOf(store.set).toMatchTypeOf<
           SetStoreFunction<{ count: number }>
@@ -30,7 +30,7 @@ describe('makePlugin', () => {
   });
 
   test('make plugin supported only by signal definition', () => {
-    const onlySignalPlugin = makePlugin(
+    const onlySignalPlugin = createPlugin(
       (store: Signal<{ count: number }>) => {
         expectTypeOf(store.set).toMatchTypeOf<Setter<{ count: number }>>();
       },
@@ -64,7 +64,7 @@ describe('makePlugin', () => {
       });
     });
 
-    const onlyCustomPlugin = makePlugin.typed<Custom<number>>()(
+    const onlyCustomPlugin = createPlugin.typed<Custom<number>>()(
       (store) => {
         expectTypeOf(store.set).toMatchTypeOf<Setter<{ count: number }>>();
         return {};
@@ -112,7 +112,7 @@ describe('extend', () => {
       };
     }
 
-    const withPlugin = makePlugin((state) => plugin(state), {
+    const withPlugin = createPlugin((state) => plugin(state), {
       name: 'plugin',
     });
 
@@ -126,7 +126,7 @@ describe('extend', () => {
   test('infer with (ctx) -> Plugin signature', () => {
     defineSignal(() => 1)
       .extend(
-        makePlugin(
+        createPlugin(
           (ctx) => ({
             set2: ctx.set,
           }),

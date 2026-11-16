@@ -1,34 +1,45 @@
 import {
   createComponent,
   createContext,
-  FlowProps,
+  type FlowProps,
   getOwner,
   onCleanup,
   useContext,
 } from 'solid-js';
 import {
   Container,
-  ExtractStore,
+  type ExtractStore,
   StateBuilderError,
-  StoreApiDefinition,
+  type StoreApiDefinition,
 } from '@statebuilder/container';
 
-const StateProviderContext = createContext<Container>();
+const StoreProviderContext = createContext<Container>();
 
-export function StateProvider(props: FlowProps) {
+export type StoreProviderProps = FlowProps<{
+  /**
+   * Definitions that get their own instance in this provider, shared by the components below it.
+   * Read once when the provider is created.
+   */
+  provide?: readonly StoreApiDefinition<any, any>[];
+}>;
+
+export function StoreProvider(props: StoreProviderProps) {
   const owner = getOwner();
   if (!owner) {
     throw new StateBuilderError(
       'Owner is missing. Cannot construct instance of Container',
     );
   }
-  const parentContainer = useContext(StateProviderContext);
-  const container = Container.create(owner, parentContainer);
+  const container = Container.create({
+    owner,
+    parent: useContext(StoreProviderContext),
+    provide: props.provide,
+  });
   onCleanup(() => {
     container.destroy();
   });
 
-  return createComponent(StateProviderContext.Provider, {
+  return createComponent(StoreProviderContext.Provider, {
     value: container,
     get children() {
       return props.children;
@@ -36,17 +47,16 @@ export function StateProvider(props: FlowProps) {
   });
 }
 
-export function getStateContext() {
-  const container = useContext(StateProviderContext);
+export function useContainer() {
+  const container = useContext(StoreProviderContext);
   if (!container) {
-    throw new StateBuilderError('No <StateProvider> found in component tree');
+    throw new StateBuilderError('No <StoreProvider> found in component tree');
   }
   return container;
 }
 
-export function provideState<
-  TStoreDefinition extends StoreApiDefinition<any, any>,
->(definition: TStoreDefinition): ExtractStore<TStoreDefinition> {
-  const context = getStateContext();
-  return context.get(definition);
+export function useStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
+  definition: TStoreDefinition,
+): ExtractStore<TStoreDefinition> {
+  return useContainer().get(definition);
 }

@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-export * from "./plugin.js";
-export * from "./create-plugin.js";
-export * from "./composer.js";
-export * from "./resolve.js";
-export * from "./plugin-key.js";
-export * from "./system.js";
+export * from './plugin.js';
+export * from './create-plugin.js';
+export * from './composer.js';
+export type {
+  SystemConfig,
+  ComposedObject,
+  ResolvePluginContext,
+  ResolvedPluginRef,
+  ResolvePluginHandler,
+} from './resolve.js';
+export * from './plugin-key.js';
+export * from './system.js';

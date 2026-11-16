@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, test } from 'vitest';
-import { defineSignal, makePlugin } from '../src';
+import { defineSignal, createPlugin } from '../src';
 import { Signal, SignalDefinitionCreator } from '~/solid/signal';
 import { Accessor, createSignal } from 'solid-js';
 
@@ -34,7 +34,7 @@ describe('defineSignal', () => {
 
   test('infer type with generics', () => {
     const plugin = <T>() =>
-      makePlugin(
+      createPlugin(
         (store) => ({
           outer: {} as T,
         }),

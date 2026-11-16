@@ -71,29 +71,11 @@ export type ExtractStore<T extends StoreApiDefinition<any, any>> =
     ? MergeStoreProps<TStoreApi, TExtensions>
     : never;
 
-export type Lazy<T> = () => T;
-
-export type Plugin<TStoreApi extends GenericStoreApi<any, any>, R> = {
-  name: string;
-  apply(storeApi: TStoreApi, options: ContainerPluginContext<TStoreApi>): R;
-};
-
-export type PluginOf<Callback> = Callback;
-
 export type GetStoreApiSetter<T extends GenericStoreApi> =
   T extends GenericStoreApi<any, infer R> ? R : never;
 
 export type GetStoreApiState<T extends GenericStoreApi> =
   T extends GenericStoreApi<infer S, any> ? S : never;
-
-export type HookConsumerFunction<T extends GenericStoreApi = GenericStoreApi> =
-  (api: T) => void;
-
-export interface PluginHooks<T extends GenericStoreApi> {
-  onInit: (consumer: HookConsumerFunction<T>) => void;
-
-  onDestroy: (consumer: HookConsumerFunction<T>) => void;
-}
 
 export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
   PluginContext & {
@@ -101,10 +83,3 @@ export type ContainerPluginContext<TStoreApi extends GenericStoreApi<any>> =
       storeDefinition: TStoreDefinition,
     ) => ExtractStore<TStoreDefinition>;
   };
-
-export type PluginCreatorFunction<
-  TStoreApi extends GenericStoreApi,
-  TReturn,
-> = (
-  store: TStoreApi,
-) => TReturn extends Plugin<any, any> ? TReturn : Plugin<TStoreApi, TReturn>;

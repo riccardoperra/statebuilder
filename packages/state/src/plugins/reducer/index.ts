@@ -1,4 +1,4 @@
-import { makePlugin } from '@statebuilder/container';
+import { createPlugin } from '@statebuilder/container';
 import { Store } from '../../solid/store';
 import { Signal } from '../../solid/signal';
 import { GenericStoreApi } from '@statebuilder/container';
@@ -24,4 +24,6 @@ function reducerPlugin<TState, TAction>(
 }
 
 export const withReducer = <S, A>(reducer: (state: S, action: A) => S) =>
-  makePlugin((store) => reducerPlugin(reducer)(store), { name: 'withReducer' });
+  createPlugin((store) => reducerPlugin(reducer)(store), {
+    name: 'withReducer',
+  });

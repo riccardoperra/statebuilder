@@ -1,8 +1,8 @@
 import { createSignal } from 'solid-js';
-import { makePlugin } from '@statebuilder/container';
+import { createPlugin } from '@statebuilder/container';
 
 export function withAsyncAction() {
-  return makePlugin(
+  return createPlugin(
     () => {
       return {
         asyncAction<P, R>(doSomething: (payload: P) => Promise<R>) {

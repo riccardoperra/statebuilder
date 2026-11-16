@@ -14,51 +14,45 @@
  * limitations under the License.
  */
 
-import { $PLUGIN } from "./plugin.js";
-import { emitter } from "./emitter.js";
-import { $PLUGIN_KEY } from "./plugin-key.js";
-import { getMeta, setMeta } from "./meta.js";
-import type { Plugin, PluginContext } from "./plugin.js";
-import type { Emitter } from "./emitter.js";
-import type { PluginKey } from "./plugin-key.js";
-import type { MetaStore, WithMeta } from "./meta.js";
-import type { SystemFactoryTypes } from "./system.js";
+import { $PLUGIN } from './plugin.js';
+import { emitter } from './emitter.js';
+import { $PLUGIN_KEY } from './plugin-key.js';
+import { getMeta, setMeta } from './meta.js';
+import type { Plugin, PluginContext } from './plugin.js';
+import type { Emitter } from './emitter.js';
+import type { PluginKey } from './plugin-key.js';
+import type { MetaStore, WithMeta } from './meta.js';
+import type { SystemFactoryTypes } from './system.js';
 
-export interface ResolveOptions<T, TContext, TPlugin extends Plugin = Plugin> {
-  reservedProperties?: Array<string>;
-  createContext?: () => TContext;
-  beforePluginMount?: InternalEvents<T, TPlugin>[typeof BEFORE_PLUGIN_MOUNT];
-  afterPluginMount?: InternalEvents<T, TPlugin>[typeof AFTER_PLUGIN_MOUNT];
+/**
+ * The configuration of a system, applied on every `resolve` call.
+ * `args` is the per-call argument given to `resolve`.
+ *
+ * @public
+ */
+export interface SystemConfig<T extends SystemFactoryTypes> {
+  reservedProperties?: ReadonlyArray<string>;
+  createContext?: (args: T['resolveArgs']) => T['resolveContext'];
+  beforePluginMount?: (
+    context: ResolvePluginContext<any, T>,
+    plugin: T['plugin'],
+    index: number,
+    args: T['resolveArgs'],
+  ) => void;
+  afterPluginMount?: (
+    context: ResolvePluginContext<any, T>,
+    data: { plugin: T['plugin']; result: unknown; object: unknown },
+    index: number,
+    args: T['resolveArgs'],
+  ) => void;
 }
 
-const DESTROY_EVENT: unique symbol = Symbol("plugin.destroy");
-const INIT_EVENT: unique symbol = Symbol("plugin.init");
-const BEFORE_PLUGIN_MOUNT: unique symbol = Symbol("plugin.init");
-const AFTER_PLUGIN_MOUNT: unique symbol = Symbol("plugin.init");
+const DESTROY_EVENT: unique symbol = Symbol('plugin.destroy');
+const INIT_EVENT: unique symbol = Symbol('plugin.init');
 
 export interface ComposedObject<T> {
   object: T;
   dispose: () => void;
-}
-
-/**
- * @internal
- */
-export interface InternalEvents<T, TPlugin extends Plugin> {
-  [BEFORE_PLUGIN_MOUNT]: (
-    context: ResolvePluginContext<T>,
-    plugin: TPlugin,
-    index: number,
-  ) => void;
-  [AFTER_PLUGIN_MOUNT]: (
-    context: ResolvePluginContext<T>,
-    data: {
-      plugin: TPlugin;
-      result: unknown;
-      object: T;
-    },
-    index: number,
-  ) => void;
 }
 
 /**
@@ -80,7 +74,7 @@ export interface ResolvePluginContext<
   refs: WeakMap<
     PluginKey<any, any>,
     {
-      plugin: TSystemFactoryTypes["plugin"];
+      plugin: TSystemFactoryTypes['plugin'];
       result: object;
     }
   >;
@@ -105,73 +99,51 @@ export interface ResolvedPluginRef {
 export type ResolvePluginHandler<
   TSystemFactoryTypes extends SystemFactoryTypes = SystemFactoryTypes,
 > = <T extends {}>(
-  composable: TSystemFactoryTypes["composable"],
+  composable: TSystemFactoryTypes['composable'],
   o: any,
-  options: ResolveOptions<
-    T,
-    TSystemFactoryTypes["resolveContext"],
-    TSystemFactoryTypes["plugin"]
-  >,
+  args: TSystemFactoryTypes['resolveArgs'],
 ) => ComposedObject<T>;
 
 /**
- * @public
+ * @internal
  *
- * A function that resolves and integrates plugins into a given object
- * based on specified options and a composable context.
+ * Resolves and integrates the plugins of a composable into a given object.
  */
-export const resolve: ResolvePluginHandler = function resolve<T extends {}>(
-  composable: SystemFactoryTypes["composable"],
+export function resolve<T extends {}, TSystem extends SystemFactoryTypes>(
+  config: SystemConfig<TSystem>,
+  composable: TSystem['composable'],
   o: any,
-  options: ResolveOptions<
-    T,
-    SystemFactoryTypes["resolveContext"],
-    SystemFactoryTypes["plugin"]
-  >,
-) {
+  args: TSystem['resolveArgs'],
+): ComposedObject<T> {
   const metadata: MetaStore = {},
     plugins = composable.context.plugins,
-    reservedProperties = options.reservedProperties ?? [],
+    reservedProperties = config.reservedProperties ?? [],
     refs = new WeakMap<PluginKey<any, any>, ResolvedPluginRef>(),
-    createContext = options.createContext ?? (() => ({})),
-    e = emitter<InternalEvents<T, Plugin>>();
+    e = emitter();
 
-  const context: ResolvePluginContext<T> = {
+  const context: ResolvePluginContext<T, TSystem> = {
     object: o as T,
-    emitter: e as ResolvePluginContext<T>["emitter"],
+    emitter: e as ResolvePluginContext<T>['emitter'],
     getMeta: getMeta.bind(metadata),
     setMeta: setMeta.bind(metadata),
-    skipSet: (property: string): boolean => {
-      if (reservedProperties.length > 0) {
-        return reservedProperties.includes(property);
-      }
-      return false;
-    },
+    skipSet: (property: string): boolean =>
+      reservedProperties.includes(property),
     refs,
     meta: {},
-    getContext: createContext,
+    getContext: () => config.createContext?.(args) ?? {},
   };
-
-  if (options.beforePluginMount)
-    e.on(BEFORE_PLUGIN_MOUNT, options.beforePluginMount);
-  if (options.afterPluginMount)
-    e.on(AFTER_PLUGIN_MOUNT, options.afterPluginMount);
 
   const dispose = () => context.emitter.emit(DESTROY_EVENT);
 
   for (let i = 0; i < plugins.length; i++) {
     const plugin = plugins[i];
-    e.emit(BEFORE_PLUGIN_MOUNT, context, plugin, i);
+    config.beforePluginMount?.(context, plugin, i, args);
     const { object, callResult } = (resolvePlugin<T>).call(context, plugin);
-    e.emit(
-      AFTER_PLUGIN_MOUNT,
+    config.afterPluginMount?.(
       context,
-      {
-        plugin,
-        result: callResult,
-        object,
-      },
+      { plugin, result: callResult, object },
       i,
+      args,
     );
   }
 
@@ -181,7 +153,7 @@ export const resolve: ResolvePluginHandler = function resolve<T extends {}>(
     object: context.object,
     dispose,
   };
-};
+}
 
 function resolvePlugin<T extends {}>(
   this: ResolvePluginContext<T>,

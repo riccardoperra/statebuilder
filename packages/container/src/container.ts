@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getOwner, type Owner } from 'solid-js';
+import { getOwner, type Owner } from './reactivity';
 import { StateBuilderError } from './error';
 import { runInSubRoot } from './root';
 import { resolve } from './api';
@@ -26,72 +26,60 @@ import type {
   StoreApiDefinition,
 } from './types';
 
-export class Container {
-  private readonly states = new Map<
-    StoreApiDefinition<any, any>,
-    GenericStoreApi
-  >();
-  readonly #resolving: StoreApiDefinition<any, any>[] = [];
+export interface ContainerOptions {
+  owner?: Owner;
+  parent?: Container;
+  provide?: readonly StoreApiDefinition<any, any>[];
+}
 
-  protected constructor(
-    private readonly owner: Owner,
-    private readonly parent?: Container,
-  ) {
+export class Container {
+  readonly #stores = new Map<StoreApiDefinition<any, any>, GenericStoreApi>();
+  // An inject only resolves in the same container or above it, so a cycle always closes inside one container.
+  readonly #resolving: StoreApiDefinition<any, any>[] = [];
+  readonly #owner: Owner;
+  readonly #parent: Container | undefined;
+  readonly #provided: ReadonlySet<StoreApiDefinition<any, any>>;
+
+  protected constructor(options: ContainerOptions, owner: Owner) {
+    this.#owner = owner;
+    this.#parent = options.parent;
+    this.#provided = new Set(options.provide);
     $SB_DEV && __devRegisterContainer(this);
   }
 
-  static create(owner?: Owner, parentContainer?: Container) {
-    const resolvedOwner = owner ?? getOwner()!;
+  static create(options: ContainerOptions = {}) {
+    const resolvedOwner = options.owner ?? getOwner()!;
     if (!resolvedOwner) {
       console.warn(
-        '[statebuilder] Using StateContainer without <StateProvider/> or `createRoot()` context is discouraged',
+        '[statebuilder] Using StateContainer without <StoreProvider/> or `createRoot()` context is discouraged',
       );
     }
-    return new Container(resolvedOwner, parentContainer);
+    return new Container(options, resolvedOwner);
   }
 
   destroy(): void {
-    this.states.clear();
+    this.#stores.clear();
     $SB_DEV && __devDestroyContainer(this);
   }
 
   remove<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
   ): void {
-    this.states.delete(state);
+    this.#stores.delete(state);
   }
 
   get<TStoreDefinition extends StoreApiDefinition<any, any>>(
     state: TStoreDefinition,
   ): ExtractStore<TStoreDefinition> {
-    type TypedStore = ExtractStore<TStoreDefinition>;
     if (!state[$CREATOR]) {
       throw new StateBuilderError('No state $CREATOR found.', {
         cause: { state: state },
       });
     }
     try {
-      const instance = this.#retrieveInstance(state);
-      if (instance) {
-        return instance as TypedStore;
-      }
-      const cycleStart = this.#resolving.indexOf(state);
-      if (cycleStart !== -1) {
-        const cycle = [...this.#resolving.slice(cycleStart), state]
-          .map((definition) => definition[$CREATOR].name)
-          .join(' -> ');
-        throw new StateBuilderError(
-          `Circular dependency between stores: ${cycle}`,
-        );
-      }
-      this.#resolving.push(state);
-      try {
-        const store = this.#resolveStore(this.owner, state);
-        this.states.set(state, store);
-        return store as TypedStore;
-      } finally {
-        this.#resolving.pop();
-      }
+      return this.#home(state).#getOrCreate(
+        state,
+      ) as ExtractStore<TStoreDefinition>;
     } catch (exception) {
       if (exception instanceof Error) throw exception;
       throw new StateBuilderError(
@@ -101,28 +89,35 @@ export class Container {
     }
   }
 
-  #resolveStore<TStoreDefinition extends StoreApiDefinition<any, any>>(
-    owner: Owner,
-    state: TStoreDefinition,
-  ): GenericStoreApi {
-    return runInSubRoot(() => resolve(state, this), owner);
+  #home(definition: StoreApiDefinition<any, any>): Container {
+    let container: Container = this;
+    while (!container.#provided.has(definition) && container.#parent) {
+      container = container.#parent;
+    }
+    return container;
   }
 
-  #retrieveInstance(
-    definition: StoreApiDefinition<any, any>,
-  ): GenericStoreApi | null {
-    let instance: GenericStoreApi | null = this.states.get(definition) ?? null;
+  #getOrCreate(definition: StoreApiDefinition<any, any>): GenericStoreApi {
+    const instance = this.#stores.get(definition);
     if (instance) {
       return instance;
     }
-    let currentParent = this.parent;
-    while (currentParent) {
-      instance = currentParent.states.get(definition) ?? null;
-      if (!!instance) {
-        return instance;
-      }
-      currentParent = currentParent.parent;
+    const cycleStart = this.#resolving.indexOf(definition);
+    if (cycleStart !== -1) {
+      const cycle = [...this.#resolving.slice(cycleStart), definition]
+        .map((entry) => entry[$CREATOR].name)
+        .join(' -> ');
+      throw new StateBuilderError(
+        `Circular dependency between stores: ${cycle}`,
+      );
     }
-    return instance;
+    this.#resolving.push(definition);
+    try {
+      const store = runInSubRoot(() => resolve(definition, this), this.#owner);
+      this.#stores.set(definition, store);
+      return store;
+    } finally {
+      this.#resolving.pop();
+    }
   }
 }

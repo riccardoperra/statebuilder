@@ -20,19 +20,11 @@ import type {
   ContainerPluginContext,
   StoreApiDefinition,
 } from './types';
-import { onCleanup } from 'solid-js';
+import { onCleanup } from './reactivity';
 import { ApiDefinition } from './api-definition';
-import { Container } from './container';
-import { ResolvedPluginContext } from './resolved-plugin-context';
-import { StateBuilderError } from './error';
-
-import {
-  $PLUGIN,
-  type CreatePluginOptions,
-  type Plugin as $Plugin,
-} from './pluggino';
-
-import { createPlugin, resolve as $resolve, type Plugin } from './system';
+import type { Container } from './container';
+import type { CreatePluginOptions } from './pluggino';
+import { createPlugin as $createPlugin, resolve as $resolve } from './system';
 import { $CREATOR } from './symbols';
 
 export interface CreateOptions {
@@ -63,19 +55,6 @@ export function create<P extends any[], T extends GenericStoreApi>(
   };
 }
 
-function checkDependencies(resolvedPlugins: string[], plugin: Plugin) {
-  const meta = plugin[$PLUGIN];
-  if (!meta || !meta.dependencies) return;
-  meta.dependencies.forEach((dependency) => {
-    if (!resolvedPlugins.includes(dependency)) {
-      throw new StateBuilderError(
-        `The dependency '${dependency}' of plugin '${meta.name}' is missing`,
-        { cause: { resolvedDependencies: resolvedPlugins, plugin } },
-      );
-    }
-  });
-}
-
 /**
  * A function that resolves a store API definition by applying the provided extensions to it.
  *
@@ -88,28 +67,15 @@ export function resolve<
   TDefinition extends StoreApiDefinition<GenericStoreApi, Record<string, any>>,
 >(definition: TDefinition, container?: Container) {
   const { factory, composer } = definition[$CREATOR];
-
-  const resolvedPlugins: string[] = [],
-    pluginContext = new ResolvedPluginContext(container),
-    resolvedStore = factory();
-
+  const resolvedStore = factory();
   const composedObject = $resolve(composer, resolvedStore, {
-    createContext: () => ({
-      inject: pluginContext.inject.bind(pluginContext),
-    }),
-    beforePluginMount: (context, plugin, index) => {
-      checkDependencies(resolvedPlugins, plugin);
-    },
-    afterPluginMount: (context, data, index) => {
-      resolvedPlugins.push(data.plugin[$PLUGIN].name);
-    },
+    container,
+    definition,
   });
 
   onCleanup(() => {
     composedObject.dispose();
-    if (container) {
-      container.remove(definition);
-    }
+    container?.remove(definition);
   });
 
   return resolvedStore;
@@ -128,24 +94,24 @@ export interface PluginCreatorOptions extends CreatePluginOptions {
  * @param options - The options for creating the plugin.
  * @returns A plugin object with the given name and dependencies and the apply function provided.
  */
-function _makePlugin<
+function _createPlugin<
   TCallback extends <S extends GenericStoreApi>(
     store: S,
     context: ContainerPluginContext<S>,
   ) => unknown,
 >(pluginCallback: TCallback, options: PluginCreatorOptions): TCallback {
-  return createPlugin(pluginCallback as any, {
+  return $createPlugin(pluginCallback as any, {
     name: options.name,
     dependencies: options.dependencies ?? [],
   });
 }
 
-export const makePlugin = Object.assign(_makePlugin, {
+export const createPlugin = Object.assign(_createPlugin, {
   typed<T extends GenericStoreApi>() {
-    return function _makePlugin2<
+    return function _createTypedPlugin<
       TCallback extends <S extends T>(store: S) => unknown,
     >(cb: TCallback, options: PluginCreatorOptions): TCallback {
-      return _makePlugin(cb as any, options);
+      return _createPlugin(cb as any, options);
     };
   },
 });

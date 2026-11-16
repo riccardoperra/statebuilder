@@ -18,7 +18,6 @@ import type {
   ApiDefinitionCreator,
   ApiDefinitionInternalCreator,
   GenericStoreApi,
-  Plugin,
   ContainerPluginContext,
 } from './types';
 import { $CREATOR } from './symbols';

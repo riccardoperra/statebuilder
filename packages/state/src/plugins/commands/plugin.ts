@@ -5,7 +5,7 @@ import {
 } from '@statebuilder/container';
 import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
 import { GenericStateCommand } from './command';
-import { makePlugin } from '@statebuilder/container';
+import { createPlugin } from '@statebuilder/container';
 import type { ProxifyCommands, StoreWithProxyCommands } from './types';
 import { makeProxyHandlers } from './proxy';
 import { applyDevtools } from '~/plugins/commands/devtools';
@@ -57,7 +57,7 @@ interface PluginOptions {
 export function withProxyCommands<T extends Record<string, unknown>>(
   options?: PluginOptions,
 ) {
-  return makePlugin(
+  return createPlugin(
     (store, context) => {
       const storeWithProxy = plugin<T>()(store);
 

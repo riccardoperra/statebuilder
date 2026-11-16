@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { create, makePlugin, resolve } from '../src/api';
+import { create, createPlugin, resolve } from '../src/api';
 import { createRoot, createSignal, getOwner } from 'solid-js';
 import { Container, type GenericStoreApi } from '../src';
 import type { SetStoreFunction } from 'solid-js/store';
@@ -59,9 +59,9 @@ describe('create', () => {
   });
 });
 
-describe('makePlugin', () => {
+describe('createPlugin', () => {
   it('make plugin with custom name', () => {
-    const withCountSetter = makePlugin(
+    const withCountSetter = createPlugin(
       <
         S extends GenericStoreApi<
           { count: number },
@@ -152,7 +152,7 @@ describe('resolve', () => {
   });
 
   it('will throw exception when dependency is missing', () => {
-    const plugin1 = makePlugin(() => ({}), {
+    const plugin1 = createPlugin(() => ({}), {
       name: 'plugin1',
       dependencies: ['missingPlugin'],
     });
@@ -201,7 +201,7 @@ describe('inject', () => {
 
   it('should inject state inside another state', () => {
     createRoot((dispose) => {
-      const containerState = Container.create(getOwner()!);
+      const containerState = Container.create({ owner: getOwner()! });
 
       const State1 = defineSignal(() => 0).extend((_, context) => {
         context.onMount(() => initHook('first-plugin'));

@@ -7,9 +7,6 @@ export default defineConfig({
   plugins: [
     statebuilder({
       autoKey: true,
-      experimental: {
-        transformStateProviderDirective: true,
-      },
     }),
     solidStart(),
     nitro(),

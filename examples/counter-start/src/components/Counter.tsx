@@ -1,5 +1,10 @@
 import './Counter.css';
-import { defineSignal, defineStore, provideState } from 'statebuilder';
+import {
+  defineSignal,
+  defineStore,
+  StoreProvider,
+  useStore,
+} from 'statebuilder';
 import { withProxyCommands } from 'statebuilder/commands';
 import { withReduxDevtools } from 'statebuilder/devtools';
 import { withAsyncAction } from 'statebuilder/asyncAction';
@@ -60,9 +65,8 @@ const CountStore = defineStore(() => ({
   });
 
 function Counter() {
-  'use stateprovider';
-  const store = provideState(CountStore);
-  const globalCount = provideState(GlobalCount);
+  const store = useStore(CountStore);
+  const globalCount = useStore(GlobalCount);
 
   return (
     <>
@@ -99,7 +103,9 @@ function Counter() {
 }
 
 export default function CounterRoot() {
-  'use stateprovider';
-  const globalCount = GlobalCount;
-  return <Counter />;
+  return (
+    <StoreProvider provide={[CountStore]}>
+      <Counter />
+    </StoreProvider>
+  );
 }

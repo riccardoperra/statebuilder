@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { $CREATOR, Container } from '../src';
-import { ɵdefineResource, ɵWithResourceStorage } from '~/solid/resource';
+import { defineAsync, withResourceStorage } from '~/solid/resource';
 import { createResource, createRoot } from 'solid-js';
 import { defineSignal } from '../src/solid';
 
@@ -12,7 +12,7 @@ interface Todo {
 
 describe('Resource', () => {
   it('should define state with params', () => {
-    const def = ɵdefineResource(
+    const def = defineAsync(
       () => async () =>
         Promise.resolve({
           id: 1,
@@ -25,7 +25,7 @@ describe('Resource', () => {
   });
 
   it('should fetch data async', async () => {
-    const def = ɵdefineResource(async () => {
+    const def = defineAsync(async () => {
       await new Promise((r) => setTimeout(r, 2000));
       return Promise.resolve({
         id: 1,
@@ -56,7 +56,7 @@ describe('Resource', () => {
       const [stateResource, { mutate }] = createResource(
         () => Promise.resolve(5),
         {
-          storage: ɵWithResourceStorage(store),
+          storage: withResourceStorage(store),
         },
       );
       return {

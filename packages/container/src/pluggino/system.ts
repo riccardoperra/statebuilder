@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { resolve } from "./resolve.js";
-import { createPlugin } from "./create-plugin.js";
-import type { ResolvePluginHandler } from "./resolve.js";
+import { resolve } from './resolve.js';
+import { createPlugin } from './create-plugin.js';
+import type { ResolvePluginHandler, SystemConfig } from './resolve.js';
 import type {
   CreatePluginFactory,
   CreatePluginOptions,
-} from "./create-plugin.js";
-import type { Composable } from "./composer.js";
-import type { Plugin } from "./plugin.js";
+} from './create-plugin.js';
+import type { Composable } from './composer.js';
+import type { Plugin } from './plugin.js';
 
 /**
  * Defines the types used in the system factory.
@@ -34,11 +34,13 @@ export interface SystemFactoryTypes<
   TComposable extends Composable<any> = Composable<any>,
   TResolveContext extends Record<string, any> = Record<string, any>,
   TPlugin extends Plugin = Plugin,
+  TResolveArgs = unknown,
 > {
   pluginOptions: TCreatePluginOptions;
   composable: TComposable;
   resolveContext: TResolveContext;
   plugin: TPlugin;
+  resolveArgs: TResolveArgs;
 }
 
 /**
@@ -50,26 +52,16 @@ export interface SystemFactory<T extends SystemFactoryTypes> {
 }
 
 /**
- * This method configures and initializes factories for creating plugins and resolving components
- * specific to the provided `SystemFactoryTypes` type parameter.
+ * Creates the plugin factory and a `resolve` function bound to the given configuration.
+ * Each `resolve` call takes a per-call argument that `createContext` and the hooks receive.
  *
  * @public
  */
-export function createSystem<T extends SystemFactoryTypes>(): SystemFactory<T> {
+export function createSystem<T extends SystemFactoryTypes>(
+  config: SystemConfig<T> = {},
+): SystemFactory<T> {
   return {
-    createPlugin: createPluginFactory<T>(),
-    resolve: resolveFactory<T>(),
-  } as unknown as SystemFactory<T>;
-}
-
-function createPluginFactory<
-  TSystemFactoryTypes extends SystemFactoryTypes,
->(): CreatePluginFactory<TSystemFactoryTypes> {
-  return createPlugin;
-}
-
-function resolveFactory<
-  TSystemFactoryTypes extends SystemFactoryTypes,
->(): ResolvePluginHandler<TSystemFactoryTypes> {
-  return resolve as unknown as ResolvePluginHandler<TSystemFactoryTypes>;
+    createPlugin: createPlugin as CreatePluginFactory<T>,
+    resolve: (composable, o, args) => resolve(config, composable, o, args),
+  };
 }

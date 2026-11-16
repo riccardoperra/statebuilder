@@ -1,4 +1,4 @@
-import { makePlugin } from '@statebuilder/container';
+import { createPlugin } from '@statebuilder/container';
 import { untrack } from 'solid-js';
 import { GenericStoreApi } from '@statebuilder/container';
 
@@ -29,7 +29,7 @@ declare global {
 }
 
 export function withReduxDevtools(options: WithReduxDevtoolsOptions) {
-  return makePlugin(
+  return createPlugin(
     <S extends GenericStoreApi>(storeApi: S) => {
       if (!globalThis.window) {
         return;

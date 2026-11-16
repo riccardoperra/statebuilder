@@ -1,4 +1,9 @@
-export { provideState, StateProvider, getStateContext } from './provider';
+export {
+  useStore,
+  StoreProvider,
+  useContainer,
+  type StoreProviderProps,
+} from './provider';
 
 export { defineStore, type Store, type StoreValue } from './store';
 
@@ -9,8 +14,8 @@ export {
 } from './signal';
 
 export {
-  ɵdefineResource,
-  ɵWithResourceStorage,
+  defineAsync,
+  withResourceStorage,
   type ResourceActions,
   type Resource,
 } from './resource';

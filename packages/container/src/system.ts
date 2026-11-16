@@ -15,9 +15,12 @@
  */
 
 import type { Composable, SystemFactoryTypes } from './pluggino';
-import { createSystem, type Plugin as $Plugin } from './pluggino';
+import { $PLUGIN, createSystem, type Plugin as $Plugin } from './pluggino';
 import type { PluginCreatorOptions } from './api';
-import type { PluginContext } from './resolved-plugin-context';
+import type { Container } from './container';
+import type { ContainerPluginContext, StoreApiDefinition } from './types';
+import { StateBuilderError } from './error';
+import { $CREATOR } from './symbols';
 
 export type Plugin<
   TCallback extends (o: any, context: any) => any = (
@@ -27,11 +30,41 @@ export type Plugin<
   T = ReturnType<TCallback>,
 > = $Plugin<TCallback, T, PluginCreatorOptions>;
 
+export interface ResolveArgs {
+  container: Container | undefined;
+  definition: StoreApiDefinition<any, any>;
+}
+
 export type StatebuilderSystem = SystemFactoryTypes<
   PluginCreatorOptions,
   Composable<any>,
-  PluginContext,
-  Plugin
+  Pick<ContainerPluginContext<any>, 'inject'>,
+  Plugin,
+  ResolveArgs
 >;
 
-export const { resolve, createPlugin } = createSystem<StatebuilderSystem>();
+export const { resolve, createPlugin } = createSystem<StatebuilderSystem>({
+  createContext: ({ container }) => ({
+    inject: (definition) => {
+      if (!container) {
+        throw new StateBuilderError('No container set in current context.');
+      }
+      return container.get(definition);
+    },
+  }),
+  beforePluginMount: (_, plugin, index, { definition }) => {
+    const dependencies = plugin[$PLUGIN].dependencies;
+    if (!dependencies) return;
+    const mounted = definition[$CREATOR].composer.context.plugins
+      .slice(0, index)
+      .map((mountedPlugin) => mountedPlugin[$PLUGIN].name);
+    for (const dependency of dependencies) {
+      if (!mounted.includes(dependency)) {
+        throw new StateBuilderError(
+          `The dependency '${dependency}' of plugin '${plugin[$PLUGIN].name}' is missing`,
+          { cause: { resolvedDependencies: mounted, plugin } },
+        );
+      }
+    }
+  },
+});
