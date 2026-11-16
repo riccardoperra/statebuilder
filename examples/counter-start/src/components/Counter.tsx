@@ -27,8 +27,8 @@ function appReducer(state: AppState, action: AppActions) {
 }
 
 const GlobalCount = defineSignal(() => 1).extend((_, context) => {
-  context.hooks.onInit(() => console.log('init count2'));
-  context.hooks.onDestroy(() => console.log('destroy count2'));
+  context.onMount(() => console.log('init count2'));
+  context.onDispose(() => console.log('destroy count2'));
 });
 
 const CountStore = defineStore(() => ({
@@ -47,8 +47,8 @@ const CountStore = defineStore(() => ({
       state.set('count', (count) => count + 1),
     );
 
-    context.hooks.onInit(() => console.log('init'));
-    context.hooks.onDestroy(() => console.log('destroy'));
+    context.onMount(() => console.log('init'));
+    context.onDispose(() => console.log('destroy'));
 
     return {
       incrementAfter1S: state.asyncAction(async (payload: number) => {
