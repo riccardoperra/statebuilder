@@ -1,3 +1,4 @@
+import { flush } from 'solid-js';
 import { describe, expect, it } from 'vitest';
 import { Container, defineStore } from '../src';
 import { createRoot, getOwner } from 'solid-js';
@@ -42,7 +43,10 @@ describe('Container', () => {
     const def = defineStore(() => ({ value: 'root' }));
     const { root, child } = chain([def]);
 
-    child.get(def).set('value', 'child');
+    child.get(def).set((state) => {
+      state.value = 'child';
+    });
+    flush();
 
     expect(child.get(def)().value).toBe('child');
     expect(root.get(def)().value).toBe('root');

@@ -1,14 +1,14 @@
-import type { PluginContext } from "./plugin.js";
+import type { PluginContext } from './plugin.js';
 
 /**
  * @internal
  */
-export const $PLUGIN_KEY: unique symbol = Symbol("plugin.key");
+export const $PLUGIN_KEY: unique symbol = Symbol('plugin.key');
 
 /**
  * @internal
  */
-export const $PLUGIN_META: unique symbol = Symbol("plugin.meta");
+export const $PLUGIN_META: unique symbol = Symbol('plugin.meta');
 
 /**
  * @public Plugin key interface
@@ -34,7 +34,7 @@ export type PluginKeyMeta<T> = symbol & {
  * @public
  */
 export function makePluginKey<T, TMeta>(
-  key: string = "key",
+  key: string = 'key',
 ): PluginKey<T, TMeta> {
   return {
     [$PLUGIN_KEY]: makePluginMeta<TMeta>(key),
@@ -56,7 +56,7 @@ export function makePluginKey<T, TMeta>(
  * @public
  */
 export function makePluginMeta<TMeta>(
-  key: string = "key",
+  key: string = 'key',
 ): PluginKeyMeta<TMeta> {
   return Object.assign(Symbol(`plugin.meta/${key}`), {
     [$PLUGIN_META]: undefined as TMeta,

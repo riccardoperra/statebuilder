@@ -1,21 +1,10 @@
-/*
- * Copyright 2025 Riccardo Perra
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import { type Accessor, createSignal } from 'solid-js';
-import { createStore, type SetStoreFunction } from 'solid-js/store';
+import {
+  type Accessor,
+  createSignal,
+  createStore,
+  snapshot,
+  type StoreSetter,
+} from 'solid-js';
 import {
   type ApiDefinitionCreator,
   create,
@@ -26,7 +15,7 @@ export type StoreValue = {};
 
 export type Store<TState extends StoreValue> = GenericStoreApi<
   TState,
-  SetStoreFunction<TState>
+  StoreSetter<TState>
 > & {
   get: TState;
 };
@@ -40,12 +29,14 @@ export type StoreDefinitionCreator<
 function makeStore<TState extends StoreValue>(
   initialValue: () => TState,
 ): Store<TState> {
-  const [store, internalSetStore] = createStore(initialValue());
-  const [track, notify] = createSignal([], { equals: false });
+  const [store, setStore]: [TState, StoreSetter<TState>] = createStore(
+    initialValue() as Record<PropertyKey, never>,
+  );
+  const [track, notify] = createSignal(undefined, { equals: false });
 
-  const set: SetStoreFunction<TState> = (...args: unknown[]) => {
-    (internalSetStore as any)(...args);
-    notify([]);
+  const set: StoreSetter<TState> = (fn) => {
+    setStore(fn);
+    notify();
   };
 
   const accessor: Accessor<TState> = () => {
@@ -56,6 +47,7 @@ function makeStore<TState extends StoreValue>(
   return Object.assign(accessor, {
     set,
     get: store,
+    peek: () => snapshot(store),
   });
 }
 

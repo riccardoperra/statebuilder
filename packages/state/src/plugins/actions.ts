@@ -1,4 +1,4 @@
-import { batch, getOwner, onCleanup, untrack } from 'solid-js';
+import { getOwner, onCleanup, untrack } from 'solid-js';
 import {
   createPlugin,
   type ContainerPluginContext,
@@ -151,8 +151,8 @@ export function withActions<S extends GenericStoreApi, A extends ActionMap>(
       untrack(() => {
         const event = { name, args };
         if (!silent) emit(registry, 'before', event);
-        const result = batch(() =>
-          context.runInAction(event, () => fn.apply(actions, args)),
+        const result = context.runInAction(event, () =>
+          fn.apply(actions, args),
         );
         if (!silent) emit(registry, 'after', event);
         return result;

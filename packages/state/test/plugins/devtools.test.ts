@@ -42,7 +42,9 @@ const FrameStore = defineStore(() => ({ padding: 64 }))
   .extend(
     withActions((store) => ({
       setPadding(padding: number) {
-        store.set('padding', padding);
+        store.set((state) => {
+          state.padding = padding;
+        });
       },
     })),
   )
@@ -72,7 +74,9 @@ describe('withDevtools', () => {
     const extension = installFakeExtension();
     const { frame } = resolveFrame();
 
-    frame.set('padding', 10);
+    frame.set((state) => {
+      state.padding = 10;
+    });
 
     expect(extension.sent).toEqual([
       { action: { type: 'set', payload: undefined }, state: { padding: 10 } },
@@ -101,7 +105,7 @@ describe('withDevtools', () => {
 
       extension.jump({ padding: 5 }, type);
 
-      expect(frame()).toEqual({ padding: 5 });
+      expect(frame.peek()).toEqual({ padding: 5 });
       expect(extension.sent).toEqual([]);
     },
   );
@@ -116,7 +120,7 @@ describe('withDevtools', () => {
     counter.set(1);
     extension.jump(7);
 
-    expect(counter()).toBe(7);
+    expect(counter.peek()).toBe(7);
     expect(extension.sent).toEqual([
       { action: { type: 'set', payload: undefined }, state: 1 },
     ]);
@@ -127,7 +131,9 @@ describe('withDevtools', () => {
     const { frame, dispose } = resolveFrame();
 
     dispose();
-    frame.set('padding', 1);
+    frame.set((state) => {
+      state.padding = 1;
+    });
 
     expect(extension.connected).toBe(false);
     expect(extension.sent).toEqual([]);
@@ -138,6 +144,6 @@ describe('withDevtools', () => {
 
     frame.actions.setPadding(1);
 
-    expect(frame()).toEqual({ padding: 1 });
+    expect(frame.peek()).toEqual({ padding: 1 });
   });
 });

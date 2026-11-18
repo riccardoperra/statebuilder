@@ -1,8 +1,7 @@
 import { describe, expectTypeOf, test, vi } from 'vitest';
 import { create, createPlugin } from '../src';
-import { Setter } from 'solid-js';
+import type { Setter, StoreSetter } from 'solid-js';
 import { GenericStoreApi } from '@statebuilder/container';
-import { SetStoreFunction } from 'solid-js/store';
 import { defineSignal, Signal } from '~/solid/signal';
 import { defineStore, Store, StoreValue } from '~/solid/store';
 import { withActions } from '~/plugins/actions';
@@ -13,9 +12,7 @@ describe('createPlugin', () => {
   test('make plugin supported only by store definition', () => {
     const onlyStorePlugin = createPlugin.typed<Store<{ count: number }>>()(
       (store) => {
-        expectTypeOf(store.set).toMatchTypeOf<
-          SetStoreFunction<{ count: number }>
-        >();
+        expectTypeOf(store.set).toMatchTypeOf<StoreSetter<{ count: number }>>();
         return {
           fromStore: 1,
         };
@@ -58,6 +55,7 @@ describe('createPlugin', () => {
       const set = vi.fn();
       return Object.assign(accessor, {
         set,
+        peek: (): T => value,
         log() {
           console.log('ok');
         },

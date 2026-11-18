@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRoot } from 'solid-js';
+import { createRoot, flush as flushSolid } from 'solid-js';
 import { Container, defineSignal } from '../../src';
 import { withAsyncAction } from '../../src/plugins/asyncAction';
 
@@ -18,6 +18,7 @@ describe('asyncAction', () => {
 
     expect(store.run.latestValue).toBeUndefined();
     store.run(2);
+    flushSolid();
     expect(store.run.loading).toBe(true);
     await flush();
 

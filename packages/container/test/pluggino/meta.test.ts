@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import { describe, expect, test, vi } from "vitest";
-import { getMeta, setMeta } from "../../src/pluggino/meta.js";
-import { makePluginKey, makePluginMeta } from "../../src/pluggino/index.js";
-import type { MetaStore } from "../../src/pluggino/meta.js";
+import { describe, expect, test, vi } from 'vitest';
+import { getMeta, setMeta } from '../../src/pluggino/meta.js';
+import { makePluginKey, makePluginMeta } from '../../src/pluggino/index.js';
+import type { MetaStore } from '../../src/pluggino/meta.js';
 
-describe("setMeta", () => {
-  test("set by key", () => {
+describe('setMeta', () => {
+  test('set by key', () => {
     const obj: MetaStore = {};
-    setMeta.bind(obj)("foo", "bar");
-    expect(obj).toHaveProperty("foo", "bar");
+    setMeta.bind(obj)('foo', 'bar');
+    expect(obj).toHaveProperty('foo', 'bar');
   });
 
-  test("set by meta key", () => {
+  test('set by meta key', () => {
     const obj: MetaStore = {};
     const key = makePluginMeta<number>();
     setMeta.bind(obj)(key, 1);
     expect(obj[key]).toEqual(1);
   });
 
-  test("set by meta plugin", () => {
+  test('set by meta plugin', () => {
     const obj: MetaStore = {};
     const key = makePluginKey<string, number>();
     setMeta.bind(obj)(key, 1);
@@ -41,21 +41,21 @@ describe("setMeta", () => {
   });
 });
 
-describe("getMeta", () => {
-  test("get by string", () => {
+describe('getMeta', () => {
+  test('get by string', () => {
     const obj: MetaStore = {};
-    obj["foo"] = "bar";
-    expect(getMeta.bind(obj)("foo")).toEqual("bar");
+    obj['foo'] = 'bar';
+    expect(getMeta.bind(obj)('foo')).toEqual('bar');
   });
 
-  test("get by meta key", () => {
+  test('get by meta key', () => {
     const obj: MetaStore = {};
     const key = makePluginMeta<number>();
     obj[key] = 1;
     expect(getMeta.bind(obj)(key)).toEqual(1);
   });
 
-  test("get by meta plugin", () => {
+  test('get by meta plugin', () => {
     const obj: MetaStore = {};
     const key = makePluginKey<any, number>();
     setMeta.bind(obj)(key, 99);

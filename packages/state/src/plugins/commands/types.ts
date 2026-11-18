@@ -8,7 +8,6 @@ import type {
   StateCommand,
 } from './command';
 import type { GenericStoreApi } from '@statebuilder/container';
-import type { ObservableObserver } from 'solid-js';
 
 export type GenericCommandsMap = Record<PropertyKey, GenericStateCommand>;
 
@@ -78,8 +77,17 @@ export type ProxifyCommands<T extends Record<string, unknown>> = {
   [K in keyof T]: StateCommand<K & string, T[K]>;
 };
 
+declare global {
+  interface SymbolConstructor {
+    readonly observable: symbol;
+  }
+}
+
+export type CommandObserver<T> =
+  ((value: T) => void) | { next?: (value: T) => void };
+
 export interface Observable<T> {
-  subscribe(observer: ObservableObserver<T>): {
+  subscribe(observer: CommandObserver<T>): {
     unsubscribe(): void;
   };
 

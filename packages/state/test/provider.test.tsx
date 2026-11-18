@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@solidjs/testing-library';
-import { createContext, useContext } from 'solid-js';
+import { createContext, flush, useContext } from 'solid-js';
 import { StoreProvider, useContainer, useStore } from '../src/solid';
 import { defineStore } from '../src/solid';
 import { StateBuilderError } from '../src/index';
 
 describe('provider', () => {
   const counter = defineStore(() => ({ count: 0 })).extend((ctx) => ({
-    increment: () => ctx.set('count', (count) => count + 1),
+    increment: () =>
+      ctx.set((state) => {
+        state.count += 1;
+      }),
   }));
 
   function App() {
@@ -22,7 +25,7 @@ describe('provider', () => {
     );
   }
 
-  const texts = (buttons: HTMLElement[]) => buttons.map((_) => _.innerText);
+  const texts = (buttons: HTMLElement[]) => buttons.map((_) => _.textContent);
 
   it('should use container from context', async () => {
     const results = render(() => (
@@ -32,11 +35,12 @@ describe('provider', () => {
     ));
 
     const btn = await results.findByTestId('button');
-    expect(btn.innerText).toEqual('0');
+    expect(btn.textContent).toEqual('0');
 
     btn.click();
+    flush();
 
-    expect(btn.innerText).toEqual('1');
+    expect(btn.textContent).toEqual('1');
   });
 
   it('should share state', async () => {
@@ -53,6 +57,7 @@ describe('provider', () => {
     expect(texts(buttons)).toEqual(['0', '0', '0']);
 
     buttons[0].click();
+    flush();
 
     expect(texts(buttons)).toEqual(['1', '1', '1']);
   });
@@ -69,6 +74,7 @@ describe('provider', () => {
 
     const buttons = await results.findAllByTestId('button');
     buttons[0].click();
+    flush();
 
     expect(texts(buttons)).toEqual(['1', '1']);
   });
@@ -89,6 +95,7 @@ describe('provider', () => {
 
     const buttons = await results.findAllByTestId('button');
     buttons[0].click();
+    flush();
 
     expect(texts(buttons)).toEqual(['1', '1', '0', '0']);
   });
@@ -99,17 +106,17 @@ describe('provider', () => {
     let theme: string | undefined;
 
     function Reader() {
-      theme = useStore(ThemedStore)().theme;
+      theme = useStore(ThemedStore).peek().theme;
       return null;
     }
 
     render(() => (
       <StoreProvider>
-        <Theme.Provider value="dark">
+        <Theme value="dark">
           <StoreProvider provide={[ThemedStore]}>
             <Reader />
           </StoreProvider>
-        </Theme.Provider>
+        </Theme>
       </StoreProvider>
     ));
 

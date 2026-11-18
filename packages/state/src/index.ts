@@ -7,12 +7,12 @@ export {
   defineSignal,
   defineStore,
   defineAsync,
-  withResourceStorage,
 } from './solid/index';
 
 export type {
   Signal,
   Store,
-  Resource,
+  AsyncStore,
+  AsyncSource,
   StoreProviderProps,
 } from './solid/index';

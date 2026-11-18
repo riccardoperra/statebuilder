@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createEffect, createRoot, createSignal } from 'solid-js';
+import { createEffect, createRoot, createSignal, flush } from 'solid-js';
 import { Container, defineSignal, defineStore, type SetMeta } from '../../src';
 import { withActions } from '../../src/plugins/actions';
 
@@ -13,10 +13,14 @@ function inRoot<T>(fn: (container: Container) => T) {
 const FrameStore = defineStore(() => ({ padding: 64, visible: true })).extend(
   withActions((store) => ({
     setPadding(padding: number) {
-      store.set('padding', padding);
+      store.set((state) => {
+        state.padding = padding;
+      });
     },
     toggleVisibility() {
-      store.set('visible', (visible) => !visible);
+      store.set((state) => {
+        state.visible = !state.visible;
+      });
     },
   })),
 );
@@ -27,6 +31,7 @@ describe('withActions', () => {
 
     frame.actions.setPadding(32);
     frame.actions.toggleVisibility();
+    flush();
 
     expect(frame()).toEqual({ padding: 32, visible: false });
   });
@@ -35,8 +40,7 @@ describe('withActions', () => {
     const Counter = defineSignal(() => 1).extend(
       withActions((store) => ({
         double() {
-          store.set((count) => count * 2);
-          return store();
+          return store.set((count) => count * 2);
         },
         async load() {
           return 'loaded';
@@ -69,7 +73,7 @@ describe('withActions', () => {
     const { result: frame } = inRoot((container) => container.get(FrameStore));
     const events: unknown[] = [];
     frame.onAction('setPadding', (event) =>
-      events.push({ ...event, padding: frame().padding }),
+      events.push({ ...event, padding: frame.peek().padding }),
     );
 
     frame.actions.setPadding(32);
@@ -114,7 +118,7 @@ describe('withActions', () => {
 
     frame.actions.setPadding.silent(10);
 
-    expect(frame().padding).toBe(10);
+    expect(frame.peek().padding).toBe(10);
     expect(listener).not.toHaveBeenCalled();
   });
 
@@ -145,7 +149,7 @@ describe('withActions', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  it('runs the action in a batch: effects see only the final state', () => {
+  it('applies the writes of an action together: effects see only the final state', () => {
     const Point = defineSignal(() => ({ x: 0, y: 0 })).extend(
       withActions((store) => ({
         move(x: number, y: number) {
@@ -156,9 +160,16 @@ describe('withActions', () => {
     );
     const { result: point } = inRoot((container) => container.get(Point));
     const seen: unknown[] = [];
-    createRoot(() => createEffect(() => seen.push(point())));
+    createRoot(() =>
+      createEffect(
+        () => point(),
+        (value) => void seen.push(value),
+      ),
+    );
+    flush();
 
     point.actions.move(1, 2);
+    flush();
 
     expect(seen).toEqual([
       { x: 0, y: 0 },
@@ -170,21 +181,26 @@ describe('withActions', () => {
     const [source, setSource] = createSignal(0);
     const Counter = defineSignal(() => 0).extend(
       withActions((store) => ({
-        copy() {
-          store.set(source());
+        readSource() {
+          return source() + store();
         },
       })),
     );
     const { result: counter } = inRoot((container) => container.get(Counter));
     const runs = vi.fn();
     createRoot(() =>
-      createEffect(() => {
-        runs();
-        counter.actions.copy();
-      }),
+      createEffect(
+        () => {
+          runs();
+          return counter.actions.readSource();
+        },
+        () => {},
+      ),
     );
+    flush();
 
     setSource(5);
+    flush();
 
     expect(runs).toHaveBeenCalledTimes(1);
   });
@@ -208,6 +224,7 @@ describe('withActions', () => {
     const { result: counter } = inRoot((container) => container.get(Counter));
 
     counter.actions.resetAndAdd(3);
+    flush();
 
     expect(counter()).toBe(3);
     expect(names).toEqual(['reset', 'resetAndAdd']);
@@ -235,6 +252,7 @@ describe('withActions', () => {
     counter.onAction(({ name }) => names.push(name));
 
     counter.actions.incrementTwice();
+    flush();
 
     expect(counter()).toBe(2);
     expect(names).toEqual(['increment', 'increment', 'incrementTwice']);

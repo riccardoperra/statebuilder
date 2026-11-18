@@ -1,4 +1,4 @@
-import { batch, untrack, type ObservableObserver } from 'solid-js';
+import { untrack } from 'solid-js';
 import { $SB_DEV, type GenericStoreApi } from '@statebuilder/container';
 import type {
   CommandPhase,
@@ -6,6 +6,7 @@ import type {
   GenericStateCommand,
 } from './command';
 import type {
+  CommandObserver,
   ExecuteCommandCallback,
   Observable,
   WatchCommandOptions,
@@ -92,17 +93,16 @@ export function makeCommandNotifier<T>(
 
       if (callbacks) {
         runInAction({ name: identity, args: [payload] }, () =>
-          batch(() =>
-            untrack(() => {
-              for (const callback of [...callbacks]) {
-                const result = callback(payload, {
-                  set: store.set,
-                  state: store(),
-                });
-                if (result !== undefined) store.set(() => result);
-              }
-            }),
-          ),
+          untrack(() => {
+            for (const callback of [...callbacks]) {
+              const result = callback(payload, {
+                set: store.set,
+                // Includes the writes of the handlers that ran before this one.
+                state: store.peek(),
+              });
+              if (result !== undefined) store.set(() => result);
+            }
+          }),
         );
       }
 
@@ -118,7 +118,7 @@ export function makeCommandNotifier<T>(
         [Symbol.observable || '@@observable']() {
           return this;
         },
-        subscribe(observer: ObservableObserver<ExecutedGenericStateCommand>) {
+        subscribe(observer: CommandObserver<ExecutedGenericStateCommand>) {
           const next =
             typeof observer === 'function'
               ? observer

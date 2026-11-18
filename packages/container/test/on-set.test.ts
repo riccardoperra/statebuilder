@@ -44,14 +44,16 @@ describe('onSet', () => {
     ]);
   });
 
-  it('passes the store state after a path write', () => {
+  it('passes the store state after a draft write', () => {
     const values: { count: number }[] = [];
     const Counter = defineStore(() => ({ count: 0 })).extend((_, context) => {
       context.onSet((value) => values.push({ ...value }));
     });
 
     const { result: counter } = inRoot((container) => container.get(Counter));
-    counter.set('count', 5);
+    counter.set((state) => {
+      state.count = 5;
+    });
 
     expect(values).toEqual([{ count: 5 }]);
   });

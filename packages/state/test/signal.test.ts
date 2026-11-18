@@ -1,4 +1,4 @@
-import { createEffect } from 'solid-js';
+import { createEffect, createRoot, flush } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 import { Container, defineSignal } from '../src';
 import { $CREATOR } from '@statebuilder/container';
@@ -52,18 +52,33 @@ describe('Store', () => {
       title: '',
     });
 
-    store.set((state) =>
-      Object.assign(state, {
-        id: state.id + 1,
-        completed: false,
-      }),
-    );
+    store.set((state) => ({
+      ...state,
+      id: state.id + 1,
+      completed: false,
+    }));
+
+    expect(store.peek()).toEqual({ id: 1, completed: false, title: '' });
+    expect(store().id).toBe(0);
+
+    flush();
 
     expect(store()).toEqual({
       id: 1,
       completed: false,
       title: '',
     });
+  });
+
+  it('applies an updater to the writes that are not flushed yet', () => {
+    const store = container.get(defineSignal(() => 0));
+
+    store.set((count) => count + 1);
+    store.set((count) => count + 1);
+
+    expect(store.peek()).toBe(2);
+    flush();
+    expect(store()).toBe(2);
   });
 
   it('should react to changes', () => {
@@ -79,15 +94,20 @@ describe('Store', () => {
 
     expect(store).toBeDefined();
 
-    createEffect(() => {
-      accessorFn(store());
+    const dispose = createRoot((dispose) => {
+      createEffect(() => store(), accessorFn);
+      return dispose;
     });
+    flush();
 
     store.set((prev) => ({ ...prev, completed: false }));
+    flush();
 
     store.set((prev) => ({ ...prev, title: 'updated' }));
+    flush();
 
     store.set((prev) => ({ ...prev, title: 'updated again' }));
+    flush();
 
     expect(store()).toEqual({
       id: 0,
@@ -96,5 +116,6 @@ describe('Store', () => {
     });
 
     expect(accessorFn).toHaveBeenCalledTimes(4);
+    dispose();
   });
 });

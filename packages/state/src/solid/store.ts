@@ -1,13 +1,19 @@
-import { Accessor, createSignal } from 'solid-js';
-import { createStore, SetStoreFunction } from 'solid-js/store';
+import {
+  type Accessor,
+  createSignal,
+  createStore,
+  snapshot,
+  type StoreSetter,
+} from 'solid-js';
 import { ApiDefinitionCreator, GenericStoreApi } from '@statebuilder/container';
 import { create } from '@statebuilder/container';
+import { replaceState } from './replace';
 
 export type StoreValue = {};
 
 export type Store<TState extends StoreValue> = GenericStoreApi<
   TState,
-  SetStoreFunction<TState>
+  StoreSetter<TState>
 > & {
   get: TState;
 };
@@ -21,12 +27,21 @@ export type StoreDefinitionCreator<
 function makeStore<TState extends StoreValue>(
   initialValue: () => TState,
 ): Store<TState> {
-  const [store, internalSetStore] = createStore(initialValue());
-  const [track, notify] = createSignal([], { equals: false });
+  const [store, setStore]: [TState, StoreSetter<TState>] = createStore(
+    initialValue() as Record<PropertyKey, never>,
+  );
+  // Lets `store()` track every write, whatever property it changes.
+  const [track, notify] = createSignal(undefined, { equals: false });
 
-  const set: SetStoreFunction<TState> = (...args: unknown[]) => {
-    (internalSetStore as any)(...args);
-    notify([]);
+  const set: StoreSetter<TState> = (fn) => {
+    setStore((draft) => {
+      const next = fn(draft);
+      // Solid skips a key whose new value is the object the store already
+      // holds, so returning an earlier `peek()` would keep the nested writes
+      // made since. Writing the differences restores it.
+      if (next !== undefined && next !== draft) replaceState(draft, next);
+    });
+    notify();
   };
 
   const accessor: Accessor<TState> = () => {
@@ -37,6 +52,7 @@ function makeStore<TState extends StoreValue>(
   return Object.assign(accessor, {
     set,
     get: store,
+    peek: () => snapshot(store),
   });
 }
 

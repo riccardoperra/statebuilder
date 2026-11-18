@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { $PLUGIN } from "./plugin.js";
-import { $PLUGIN_KEY, makePluginKey } from "./plugin-key.js";
-import type { Plugin, PluginContext, PluginMeta } from "./plugin.js";
-import type { PluginKey } from "./plugin-key.js";
-import type { SystemFactoryTypes } from "./system.js";
+import { $PLUGIN } from './plugin.js';
+import { $PLUGIN_KEY, makePluginKey } from './plugin-key.js';
+import type { Plugin, PluginContext, PluginMeta } from './plugin.js';
+import type { PluginKey } from './plugin-key.js';
+import type { SystemFactoryTypes } from './system.js';
 
 export type CreatePluginOptions = {
   key?: PluginKey<any, any>;
@@ -49,7 +49,7 @@ export type CreatePluginFactory<
   TCallback extends <TObject>(o: TObject, context: PluginContext) => unknown,
 >(
   callback: TCallback,
-  options: TSystemTypes["pluginOptions"],
+  options: TSystemTypes['pluginOptions'],
 ) => Plugin<TCallback>;
 
 /**
@@ -77,7 +77,7 @@ export const createPlugin: CreatePluginFactory = function createPlugin<
   });
 
   if (!plugin.name) {
-    Object.defineProperty(plugin, "name", { value: options.name });
+    Object.defineProperty(plugin, 'name', { value: options.name });
   }
 
   return plugin;

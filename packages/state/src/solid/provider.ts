@@ -4,6 +4,7 @@ import {
   type FlowProps,
   getOwner,
   onCleanup,
+  untrack,
   useContext,
 } from 'solid-js';
 import {
@@ -13,7 +14,7 @@ import {
   type StoreApiDefinition,
 } from '@statebuilder/container';
 
-const StoreProviderContext = createContext<Container>();
+const StoreProviderContext = createContext<Container | null>(null);
 
 export type StoreProviderProps = FlowProps<{
   /**
@@ -32,14 +33,14 @@ export function StoreProvider(props: StoreProviderProps) {
   }
   const container = Container.create({
     owner,
-    parent: useContext(StoreProviderContext),
-    provide: props.provide,
+    parent: useContext(StoreProviderContext) ?? undefined,
+    provide: untrack(() => props.provide),
   });
   onCleanup(() => {
     container.destroy();
   });
 
-  return createComponent(StoreProviderContext.Provider, {
+  return createComponent(StoreProviderContext, {
     value: container,
     get children() {
       return props.children;

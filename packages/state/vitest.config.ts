@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitest/config';
-import solidPlugin from 'vite-plugin-solid';
+import solidPlugin from '@solidjs/vite-plugin';
 import { statebuilder } from './compiler';
 
 export default defineConfig({
   test: {
-    environment: 'happy-dom',
+    environment: 'jsdom',
     globals: true,
   },
   resolve: { tsconfigPaths: true },

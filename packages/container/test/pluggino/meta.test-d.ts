@@ -14,43 +14,43 @@
  * limitations under the License.
  */
 
-import { describe, expectTypeOf, test } from "vitest";
-import { getMeta, setMeta } from "../../src/pluggino/meta.js";
-import { makePluginKey, makePluginMeta } from "../../src/pluggino/index.js";
+import { describe, expectTypeOf, test } from 'vitest';
+import { getMeta, setMeta } from '../../src/pluggino/meta.js';
+import { makePluginKey, makePluginMeta } from '../../src/pluggino/index.js';
 
-describe("setMeta", () => {
-  test("allows to pass any type of value on generic keys", () => {
-    setMeta("anyString", 123);
-    setMeta("anyString", "");
-    setMeta("anyString", {});
+describe('setMeta', () => {
+  test('allows to pass any type of value on generic keys', () => {
+    setMeta('anyString', 123);
+    setMeta('anyString', '');
+    setMeta('anyString', {});
   });
 
-  test("infer type by given plugin meta", () => {
+  test('infer type by given plugin meta', () => {
     const meta = makePluginMeta<string>();
-    setMeta(meta, "any-string");
+    setMeta(meta, 'any-string');
     // @ts-expect-error Can pass only string
     setMeta(meta, 123);
   });
 
-  test("infer type by given plugin key", () => {
+  test('infer type by given plugin key', () => {
     const meta = makePluginKey<number, string>();
-    setMeta(meta, "any-string");
+    setMeta(meta, 'any-string');
     // @ts-expect-error Can pass only string
     setMeta(meta, 123);
   });
 });
 
-describe("getMeta", () => {
-  test("allows to pass any type of value on generic keys", () => {
-    expectTypeOf(getMeta("anyString")).toEqualTypeOf<any>();
+describe('getMeta', () => {
+  test('allows to pass any type of value on generic keys', () => {
+    expectTypeOf(getMeta('anyString')).toEqualTypeOf<any>();
   });
 
-  test("infer type by given plugin meta", () => {
+  test('infer type by given plugin meta', () => {
     const meta = makePluginMeta<string>();
     expectTypeOf(getMeta(meta)).toEqualTypeOf<string>();
   });
 
-  test("infer type by given plugin key", () => {
+  test('infer type by given plugin key', () => {
     const meta = makePluginKey<string, number>();
     expectTypeOf(getMeta(meta)).toEqualTypeOf<number>();
   });

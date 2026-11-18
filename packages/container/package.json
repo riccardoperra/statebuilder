@@ -19,14 +19,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@solidjs/babel-plugin": "^2.0.0",
+    "@solidjs/vite-plugin": "^3.0.1",
+    "@solidjs/web": "^2.0.1",
     "@types/node": "^26.6.6",
-    "solid-js": "^1.9.19",
+    "jsdom": "^31.0.1",
+    "solid-js": "^2.0.1",
     "tsdown": "^0.23.7",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   },
   "peerDependencies": {
-    "solid-js": "^1.9.0"
+    "solid-js": "^2.0.0"
   },
   "files": [
     "dist"

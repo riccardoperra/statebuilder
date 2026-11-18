@@ -9,13 +9,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "solid-js": "^1.9.19",
+    "solid-js": "^2.0.1",
     "statebuilder": "workspace:*"
   },
   "devDependencies": {
+    "@solidjs/babel-plugin": "^2.0.0",
+    "@solidjs/vite-plugin": "^3.0.1",
+    "@solidjs/web": "^2.0.1",
     "happy-dom": "^21.0.4",
     "typescript": "^7.0.2",
-    "vite-plugin-solid": "^2.11.16",
     "vitest": "^5.1.0"
   }
 }

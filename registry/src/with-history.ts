@@ -1,5 +1,4 @@
-import { batch, createSignal, untrack } from 'solid-js';
-import { reconcile, unwrap } from 'solid-js/store';
+import { createSignal } from 'solid-js';
 import {
   createPlugin,
   type ContainerPluginContext,
@@ -19,16 +18,6 @@ export interface History {
   clear(): void;
 }
 
-/** A plain copy, never the store proxy, so later writes cannot change it. */
-const snapshot = <T>(value: T): T => structuredClone(unwrap(value));
-
-function replaceState<T>(store: GenericStoreApi<T>, value: T) {
-  const copy = snapshot(value);
-  // set on a defineStore store merges an object into the state, so reconcile
-  // is needed to drop keys. A signal's set replaces the value.
-  store.set('get' in store ? reconcile(copy) : () => copy);
-}
-
 export function withHistory(options: WithHistoryOptions = {}) {
   const limit = options.limit ?? 100;
 
@@ -37,23 +26,35 @@ export function withHistory(options: WithHistoryOptions = {}) {
       store: GenericStoreApi<T>,
       context: ContainerPluginContext<GenericStoreApi<T>>,
     ) => {
-      const [past, setPast] = createSignal<T[]>([]);
-      const [future, setFuture] = createSignal<T[]>([]);
-      let present = snapshot(untrack(store));
+      // The arrays are the source of truth: a signal read right after its
+      // write is stale until the flush. The signal only makes canUndo and
+      // canRedo reactive. Entries are peek() and onSet values, which for a
+      // store are snapshots that later writes do not change.
+      let past: T[] = [];
+      let future: T[] = [];
+      let present = store.peek();
       let restoring = false;
+      const [sizes, setSizes] = createSignal({ past: 0, future: 0 });
+
+      function commit(nextPast: T[], nextFuture: T[]) {
+        past = nextPast;
+        future = nextFuture;
+        setSizes({ past: past.length, future: future.length });
+      }
 
       context.onSet((value) => {
         if (restoring) return;
-        setPast((entries) => [...entries, present].slice(-limit));
-        setFuture([]);
-        present = snapshot(value);
+        commit([...past, present].slice(-limit), []);
+        present = value;
       });
 
       function restore(next: T) {
         present = next;
         restoring = true;
         try {
-          replaceState(store, next);
+          // Replaces the whole state: a store drops the keys `next` lacks and
+          // keeps the identity of the objects that exist on both sides.
+          store.set(() => next);
         } finally {
           restoring = false;
         }
@@ -61,33 +62,20 @@ export function withHistory(options: WithHistoryOptions = {}) {
 
       const history: History = {
         undo() {
-          const entries = untrack(past);
-          if (entries.length === 0) return;
-          const previous = entries[entries.length - 1];
-          batch(() => {
-            setPast(entries.slice(0, -1));
-            setFuture((next) => [present, ...next]);
-          });
+          if (past.length === 0) return;
+          const previous = past[past.length - 1];
+          commit(past.slice(0, -1), [present, ...future]);
           restore(previous);
         },
         redo() {
-          const entries = untrack(future);
-          if (entries.length === 0) return;
-          const [next, ...rest] = entries;
-          batch(() => {
-            setFuture(rest);
-            setPast((entries) => [...entries, present]);
-          });
+          if (future.length === 0) return;
+          const [next, ...rest] = future;
+          commit([...past, present], rest);
           restore(next);
         },
-        canUndo: () => past().length > 0,
-        canRedo: () => future().length > 0,
-        clear() {
-          batch(() => {
-            setPast([]);
-            setFuture([]);
-          });
-        },
+        canUndo: () => sizes().past > 0,
+        canRedo: () => sizes().future > 0,
+        clear: () => commit([], []),
       };
 
       return { history };

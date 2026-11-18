@@ -107,9 +107,8 @@ export default defineConfig({
 ### Defining the store
 
 Define the store state through the definition creator function, such as `defineStore` or `defineSignal`.
-Those utilities wrap under the hood the [createSignal](https://www.solidjs.com/docs/latest#createsignal)
-and [createStore](https://www.solidjs.com/docs/latest#createstore)
-primitives from SolidJS, but they will be lazy initialized once the state is injected the first time.
+Those utilities wrap under the hood the `createSignal` and `createStore` primitives of Solid 2, but they will be lazy
+initialized once the state is injected the first time.
 
 ```ts
 // count.ts
@@ -122,9 +121,10 @@ const CountStore = defineSignal(() => 0)
     decrement: () => state.set((prev) => prev - 1),
   }))
   .extend((state) => {
-    createEffect(() => {
-      console.log('on state change', state());
-    });
+    createEffect(
+      () => state(),
+      (count) => console.log('on state change', count),
+    );
   });
 ```
 
@@ -148,7 +148,11 @@ const count = stateContainer.get(CountStore);
 
 count(); // get the state accessor
 
-count.set((count) => count++); // set the state manually
+count.set((count) => count + 1); // set the state manually
+
+count(); // still the old value: Solid applies a write on the next flush
+
+count.peek(); // the value with the writes that are not flushed yet
 
 // The returned state will inherit all properties returned by the .extend() method 😁
 
@@ -180,14 +184,10 @@ e.g. `LocalStoragePlugin`), in order to simplify the TS typings.
 ### Defining plugins through simple functions
 
 ```ts
-import { createEffect, on } from 'solid-js';
-
-const CountStore = defineSignal(() => 0).extend((state) => {
-  if (localStorage.has('count')) {
-    state.set(JSON.parse(localStorage.get('count')));
-  }
-
-  createEffect(on(state, (count) => localStorage.set('count', count)));
+const CountStore = defineSignal(() =>
+  Number(localStorage.getItem('count') ?? 0),
+).extend((state, context) => {
+  context.onSet((count) => localStorage.setItem('count', String(count)));
 
   return {
     increment: () => state.set((prev) => prev + 1),
@@ -208,16 +208,11 @@ import { createPlugin } from 'statebuilder';
 
 const withLocalStorage = (key: string) =>
   createPlugin(
-    (state) => {
-      // Will be called once during state initialization
-      if (localStorage.has(key)) {
-        const value = JSON.parse(localStorage.get(key));
-        state.set(key);
-      }
-
-      createEffect(on(state, (count) => localStorage.set('count', count)));
-
-      return {};
+    (state, context) => {
+      // Called once, when the store is created
+      context.onSet((value) =>
+        localStorage.setItem(key, JSON.stringify(value)),
+      );
     },
     { name: 'withLocalStorage' },
   );
@@ -226,17 +221,20 @@ const CountStore = defineSignal(() => 0)
   .extend(withLocalStorage('count'))
   .extend((state) => {
     return {
-      increment: state.set((prev) => prev + 1),
-      decrement: state.set((prev) => prev - 1),
+      increment: () => state.set((prev) => prev + 1),
+      decrement: () => state.set((prev) => prev - 1),
     };
   });
 ```
+
+A plugin runs while the store is created, inside a Solid owner. Solid 2 does not allow a write there, so give the
+store its first value in the definition, and write from event handlers, effects and `onSet` listeners.
 
 ### Reacting to writes with `onSet`
 
 The plugin context has `onSet`, which runs synchronously after every write to the store, also when a plugin overrides
 `set`. It receives the state after the write and a `meta` object. Use the value it receives instead of reading the
-store again. It returns an unsubscribe function, and the listener is removed when the store is disposed.
+store again: until the next flush the store still returns the old state. For a store the value is a plain snapshot. It returns an unsubscribe function, and the listener is removed when the store is disposed.
 
 ```ts
 const withLogger = createPlugin(
@@ -325,6 +323,44 @@ function Counter() {
 }
 ```
 
+## Reading and writing with Solid 2
+
+`statebuilder` 0.9 requires `solid-js` 2. Three rules of Solid 2 shape the API.
+
+**A write is applied on the next flush.** `store()` and `store.get` return the old state until then. `store.peek()`
+returns the state with the pending writes, without tracking. Use it inside actions and handlers that need what was
+just written.
+
+```ts
+count.set(5);
+count(); // 0
+count.peek(); // 5
+flush(); // from 'solid-js'. Solid also flushes by itself on the next microtask
+count(); // 5
+```
+
+**`defineStore` takes a draft.** Mutate the draft, or return the next state. Returning a state replaces the current
+one: missing keys are removed and nested objects that exist on both sides keep their identity. Returning an earlier
+`peek()` restores it.
+
+```ts
+frame.set((state) => {
+  state.padding = 32;
+});
+
+const before = frame.peek();
+frame.set((state) => ({ ...state, padding: 0 }));
+frame.set(() => before); // back to 32
+```
+
+**No write inside an owned scope.** Solid throws when a signal or store is written in a component body, a memo or the
+tracking half of an effect. Write from event handlers, from the second function of `createEffect`, and from `onSet`
+or `onAction` listeners.
+
+`defineAsync(() => fetchUser())` creates a store from an async source. Reading it before the first value suspends the
+closest `<Loading>`. It has `set`, `refetch()` and `peek()`, and `isPending(() => store())` tells when a new value is
+on its way.
+
 ## Usage in SolidJS
 
 Before using `statebuilder` on SolidJS, it's recommended to mount the `StoreProvider` to your app, ideally at the root.
@@ -398,10 +434,14 @@ import { withActions } from 'statebuilder/actions';
 const FrameStore = defineStore(() => ({ padding: 64, visible: true })).extend(
   withActions((store) => ({
     setPadding(padding: number) {
-      store.set('padding', padding);
+      store.set((state) => {
+        state.padding = padding;
+      });
     },
     toggleVisibility() {
-      store.set('visible', (visible) => !visible);
+      store.set((state) => {
+        state.visible = !state.visible;
+      });
     },
   })),
 );
@@ -414,7 +454,8 @@ frame.onAction(['setPadding', 'toggleVisibility'], ({ name }) => {});
 frame.onAction((event) => {}, { phase: 'before' }); // default phase is 'after'
 ```
 
-Each action runs inside `batch` and `untrack` and returns what the function returns. `after` listeners run when the
+Each action runs inside `untrack` and returns what the function returns. Solid applies its writes together on the next
+flush. `after` listeners run when the
 action returns, which for an async action is before its promise settles. Inside an action, `this` is the map of
 actions, so `this.toggleVisibility()` runs as a nested action. `onAction` returns an unsubscribe function and also
 unsubscribes on cleanup of the current owner. Using `withActions` again on the same definition adds to the same map.
@@ -438,7 +479,9 @@ const FrameStore = defineStore(() => ({ padding: 64, visible: true }))
         padding,
       }))
       .hold(store.commands.toggleVisibility, (_, { set }) =>
-        set('visible', (visible) => !visible),
+        set((state) => {
+          state.visible = !state.visible;
+        }),
       );
   });
 
@@ -452,14 +495,18 @@ frame
 
 The `Commands` type is the contract of the store. Each key becomes a command object in `store.commands` and a function
 in `store.actions`. `hold` attaches a handler to a command, and a command can have more than one handler. A handler
-returns the new state or writes with `set`.
+returns the new state or writes with `set`. Its `state` is `store.peek()`, so it includes the writes of the handlers
+that ran before it.
 
 `hold` also takes an object with one handler per command. TypeScript reports a command left without a handler.
 
 ```ts
 store.hold({
-  setPadding: (padding, { set }) => set('padding', padding),
-  toggleVisibility: (_, { set }) => set('visible', (visible) => !visible),
+  setPadding: (padding, { state }) => ({ ...state, padding }),
+  toggleVisibility: (_, { set }) =>
+    set((state) => {
+      state.visible = !state.visible;
+    }),
 });
 ```
 

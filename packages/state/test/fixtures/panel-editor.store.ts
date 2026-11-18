@@ -31,7 +31,9 @@ export const EditorStore = defineStore<EditorState>(() => ({
   .extend(
     withActions((_) => ({
       setSelectedJobId(id: string | null) {
-        _.set('selectedJobId', id);
+        _.set((state) => {
+          state.selectedJobId = id;
+        });
       },
     })),
   );
@@ -46,7 +48,9 @@ export const PanelEditorStore = defineStore<PanelEditorState>(() => ({
   .extend(
     withActions((_) => ({
       setActiveStepId(id: string | null) {
-        _.set('activeStep', id);
+        _.set((state) => {
+          state.activeStep = id;
+        });
       },
     })),
   )
@@ -71,7 +75,7 @@ export const PanelEditorStore = defineStore<PanelEditorState>(() => ({
 
     return {
       back() {
-        if (_.get.activeStep) {
+        if (_.peek().activeStep) {
           _.actions.setActiveStepId(null);
         } else {
           editorStore.actions.setSelectedJobId(null);

@@ -16,9 +16,14 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { create, createPlugin, resolve } from '../src/api';
-import { createRoot, createSignal, getOwner } from 'solid-js';
+import {
+  createRoot,
+  createSignal,
+  getOwner,
+  flush,
+  type StoreSetter,
+} from 'solid-js';
 import { Container, type GenericStoreApi } from '../src';
-import type { SetStoreFunction } from 'solid-js/store';
 import { defineSignal } from './utils/signal';
 import { defineStore } from './utils/store';
 const container = createRoot(() => Container.create());
@@ -29,17 +34,19 @@ describe('create', () => {
 
     const creatorFn = create('custom', (initialValue?: number) => {
       const [state, setState] = createSignal(initialValue ?? 0);
+      let latest = initialValue ?? 0;
       return Object.assign(state, {
         set: (value: number) => {
           if (value < 0) return;
           notify();
-          setState(value);
+          latest = setState(value);
         },
+        peek: () => latest,
       });
     });
 
     const definition = creatorFn(1).extend((ctx) => ({
-      decrement: () => ctx.set(ctx() - 1),
+      decrement: () => ctx.set(ctx.peek() - 1),
     }));
 
     const state = container.get(definition);
@@ -47,11 +54,13 @@ describe('create', () => {
     expect(state()).toEqual(1);
 
     state.set(0);
+    flush();
 
     expect(state()).toEqual(0);
 
     state.decrement();
     state.set(-1);
+    flush();
 
     expect(state()).toEqual(0);
 
@@ -65,12 +74,15 @@ describe('createPlugin', () => {
       <
         S extends GenericStoreApi<
           { count: number },
-          SetStoreFunction<{ count: number }>
+          StoreSetter<{ count: number }>
         >,
       >(
         store: S,
       ) => ({
-        increment: () => store.set('count', (count) => count + 1),
+        increment: () =>
+          store.set((state) => {
+            state.count += 1;
+          }),
       }),
       { name: 'countSetter' },
     );

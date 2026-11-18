@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { $PLUGIN_KEY, $PLUGIN_META } from "./plugin-key.js";
-import type { PluginKey, PluginKeyMeta } from "./plugin-key.js";
+import { $PLUGIN_KEY, $PLUGIN_META } from './plugin-key.js';
+import type { PluginKey, PluginKeyMeta } from './plugin-key.js';
 
 /**
  * @public Object that allows to store metadata
@@ -72,7 +72,7 @@ export type MetaStore = Record<PropertyKey, unknown>;
 /**
  * @internal
  */
-export const getMeta: WithMeta["getMeta"] = function getMeta(
+export const getMeta: WithMeta['getMeta'] = function getMeta(
   this: MetaStore,
   ...args:
     | [key: string]
@@ -80,23 +80,23 @@ export const getMeta: WithMeta["getMeta"] = function getMeta(
     | [key: PluginKeyMeta<unknown>]
 ) {
   const arg = args[0];
-  if (typeof arg === "string") return this[arg];
+  if (typeof arg === 'string') return this[arg];
   if ($PLUGIN_META in arg) return this[arg];
   if ($PLUGIN_KEY in arg) return this[arg.ɵmeta];
   return null;
-} satisfies WithMeta["getMeta"];
+} satisfies WithMeta['getMeta'];
 
 /**
  * @internal
  */
-export const setMeta: WithMeta["setMeta"] = function setMeta(
+export const setMeta: WithMeta['setMeta'] = function setMeta(
   this: MetaStore,
   ...args:
     | [key: string, value: any]
     | [key: PluginKey<any, any>, value: any]
     | [key: PluginKeyMeta<any>, value: any]
 ) {
-  if (typeof args[0] === "string") {
+  if (typeof args[0] === 'string') {
     this[args[0]] = args[1];
     return;
   }
@@ -109,4 +109,4 @@ export const setMeta: WithMeta["setMeta"] = function setMeta(
     this[arg.ɵmeta] = args[1];
     return;
   }
-} satisfies WithMeta["setMeta"];
+} satisfies WithMeta['setMeta'];

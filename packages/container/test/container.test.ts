@@ -16,7 +16,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { Container, StateBuilderError } from '../src';
-import { createRoot, getOwner } from 'solid-js';
+import { createRoot, flush, getOwner } from 'solid-js';
 import { defineSignal } from './utils/signal';
 
 function chain(provide: Parameters<typeof Container.create>[0] = {}) {
@@ -77,6 +77,7 @@ describe('Container scope', () => {
 
     first.get(def).set(1);
     second.get(def).set(2);
+    flush();
 
     expect(first.get(def)()).toBe(1);
     expect(second.get(def)()).toBe(2);

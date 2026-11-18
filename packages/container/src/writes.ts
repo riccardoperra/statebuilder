@@ -41,7 +41,7 @@ export function createStoreWrites(store: GenericStoreApi): StoreWrites {
     const meta: SetMeta = action ? { action } : {};
     // Untracked, so a listener's reads do not subscribe the computation that wrote.
     untrack(() => {
-      const value = store();
+      const value = store.peek();
       for (const listener of current) listener(value, meta);
     });
   };

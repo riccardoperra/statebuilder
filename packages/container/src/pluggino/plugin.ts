@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { $PLUGIN_KEY, PluginKey } from "./plugin-key.js";
-import type { WithMeta } from "./meta.js";
+import type { $PLUGIN_KEY, PluginKey } from './plugin-key.js';
+import type { WithMeta } from './meta.js';
 
 /**
  * @public
@@ -49,7 +49,7 @@ export type Plugin<
 /**
  * @internal Plugin symbol
  */
-export const $PLUGIN: unique symbol = Symbol("plugin");
+export const $PLUGIN: unique symbol = Symbol('plugin');
 
 /**
  * @public Plugin context

@@ -94,67 +94,99 @@ export const FrameStore = defineStore(() => getInitialFrameState())
   .extend(
     withActions((store) => ({
       setBackground(background: string) {
-        store.set('background', background);
+        store.set((state) => {
+          state.background = background;
+        });
       },
       setOpacity(opacity: number) {
-        store.set('opacity', opacity);
+        store.set((state) => {
+          state.opacity = opacity;
+        });
       },
       setPadding(padding: number) {
-        store.set('padding', padding);
+        store.set((state) => {
+          state.padding = padding;
+        });
       },
       setRadius(radius: number) {
-        store.set('radius', radius);
+        store.set((state) => {
+          state.radius = radius;
+        });
       },
       setScale(scale: number) {
-        store.set('scale', scale);
+        store.set((state) => {
+          state.scale = scale;
+        });
       },
       setAutoWidth(autoWidth: boolean) {
-        store.set('autoWidth', autoWidth);
+        store.set((state) => {
+          state.autoWidth = autoWidth;
+        });
       },
       setWidth(width: number) {
-        store.set('width', width);
+        store.set((state) => {
+          state.width = width;
+        });
       },
       setHeight(height: number) {
-        store.set('height', height);
+        store.set((state) => {
+          state.height = height;
+        });
       },
       setVisibility(visible: boolean) {
-        store.set('visible', visible);
+        store.set((state) => {
+          state.visible = visible;
+        });
       },
       toggleVisibility() {
-        store.set('visible', (visible) => !visible);
+        store.set((state) => {
+          state.visible = !state.visible;
+        });
       },
       setNextPadding() {
         const availablePadding = appEnvironment.editorPadding;
         const currentIndex = availablePadding.findIndex(
-          (item) => Number(item.value) === store.get.padding,
+          (item) => Number(item.value) === store.peek().padding,
         );
         const next = (currentIndex + 1) % availablePadding.length;
-        store.set('padding', Number(availablePadding[next].value));
+        store.set((state) => {
+          state.padding = Number(availablePadding[next].value);
+        });
       },
       setFromPreset(presetData: PresetFrameData) {
-        store.set({
-          ...presetData,
-          signature: parseSignature(presetData.signature),
-          aspectRatio: presetData.aspectRatio ?? null,
-          exportTarget: presetData.exportTarget ?? null,
+        store.set((state) => {
+          Object.assign(state, {
+            ...presetData,
+            signature: parseSignature(presetData.signature),
+            aspectRatio: presetData.aspectRatio ?? null,
+            exportTarget: presetData.exportTarget ?? null,
+          });
         });
       },
       setFromPersistedState(persisted: PersistedFrameState) {
-        store.set({
-          ...persisted,
-          signature: parseSignature(persisted.signature),
-          aspectRatio: persisted.aspectRatio ?? null,
-          exportTarget: persisted.exportTarget ?? null,
+        store.set((state) => {
+          Object.assign(state, {
+            ...persisted,
+            signature: parseSignature(persisted.signature),
+            aspectRatio: persisted.aspectRatio ?? null,
+            exportTarget: persisted.exportTarget ?? null,
+          });
         });
       },
       setSignature(signature: FrameState['signature']) {
-        store.set('signature', signature);
+        store.set((state) => {
+          state.signature = signature;
+        });
       },
       setAspectRatio(aspectRatio: string | null) {
-        store.set({ aspectRatio, exportTarget: null });
+        store.set((state) => {
+          Object.assign(state, { aspectRatio, exportTarget: null });
+        });
       },
       setExportTarget(exportTarget: FrameState['exportTarget']) {
-        store.set({ exportTarget, aspectRatio: null });
+        store.set((state) => {
+          Object.assign(state, { exportTarget, aspectRatio: null });
+        });
       },
     })),
   )
@@ -186,11 +218,11 @@ export const FrameStore = defineStore(() => getInitialFrameState())
       setStore: store.set,
       onStateToPersist(listener: (state: PersistedFrameState) => void) {
         return store.onAction(persistedActions, () =>
-          listener(mapToStateToPersistState(store())),
+          listener(mapToStateToPersistState(store.peek())),
         );
       },
       stateToPersist() {
-        return mapToStateToPersistState(store());
+        return mapToStateToPersistState(store.peek());
       },
       ...store.actions,
     };

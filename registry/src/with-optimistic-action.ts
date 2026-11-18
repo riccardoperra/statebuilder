@@ -1,5 +1,4 @@
-import { createSignal, untrack } from 'solid-js';
-import { reconcile, unwrap } from 'solid-js/store';
+import { createSignal } from 'solid-js';
 import { createPlugin, type GenericStoreApi } from 'statebuilder';
 
 export interface OptimisticAction<P> {
@@ -8,15 +7,6 @@ export interface OptimisticAction<P> {
   (payload?: void): Promise<void>;
   readonly loading: boolean;
   readonly error: unknown;
-}
-
-/** A plain copy, never the store proxy, so later writes cannot change it. */
-const snapshot = <T>(value: T): T => structuredClone(unwrap(value));
-
-function replaceState<T>(store: GenericStoreApi<T>, value: T) {
-  // set on a defineStore store merges an object into the state, so reconcile
-  // is needed to drop keys. A signal's set replaces the value.
-  store.set('get' in store ? reconcile(value) : () => value);
 }
 
 /**
@@ -40,11 +30,15 @@ export function withOptimisticAction() {
 
         const run = (payload: P) => {
           setError(undefined);
-          const before = snapshot(untrack(store));
+          // peek(), not store(): the rollback of the previous call may not be
+          // flushed yet. For a store it is a snapshot later writes leave alone.
+          const before = store.peek();
           return new Promise((resolve) => resolve(fn(payload))).then(
             () => {},
             (reason: unknown) => {
-              replaceState(store, before);
+              // Replaces the whole state: a store drops the keys `fn` added and
+              // keeps the identity of the objects that exist on both sides.
+              store.set(() => before);
               setError(() => reason);
             },
           );

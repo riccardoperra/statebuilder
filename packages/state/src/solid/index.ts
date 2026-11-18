@@ -13,9 +13,4 @@ export {
   type SignalDefinitionCreator,
 } from './signal';
 
-export {
-  defineAsync,
-  withResourceStorage,
-  type ResourceActions,
-  type Resource,
-} from './resource';
+export { defineAsync, type AsyncSource, type AsyncStore } from './async';

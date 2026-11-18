@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { flush } from 'solid-js';
 import { withReducer } from '~/plugins/reducer';
 import { Container } from '@statebuilder/container';
 import { defineSignal } from '~/solid/signal';
@@ -33,6 +34,7 @@ describe('reducer', () => {
     const store = container.get(config);
 
     store.dispatch({ type: 'increment', payload: 5 });
+    flush();
 
     expect(store()).toEqual(6);
   });

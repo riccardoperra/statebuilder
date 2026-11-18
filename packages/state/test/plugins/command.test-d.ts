@@ -6,8 +6,7 @@ import {
   withProxyCommands,
 } from '../../src/plugins/commands';
 import { defineSignal, defineStore } from '../../src/solid';
-import { Setter } from 'solid-js';
-import { SetStoreFunction } from 'solid-js/store';
+import type { Setter, StoreSetter } from 'solid-js';
 
 type Commands = {
   setFirstName: string;
@@ -54,7 +53,7 @@ describe('withProxyCommand', () => {
           expectTypeOf(command).toEqualTypeOf<boolean>();
           expectTypeOf(context.state).toEqualTypeOf<{ count: number }>();
           expectTypeOf(context.set).toMatchTypeOf<
-            SetStoreFunction<{ count: number }>
+            StoreSetter<{ count: number }>
           >();
         });
       });

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { createRoot } from 'solid-js';
+import { createRoot, flush } from 'solid-js';
 import { Container, defineSignal, defineStore } from 'statebuilder';
 import { withPersist, type PersistStorage } from '../src/with-persist';
 
-const flush = () => new Promise((resolve) => setTimeout(resolve));
+const settle = () => new Promise((resolve) => setTimeout(resolve));
 
 function asyncStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -37,15 +37,32 @@ describe('withPersist', () => {
     const definition = SettingsStore(localStorage);
     const settings = resolve(() => Container.create().get(definition));
 
+    expect(settings.peek()).toEqual({ theme: 'dark', fontSize: 14 });
+    flush();
     expect(settings.persist.hydrated()).toBe(true);
     expect(settings()).toEqual({ theme: 'dark', fontSize: 14 });
 
-    settings.set('fontSize', 16);
+    settings.set((state) => {
+      state.fontSize = 16;
+    });
 
     expect(JSON.parse(localStorage.getItem('settings')!)).toEqual({
       theme: 'dark',
       fontSize: 16,
     });
+  });
+
+  it('saves a write made before the hydration is flushed', () => {
+    const definition = SettingsStore(localStorage);
+    const settings = resolve(() => Container.create().get(definition));
+
+    settings.set((state) => {
+      state.theme = 'dark';
+    });
+
+    expect(localStorage.getItem('settings')).toBe(
+      '{"theme":"dark","fontSize":14}',
+    );
   });
 
   it('hydrates from an async storage once it answers', async () => {
@@ -55,7 +72,8 @@ describe('withPersist', () => {
 
     expect(settings.persist.hydrated()).toBe(false);
     expect(settings().theme).toBe('light');
-    await flush();
+    await settle();
+    flush();
 
     expect(settings.persist.hydrated()).toBe(true);
     expect(settings()).toEqual({ theme: 'dark', fontSize: 14 });
@@ -65,7 +83,8 @@ describe('withPersist', () => {
     const storage = asyncStorage({ settings: '{"theme":"dark"}' });
     const definition = SettingsStore(storage);
     resolve(() => Container.create().get(definition));
-    await flush();
+    await settle();
+    flush();
 
     expect(storage.setItem).not.toHaveBeenCalled();
   });
@@ -76,6 +95,7 @@ describe('withPersist', () => {
     const definition = SettingsStore(localStorage);
 
     const settings = resolve(() => Container.create().get(definition));
+    flush();
 
     expect(settings()).toEqual({ theme: 'light', fontSize: 14 });
     expect(settings.persist.hydrated()).toBe(true);
@@ -87,7 +107,8 @@ describe('withPersist', () => {
     storage.getItem.mockRejectedValueOnce(new Error('blocked'));
     const definition = SettingsStore(storage);
     const settings = resolve(() => Container.create().get(definition));
-    await flush();
+    await settle();
+    flush();
 
     expect(settings()).toEqual({ theme: 'light', fontSize: 14 });
     expect(settings.persist.hydrated()).toBe(true);
@@ -110,7 +131,10 @@ describe('withPersist', () => {
     );
     const settings = resolve(() => Container.create().get(definition));
 
-    settings.set('draft', 'hello');
+    settings.set((state) => {
+      state.draft = 'hello';
+    });
+    flush();
 
     expect(settings()).toEqual({ theme: 'dark', draft: 'hello' });
     expect(localStorage.getItem('settings')).toBe('{"theme":"dark"}');
@@ -127,6 +151,7 @@ describe('withPersist', () => {
       }),
     );
     const count = resolve(() => Container.create().get(definition));
+    flush();
 
     expect(count()).toBe(41);
     count.set(42);
@@ -136,7 +161,9 @@ describe('withPersist', () => {
   it('clear removes the stored value', async () => {
     const definition = SettingsStore(localStorage);
     const settings = resolve(() => Container.create().get(definition));
-    settings.set('theme', 'dark');
+    settings.set((state) => {
+      state.theme = 'dark';
+    });
 
     await settings.persist.clear();
 

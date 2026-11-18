@@ -1,5 +1,3 @@
-import { untrack } from 'solid-js';
-import { reconcile, unwrap } from 'solid-js/store';
 import { createPlugin, type GenericStoreApi } from 'statebuilder';
 
 /** Where the state is loaded from and saved to. Sync or async. */
@@ -18,15 +16,9 @@ export interface WithSourceSwitchOptions<T> {
 export interface SourceSwitch {
   /** Loads from the current source and replaces the state with the result. */
   load(): Promise<void>;
-  /** Saves a plain copy of the state to the current source. */
+  /** Saves the state to the current source, as a snapshot for a store. */
   save(): Promise<void>;
   current(): 'local' | 'remote';
-}
-
-function replaceState<T>(store: GenericStoreApi<T>, value: T) {
-  // set on a defineStore store merges an object into the state, so reconcile
-  // is needed to drop keys. A signal's set replaces the value.
-  store.set('get' in store ? reconcile(value) : () => value);
 }
 
 export function withSourceSwitch<T>(options: WithSourceSwitchOptions<T>) {
@@ -37,11 +29,14 @@ export function withSourceSwitch<T>(options: WithSourceSwitchOptions<T>) {
       const source: SourceSwitch = {
         current,
         async load() {
-          replaceState(store, await options[current()].load());
+          const value = await options[current()].load();
+          // Replaces the whole state: a store drops the keys `value` lacks.
+          store.set(() => value);
         },
         async save() {
-          const value = structuredClone(unwrap(untrack(store)));
-          await options[current()].save(value);
+          // peek() includes writes not flushed yet. A store's is a snapshot
+          // that later writes do not change.
+          await options[current()].save(store.peek());
         },
       };
       return { source };

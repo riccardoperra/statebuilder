@@ -43,7 +43,9 @@ const CountStore = defineStore(() => ({
   .extend(
     withActions((state) => ({
       increment() {
-        state.set('count', (count) => count + 1);
+        state.set((draft) => {
+          draft.count += 1;
+        });
       },
     })),
   )
@@ -56,7 +58,9 @@ const CountStore = defineStore(() => ({
     return {
       incrementAfter1S: state.asyncAction(async (payload: number) => {
         await new Promise((r) => setTimeout(r, 3000));
-        state.set('count', (count) => count + 1);
+        state.set((draft) => {
+          draft.count += 1;
+        });
         return payload;
       }),
     };

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRoot, createSignal } from 'solid-js';
+import { createRoot, createSignal, flush } from 'solid-js';
 import { Container, defineSignal, defineStore } from 'statebuilder';
 import { withSourceSwitch, type Source } from '../src/with-source-switch';
 
@@ -20,6 +20,11 @@ function memorySource(initial: Preset[]) {
   } satisfies Source<Preset[]> & { saved: Preset[] };
 }
 
+function memoryOf<T>(): Source<T> {
+  let saved: T;
+  return { load: () => saved, save: (value) => void (saved = value) };
+}
+
 function setup() {
   const [loggedIn, setLoggedIn] = createSignal(false);
   const local = memorySource([{ name: 'local' }]);
@@ -36,19 +41,23 @@ describe('withSourceSwitch', () => {
     const { presets, setLoggedIn } = setup();
 
     await presets.source.load();
+    flush();
     expect(presets()).toEqual([{ name: 'local' }]);
 
     setLoggedIn(true);
+    flush();
     await presets.source.load();
+    flush();
     expect(presets()).toEqual([{ name: 'remote' }]);
   });
 
   it('saves to the source that is current when save is called', async () => {
     const { presets, local, remote, setLoggedIn } = setup();
-    presets.set([{ name: 'mine' }]);
+    presets.set(() => [{ name: 'mine' }]);
 
     await presets.source.save();
     setLoggedIn(true);
+    flush();
     await presets.source.save();
 
     expect(local.save).toHaveBeenCalledTimes(1);
@@ -58,12 +67,35 @@ describe('withSourceSwitch', () => {
 
   it('saves a plain copy that later writes do not change', async () => {
     const { presets, local } = setup();
-    presets.set([{ name: 'mine' }]);
+    presets.set(() => [{ name: 'mine' }]);
 
     await presets.source.save();
-    presets.set(0, 'name', 'changed');
+    presets.set((state) => {
+      state[0].name = 'changed';
+    });
+    flush();
 
     expect(local.saved).toEqual([{ name: 'mine' }]);
+  });
+
+  it('load restores what save sent, nested writes made since included', async () => {
+    const definition = defineStore(() => ({ frame: { padding: 0 } })).extend(
+      withSourceSwitch({
+        useRemote: () => false,
+        local: memoryOf<{ frame: { padding: number } }>(),
+        remote: memoryOf<{ frame: { padding: number } }>(),
+      }),
+    );
+    const frame = createRoot(() => Container.create().get(definition));
+
+    await frame.source.save();
+    frame.set((state) => {
+      state.frame.padding = 8;
+    });
+    await frame.source.load();
+    flush();
+
+    expect(frame().frame.padding).toBe(0);
   });
 
   it('current names the active source', () => {
@@ -71,6 +103,7 @@ describe('withSourceSwitch', () => {
 
     expect(presets.source.current()).toBe('local');
     setLoggedIn(true);
+    flush();
     expect(presets.source.current()).toBe('remote');
   });
 
@@ -88,6 +121,7 @@ describe('withSourceSwitch', () => {
     const settings = createRoot(() => Container.create().get(definition));
 
     await settings.source.load();
+    flush();
 
     expect(settings()).toEqual({ theme: 'dark' });
   });
@@ -103,6 +137,7 @@ describe('withSourceSwitch', () => {
     const theme = createRoot(() => Container.create().get(definition));
 
     await theme.source.load();
+    flush();
 
     expect(theme()).toBe('dark');
   });

@@ -5,10 +5,14 @@ import { withActions } from '../../src/plugins/actions';
 const FrameStore = defineStore(() => ({ padding: 64, visible: true })).extend(
   withActions((store) => ({
     setPadding(padding: number) {
-      store.set('padding', padding);
+      store.set((state) => {
+        state.padding = padding;
+      });
     },
     toggleVisibility() {
-      store.set('visible', (visible) => !visible);
+      store.set((state) => {
+        state.visible = !state.visible;
+      });
     },
     rename(name: string, force?: boolean) {
       return name.length > 0 || !!force;

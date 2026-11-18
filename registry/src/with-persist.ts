@@ -1,4 +1,4 @@
-import { createSignal, untrack, type Accessor } from 'solid-js';
+import { createSignal, runWithOwner, type Accessor } from 'solid-js';
 import {
   createPlugin,
   type ContainerPluginContext,
@@ -46,16 +46,21 @@ export function withPersist<T>(options: WithPersistOptions<T>) {
       store: GenericStoreApi<T>,
       context: ContainerPluginContext<GenericStoreApi<T>>,
     ) => {
+      // `saving` gates the writes, not hydrated(): a signal read right after
+      // its write is stale until the flush.
+      let saving = false;
       const [hydrated, setHydrated] = createSignal(false);
 
       function hydrate(raw: string | null) {
         try {
           if (raw !== null) {
             const saved = deserialize(raw);
-            // A defineStore store merges the object into its state, so keys
-            // added since the value was saved keep their initial value. A
-            // signal takes it as its new value.
-            store.set(() => saved);
+            // A defineStore store (it has `get`) merges the object into its
+            // state, so keys added since the value was saved keep their
+            // initial value. A signal takes it as its new value.
+            store.set(() =>
+              'get' in store ? { ...store.peek(), ...saved } : saved,
+            );
           }
         } catch (error) {
           console.warn(
@@ -63,18 +68,20 @@ export function withPersist<T>(options: WithPersistOptions<T>) {
             error,
           );
         }
+        saving = true;
         setHydrated(true);
       }
 
       // Writes made before an async storage answers are not saved.
       context.onSet((value) => {
-        if (!untrack(hydrated)) return;
-        void storage.setItem(key, serialize(select(value)));
+        if (saving) void storage.setItem(key, serialize(select(value)));
       });
 
       const raw = storage.getItem(key);
       if (raw instanceof Promise) raw.then(hydrate, () => hydrate(null));
-      else hydrate(raw);
+      // Setup runs in an owned scope, where Solid throws on a write. The store
+      // is not returned yet, so nothing has read the state it replaces.
+      else runWithOwner(null, () => hydrate(raw));
 
       const persist: Persist = {
         hydrated,

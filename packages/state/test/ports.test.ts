@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRoot } from 'solid-js';
+import { createRoot, flush } from 'solid-js';
 import { Container } from '../src';
 import { FrameStore, type PersistedFrameState } from './fixtures/frame.store';
 import { EditorStore, PanelEditorStore } from './fixtures/panel-editor.store';
@@ -15,6 +15,7 @@ describe('frame store port', () => {
     frame.toggleVisibility();
     frame.setNextPadding();
     frame.setExportTarget('x-post');
+    flush();
 
     expect(frame.store.padding).toBe(64);
     expect(frame.store.visible).toBe(false);
@@ -22,6 +23,7 @@ describe('frame store port', () => {
     expect(frame.exportPixelRatio(2)).toBe(1);
 
     frame.setAspectRatio('16/9');
+    flush();
     expect(frame.store.exportTarget).toBeNull();
     expect(frame.exportPixelRatio(2)).toBe(2);
   });
@@ -80,10 +82,9 @@ describe('panel editor store port', () => {
   ];
 
   function setup() {
-    return createRoot((disposeAll) => {
+    const setup = createRoot((disposeAll) => {
       const root = Container.create();
       const editor = root.get(EditorStore);
-      editor.set('jobs', jobs);
       const panel = createRoot((disposePanel) => ({
         store: Container.create({
           parent: root,
@@ -93,16 +94,23 @@ describe('panel editor store port', () => {
       }));
       return { editor, ...panel, disposeAll };
     });
+    setup.editor.set((state) => {
+      state.jobs = jobs;
+    });
+    flush();
+    return setup;
   }
 
   it('resets the active step when the editor selects another job', () => {
     const { editor, store: panel } = setup();
     editor.actions.setSelectedJobId('job-1');
     panel.actions.setActiveStepId('step-1');
+    flush();
 
     expect(panel.headerPanelLabel()).toBe('Build / Checkout');
 
     editor.actions.setSelectedJobId('job-2');
+    flush();
 
     expect(panel().activeStep).toBeNull();
     expect(panel.headerPanelLabel()).toBe('test');
@@ -112,12 +120,15 @@ describe('panel editor store port', () => {
     const { editor, store: panel } = setup();
     editor.actions.setSelectedJobId('job-1');
     panel.actions.setActiveStepId('step-1');
+    flush();
 
     panel.back();
+    flush();
     expect(panel.selectedStep()).toBeNull();
     expect(editor().selectedJobId).toBe('job-1');
 
     panel.back();
+    flush();
     expect(editor().selectedJobId).toBeNull();
     expect(panel.selectedJob()).toBeUndefined();
   });
@@ -126,9 +137,11 @@ describe('panel editor store port', () => {
     const { editor, store: panel, disposePanel } = setup();
     editor.actions.setSelectedJobId('job-1');
     panel.actions.setActiveStepId('step-1');
+    flush();
 
     disposePanel();
     editor.actions.setSelectedJobId('job-2');
+    flush();
 
     expect(panel().activeStep).toBe('step-1');
   });

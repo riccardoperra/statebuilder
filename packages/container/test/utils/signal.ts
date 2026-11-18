@@ -27,15 +27,17 @@ export type SignalDefinitionCreator<
 > = ApiDefinitionCreator<TStoreApi, TSignalExtension>;
 
 function makeSignal<TState>(initialValue: () => TState): Signal<TState> {
-  const [signal, setSignal] = createSignal(initialValue());
+  let latest = initialValue();
+  const [signal, setSignal] = createSignal<TState>(
+    latest as Exclude<TState, Function>,
+  );
 
-  Object.defineProperty(signal, 'set', {
-    value: setSignal,
-    writable: true,
-    configurable: true,
-  });
+  const set = ((...args: [never]) => {
+    latest = setSignal(...args) as TState;
+    return latest;
+  }) as Setter<TState>;
 
-  return signal as Signal<TState>;
+  return Object.assign(signal, { set, peek: () => latest });
 }
 
 export const defineSignal = fns('signal', makeSignal);

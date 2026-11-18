@@ -47,9 +47,9 @@ describe('proxyCommand', () => {
   it('should update state', () => {
     store.actions.setFirstName('updated');
     store.actions.setLastName('updated 2');
-    expect(store.get.firstName).toBe('updated');
-    expect(store.get.lastName).toBe('updated 2');
-    expect(store()).toEqual({
+    expect(store.peek().firstName).toBe('updated');
+    expect(store.peek().lastName).toBe('updated 2');
+    expect(store.peek()).toEqual({
       firstName: 'updated',
       lastName: 'updated 2',
     });
@@ -63,15 +63,17 @@ describe('proxyCommand', () => {
     const innerStore = $innerStore();
 
     innerStore.setFirstName('updated');
-    expect(store.get.firstName).toBe('updated');
+    expect(store.peek().firstName).toBe('updated');
   });
 
   it('should have available proxy in context extend callback', function () {
     const config = defineStore(() => initialObject)
       .extend(withProxyCommands<Commands>())
       .extend((ctx) => {
-        ctx.hold(ctx.commands.setFirstName, (_, { set }) =>
-          set('firstName', _),
+        ctx.hold(ctx.commands.setFirstName, (firstName, { set }) =>
+          set((state) => {
+            state.firstName = firstName;
+          }),
         );
         expect({ ...ctx.actions }).toHaveProperty('setFirstName');
         return ctx.actions;
@@ -125,13 +127,17 @@ describe('commands and onSet', () => {
       .extend((store, context) => {
         context.onSet((_, meta) => writes.push(meta.action));
         store.hold(store.commands.setFirstName, (firstName, { set }) =>
-          set('firstName', firstName),
+          set((state) => {
+            state.firstName = firstName;
+          }),
         );
       });
     const store = createRoot(() => Container.create().get(definition));
 
     store.actions.setFirstName('Ada');
-    store.set('firstName', 'direct');
+    store.set((state) => {
+      state.firstName = 'direct';
+    });
 
     expect(writes).toEqual([
       { name: 'setFirstName', args: ['Ada'] },
@@ -146,7 +152,9 @@ function setupCounter() {
   );
   const store = createRoot(() => Container.create().get(definition));
   store.hold(store.commands.add, (amount, { set }) =>
-    set('count', (count) => count + amount),
+    set((state) => {
+      state.count += amount;
+    }),
   );
   return store;
 }
@@ -159,25 +167,30 @@ describe('hold', () => {
     const store = createRoot(() => Container.create().get(definition));
 
     store.hold({
-      add: (amount, { set }) => set('count', (count) => count + amount),
+      add: (amount, { set }) =>
+        set((state) => {
+          state.count += amount;
+        }),
       reset: (_, { state }) => ({ ...state, count: 0 }),
     });
 
     store.actions.add(5);
-    expect(store.get.count).toBe(5);
+    expect(store.peek().count).toBe(5);
     store.actions.reset();
-    expect(store.get.count).toBe(0);
+    expect(store.peek().count).toBe(0);
   });
 
   it('runs every handler attached to the same command', () => {
     const store = setupCounter();
     store.hold(store.commands.add, (amount, { set }) =>
-      set('count', (count) => count + amount),
+      set((state) => {
+        state.count += amount;
+      }),
     );
 
     store.actions.add(2);
 
-    expect(store.get.count).toBe(4);
+    expect(store.peek().count).toBe(4);
   });
 });
 
@@ -198,7 +211,7 @@ describe('watchCommand', () => {
     const counts: number[] = [];
     store
       .watchCommand([store.commands.add])
-      .subscribe(() => counts.push(store.get.count));
+      .subscribe(() => counts.push(store.peek().count));
 
     store.actions.add(3);
 
@@ -211,7 +224,7 @@ describe('watchCommand', () => {
     store
       .watchCommand([store.commands.add], { phase: 'before' })
       .subscribe((command) =>
-        seen.push([command.phase, command.consumerValue, store.get.count]),
+        seen.push([command.phase, command.consumerValue, store.peek().count]),
       );
 
     store.actions.add(3);
@@ -270,7 +283,7 @@ describe('untrackCommand', () => {
 
     untrackCommand(() => store.actions.add(1));
 
-    expect(store.get.count).toBe(1);
+    expect(store.peek().count).toBe(1);
     expect(seen).toEqual([]);
   });
 
@@ -408,7 +421,9 @@ describe('devtools option', () => {
     );
     const store = createRoot(() => Container.create().get(definition));
     store.hold(store.commands.add, (amount, { set }) =>
-      set('count', (count) => count + amount),
+      set((state) => {
+        state.count += amount;
+      }),
     );
 
     untrackCommand(() => store.actions.add(2));

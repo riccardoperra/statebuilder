@@ -23,6 +23,12 @@ export type GenericStoreApi<
 > = {
   (): T;
   set: Setter;
+  /**
+   * Reads the state with the writes that are not flushed yet. Solid applies a
+   * write on the next flush, so `store()` still returns the old state right
+   * after `set`.
+   */
+  peek: () => T;
 };
 
 export interface ApiDefinitionCreator<

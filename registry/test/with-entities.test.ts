@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { createRoot } from 'solid-js';
+import { createRoot, flush } from 'solid-js';
 import { Container, defineSignal, defineStore } from 'statebuilder';
 import { withEntities } from '../src/with-entities';
 
@@ -39,6 +39,7 @@ describe.each(Object.entries(kinds))('withEntities on %s', (_, define) => {
     const todos = setup();
 
     todos.entities.add({ id: 3, title: 'rest', done: false });
+    flush();
 
     expect(todos().map((todo) => todo.id)).toEqual([1, 2, 3]);
   });
@@ -48,6 +49,7 @@ describe.each(Object.entries(kinds))('withEntities on %s', (_, define) => {
 
     todos.entities.update(1, { done: true });
     todos.entities.update(2, (todo) => ({ ...todo, title: 'ship it' }));
+    flush();
 
     expect(todos()).toEqual([
       { id: 1, title: 'write docs', done: true },
@@ -59,6 +61,7 @@ describe.each(Object.entries(kinds))('withEntities on %s', (_, define) => {
     const todos = setup();
 
     todos.entities.remove(1);
+    flush();
 
     expect(todos().map((todo) => todo.id)).toEqual([2]);
   });
@@ -68,6 +71,7 @@ describe.each(Object.entries(kinds))('withEntities on %s', (_, define) => {
 
     todos.entities.upsert({ id: 2, title: 'ship v2', done: true });
     todos.entities.upsert({ id: 4, title: 'new', done: false });
+    flush();
 
     expect(todos()).toEqual([
       { id: 1, title: 'write docs', done: false },
