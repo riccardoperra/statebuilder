@@ -14,4 +14,4 @@ Breaking changes for users of 0.8:
 
 - A store lives in the root `StoreProvider` unless a nested provider lists it: `<StoreProvider provide={[EditorStore]}>`.
 - The `'use stateprovider'` directive and the `experimental.transformStateProviderDirective` compiler option are removed.
-- `withActions` from `statebuilder/actions` is a new way to define named actions. `statebuilder/commands` is unchanged.
+- `withActions` from `statebuilder/actions` is a new way to define named actions.

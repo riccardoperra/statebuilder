@@ -1,62 +1,21 @@
 import {
+  createPlugin,
   type ContainerPluginContext,
-  GenericStoreApi,
-  GetStoreApiSetter,
-  GetStoreApiState,
+  type GenericStoreApi,
+  type GetStoreApiState,
 } from '@statebuilder/container';
-import { ExecuteCommandCallback, makeCommandNotifier } from './notifier';
-import { GenericStateCommand } from './command';
-import { createPlugin } from '@statebuilder/container';
-import type { ProxifyCommands, StoreWithProxyCommands } from './types';
+import { connectDevtools } from '~/plugins/devtools';
+import type { GenericStateCommand } from './command';
+import { makeCommandNotifier } from './notifier';
 import { makeProxyHandlers } from './proxy';
-import { applyDevtools } from '~/plugins/commands/devtools';
-
-function plugin<ActionsMap extends Record<string, unknown>>(): <
-  TGenericApi extends GenericStoreApi,
->(
-  ctx: TGenericApi,
-  context?: ContainerPluginContext<TGenericApi>,
-) => StoreWithProxyCommands<
-  TGenericApi,
-  GetStoreApiState<TGenericApi>,
-  ProxifyCommands<ActionsMap>
-> {
-  return <TGenericApi extends GenericStoreApi>(
-    ctx: TGenericApi,
-    context?: ContainerPluginContext<TGenericApi>,
-  ): StoreWithProxyCommands<
-    TGenericApi,
-    GetStoreApiState<TGenericApi>,
-    ProxifyCommands<ActionsMap>
-  > => {
-    const { callbacks, watchCommand, dispatch } = makeCommandNotifier(
-      ctx,
-      context?.runInAction,
-    );
-    const { commands, actions } = makeProxyHandlers<ActionsMap>(dispatch);
-
-    return {
-      commands,
-      actions,
-      hold(command, cb) {
-        const resolvedCallbacks = callbacks.get(command.identity) || [];
-        const updatedCallbacks = resolvedCallbacks.concat(
-          cb as ExecuteCommandCallback<
-            GetStoreApiState<TGenericApi>,
-            GenericStateCommand,
-            GetStoreApiSetter<TGenericApi>
-          >,
-        );
-        callbacks.set(command.identity, updatedCallbacks);
-        return this;
-      },
-      dispatch,
-      watchCommand,
-    };
-  };
-}
+import type {
+  ExecuteCommandCallback,
+  ProxifyCommands,
+  StoreWithProxyCommands,
+} from './types';
 
 interface PluginOptions {
+  /** Connects the store to Redux DevTools under this name. */
   devtools?: { storeName: string };
 }
 
@@ -64,20 +23,52 @@ export function withProxyCommands<T extends Record<string, unknown>>(
   options?: PluginOptions,
 ) {
   return createPlugin(
-    (store, context) => {
-      const storeWithProxy = plugin<T>()(store, context);
+    <TStoreApi extends GenericStoreApi>(
+      store: TStoreApi,
+      context: ContainerPluginContext<TStoreApi>,
+    ): StoreWithProxyCommands<
+      TStoreApi,
+      GetStoreApiState<TStoreApi>,
+      ProxifyCommands<T>
+    > => {
+      type State = GetStoreApiState<TStoreApi>;
+      type Callback = ExecuteCommandCallback<State, GenericStateCommand>;
+
+      const notifier = makeCommandNotifier<State>(
+        store,
+        context.runInAction,
+        (identity): boolean => proxy.has(identity),
+      );
+      const proxy = makeProxyHandlers<T>(notifier.dispatch);
 
       if (options?.devtools) {
-        const { storeName } = options.devtools;
-        context.onMount(() => {
-          const unsubscribe = applyDevtools(store, storeWithProxy, {
-            storeName,
-          });
-          context.onDispose(() => unsubscribe());
-        });
+        connectDevtools(store, context, options.devtools.storeName);
       }
 
-      return storeWithProxy;
+      return {
+        commands: proxy.commands,
+        actions: proxy.actions,
+        hold(
+          commandOrHandlers: GenericStateCommand | Record<string, Callback>,
+          callback?: Callback,
+        ) {
+          if (callback) {
+            notifier.hold(
+              (commandOrHandlers as GenericStateCommand).identity,
+              callback,
+            );
+          } else {
+            const handlers = commandOrHandlers as Record<string, Callback>;
+            for (const name of Object.keys(handlers)) {
+              void proxy.commands[name];
+              notifier.hold(name, handlers[name]);
+            }
+          }
+          return this;
+        },
+        dispatch: notifier.dispatch,
+        watchCommand: notifier.watchCommand,
+      } as StoreWithProxyCommands<TStoreApi, State, ProxifyCommands<T>>;
     },
     {
       name: 'withProxyCommands',

@@ -1,80 +1,58 @@
 import {
   createCommand,
-  GenericStateCommand,
-  MapCommandToActions,
-  StateCommand,
-} from '~/plugins/commands/command';
-import { GenericCommandsMap, ProxifyCommands } from '~/plugins/commands/types';
+  type GenericStateCommand,
+  type MapCommandToActions,
+} from './command';
+import type { ProxifyCommands } from './types';
 
 interface ProxyHandlers<ActionsMap extends Record<string, unknown>> {
   readonly commands: ProxifyCommands<ActionsMap>;
-  readonly actions: MapCommandToActions<{
-    [key in keyof ActionsMap]: StateCommand<any, ActionsMap[key]>;
-  }>;
+  readonly actions: MapCommandToActions<ProxifyCommands<ActionsMap>>;
+  /** Whether a command of that name was read from `commands` or `actions`. */
+  has(identity: string): boolean;
 }
 
+/**
+ * The commands exist only as a type, so both maps are proxies that create the
+ * command and its action the first time a name is read.
+ */
 export function makeProxyHandlers<ActionsMap extends Record<string, unknown>>(
   onDispatch: (command: GenericStateCommand, payload: unknown) => void,
 ): ProxyHandlers<ActionsMap> {
-  type ProxifiedCommands = ProxifyCommands<ActionsMap>;
+  const commandsMap: Record<string, GenericStateCommand> = {};
+  const actionsMap: Record<string, (payload: unknown) => void> = {};
 
-  function commandsProxyHandler(): ProxyHandler<ProxifiedCommands> {
-    const commandsMap: Record<string, GenericStateCommand> = {};
+  function ensure(name: string) {
+    if (commandsMap[name]) return;
+    const command = createCommand(name);
+    commandsMap[name] = command;
+    actionsMap[name] = (payload) => onDispatch(command, payload);
+  }
+
+  function handler(source: Record<string, unknown>): ProxyHandler<object> {
     return {
-      ownKeys() {
-        return Reflect.ownKeys(commandsMap);
+      ownKeys: () => Reflect.ownKeys(commandsMap),
+      getOwnPropertyDescriptor(_, key) {
+        if (typeof key !== 'string') return undefined;
+        ensure(key);
+        return { value: source[key], enumerable: true, configurable: true };
       },
-      getOwnPropertyDescriptor(target, key) {
-        return {
-          value: Reflect.get(commands, key),
-          enumerable: true,
-          configurable: true,
-        };
-      },
-      get(_, property: string) {
-        if (!commandsMap[property]) {
-          commandsMap[property] = createCommand(property).withPayload();
-          void Reflect.get(actions, property);
-        }
-        return commandsMap[property];
+      get(_, key) {
+        if (typeof key !== 'string') return undefined;
+        ensure(key);
+        return source[key];
       },
     };
   }
 
-  function actionsProxyHandler(): ProxyHandler<
-    MapCommandToActions<ProxifiedCommands>
-  > {
-    const actions: MapCommandToActions<GenericCommandsMap> = {};
-
-    return {
-      ownKeys() {
-        return Reflect.ownKeys(actions);
-      },
-      getOwnPropertyDescriptor(target, key) {
-        return {
-          value: Reflect.get(actions, key),
-          enumerable: true,
-          configurable: true,
-        };
-      },
-      get(_, property: string) {
-        const command = commands[
-          property as keyof typeof commands
-        ] as unknown as GenericStateCommand;
-        if (!actions[property]) {
-          actions[property] = (payload) => onDispatch(command, payload);
-        }
-        return actions[property];
-      },
-    };
-  }
-
-  const commands = new Proxy({} as ProxifiedCommands, commandsProxyHandler());
-
-  const actions = new Proxy(
-    {} as MapCommandToActions<ProxifiedCommands>,
-    actionsProxyHandler(),
-  );
-
-  return { commands, actions } as const;
+  return {
+    commands: new Proxy(
+      {},
+      handler(commandsMap),
+    ) as ProxifyCommands<ActionsMap>,
+    actions: new Proxy({}, handler(actionsMap)) as MapCommandToActions<
+      ProxifyCommands<ActionsMap>
+    >,
+    has: (identity) => identity in commandsMap,
+  };
 }

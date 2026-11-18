@@ -1,181 +1,143 @@
-import { batch, ObservableObserver, untrack } from 'solid-js';
-import { GenericStoreApi } from '@statebuilder/container';
-import { createTrackObserver } from './track';
-import {
-  CommandPayload,
-  createCommand,
+import { batch, untrack, type ObservableObserver } from 'solid-js';
+import { $SB_DEV, type GenericStoreApi } from '@statebuilder/container';
+import type {
+  CommandPhase,
   ExecutedGenericStateCommand,
   GenericStateCommand,
-  StateCommand,
 } from './command';
-import { createEventBus } from '@solid-primitives/event-bus';
-import { Observable } from './types';
-
-export type ExecuteCommandCallback<
-  T,
-  Command extends GenericStateCommand,
-  TSetter = any,
-> = (
-  payload: CommandPayload<Command>,
-  meta: {
-    set: TSetter;
-    state: T;
-  },
-) => T | void;
-
-export const [track, untrackCommand] = createTrackObserver();
+import type {
+  ExecuteCommandCallback,
+  Observable,
+  WatchCommandOptions,
+} from './types';
 
 type RunInAction = <R>(
   action: { name: string; args: readonly unknown[] },
   fn: () => R,
 ) => R;
 
+type Filter = readonly GenericStateCommand[] | RegExp | undefined;
+
+// Shared by every store: one call hides the commands of all the stores it writes.
+let untracked = 0;
+
+/**
+ * Runs `cb` with its commands hidden from `watchCommand` subscribers. The
+ * handlers still run. With `async`, commands stay hidden until the next
+ * microtask.
+ */
+export function untrackCommand<R>(cb: () => R, async = false): R {
+  untracked++;
+  const restore = () => void untracked--;
+  try {
+    return cb();
+  } finally {
+    if (async) queueMicrotask(restore);
+    else restore();
+  }
+}
+
+function matches(filter: Filter, identity: string): boolean {
+  if (filter === undefined) return true;
+  if (filter instanceof RegExp) return filter.test(identity);
+  return filter.some((command) => command.identity === identity);
+}
+
 export function makeCommandNotifier<T>(
-  ctx: GenericStoreApi<T>,
-  runInAction: RunInAction = (_, fn) => fn(),
+  store: GenericStoreApi<T>,
+  runInAction: RunInAction,
+  isDeclared: (identity: string) => boolean,
 ) {
-  const initCommand = createCommand('@@INIT');
-  const bus = createEventBus<ExecutedGenericStateCommand>();
-  bus.emit(initCommand.execute(void 0));
-
-  const callbacks = new Map<
+  const handlers = new Map<
     string,
-    ReadonlyArray<ExecuteCommandCallback<T, GenericStateCommand>>
+    ExecuteCommandCallback<T, GenericStateCommand>[]
   >();
+  const watchers = new Set<(command: ExecutedGenericStateCommand) => void>();
+  const warned = new Set<string>();
 
-  bus.listen((command) => {
-    const resolvedCallbacks = callbacks.get(command.identity) ?? [];
-    if (resolvedCallbacks.length === 0) return;
-    const action = { name: command.identity, args: [command.consumerValue] };
-    runInAction(action, () =>
-      batch(() => {
-        untrack(() => {
-          for (const callback of resolvedCallbacks) {
-            const result = callback(command.consumerValue, {
-              set: ctx.set,
-              state: ctx(),
-            });
-
-            if (result !== undefined) {
-              ctx.set(() => result);
-            }
-          }
-        });
-      }),
-    );
-  });
-
-  function retrieveCommand(
-    commandOrRegexp: readonly GenericStateCommand[] | RegExp | undefined,
-    command: ExecutedGenericStateCommand | undefined | null,
-  ) {
-    let resolvedCommand: ExecutedGenericStateCommand | null = null;
-    if (!command || command.silent) return null;
-
-    if (commandOrRegexp === undefined) {
-      resolvedCommand = command;
-    } else if (commandOrRegexp instanceof RegExp) {
-      if (commandOrRegexp.test(command.identity)) {
-        resolvedCommand = command;
-      }
-    } else {
-      const foundCommand = !!(commandOrRegexp ?? []).find(
-        (watchedCommand) => watchedCommand.identity === command.identity,
-      );
-      if (foundCommand) resolvedCommand = command;
-    }
-
-    return resolvedCommand;
+  function emit(identity: string, consumerValue: unknown, phase: CommandPhase) {
+    if (watchers.size === 0) return;
+    const command = { identity, consumerValue, phase };
+    for (const watcher of [...watchers]) watcher(command);
   }
 
   return {
-    executeCommand<T extends ExecutedGenericStateCommand>(command: T) {
-      bus.emit(command);
+    hold(
+      identity: string,
+      callback: ExecuteCommandCallback<T, GenericStateCommand>,
+    ): void {
+      const current = handlers.get(identity);
+      if (current) current.push(callback);
+      else handlers.set(identity, [callback]);
     },
-    callbacks,
-    track,
-    untrackCommand,
-    watchCommand<Commands extends GenericStateCommand>(
-      commands?: readonly Commands[] | RegExp,
-    ): Observable<Commands> {
+
+    dispatch(command: GenericStateCommand, payload: unknown): void {
+      const { identity } = command;
+      const tracked = untracked === 0;
+      const callbacks = handlers.get(identity);
+
+      if (
+        $SB_DEV &&
+        !callbacks &&
+        isDeclared(identity) &&
+        !warned.has(identity)
+      ) {
+        warned.add(identity);
+        console.warn(
+          `[statebuilder] The command "${identity}" was dispatched but no handler is attached to it. Attach one with hold().`,
+        );
+      }
+
+      if (tracked) emit(identity, payload, 'before');
+
+      if (callbacks) {
+        runInAction({ name: identity, args: [payload] }, () =>
+          batch(() =>
+            untrack(() => {
+              for (const callback of [...callbacks]) {
+                const result = callback(payload, {
+                  set: store.set,
+                  state: store(),
+                });
+                if (result !== undefined) store.set(() => result);
+              }
+            }),
+          ),
+        );
+      }
+
+      if (tracked) emit(identity, payload, 'after');
+    },
+
+    watchCommand(
+      filter?: Filter,
+      options?: WatchCommandOptions,
+    ): Observable<ExecutedGenericStateCommand> {
+      const phase = options?.phase ?? 'after';
       return {
         [Symbol.observable || '@@observable']() {
           return this;
         },
-        subscribe(observer: ObservableObserver<Commands>): {
-          unsubscribe(): void;
-        } {
-          const handler =
+        subscribe(observer: ObservableObserver<ExecutedGenericStateCommand>) {
+          const next =
             typeof observer === 'function'
               ? observer
-              : observer.next && observer.next.bind(observer);
+              : observer.next?.bind(observer);
+          if (!next) return { unsubscribe() {} };
 
-          if (!handler) {
-            return {
-              unsubscribe() {},
-            };
-          }
-
-          const clear = bus.listen((command) => {
-            const resolvedCommand = retrieveCommand(commands, command);
-            if (resolvedCommand) {
-              handler(resolvedCommand as unknown as Commands);
+          const watcher = (command: ExecutedGenericStateCommand) => {
+            if (command.phase === phase && matches(filter, command.identity)) {
+              next(command);
             }
-          });
-
+          };
+          watchers.add(watcher);
           return {
             unsubscribe() {
-              clear();
+              watchers.delete(watcher);
             },
           };
         },
       };
     },
-    dispatch<Command extends GenericStateCommand>(
-      command: Command,
-      payload: CommandPayload<Command>,
-    ): void {
-      bus.emit(
-        createCommand(`@@BEFORE/${command.identity}`)
-          .with({
-            identity: `@@BEFORE/${command.identity}`,
-            internal: true,
-          })
-          .execute(void 0),
-      );
-
-      const resolvedCommand = command
-        .with(track() ? {} : { silent: true })
-        .execute(payload);
-
-      bus.emit(resolvedCommand);
-
-      bus.emit(
-        createCommand(`@@AFTER/${command.identity}`)
-          .with({
-            identity: `@@AFTER/${command.identity}`,
-            correlate: resolvedCommand,
-            internal: true,
-          })
-          .execute(void 0),
-      );
-    },
   };
-}
-
-export function isInternalCommand<T extends StateCommand<any, any>>(
-  command: T,
-): command is T & {
-  internal: true;
-} {
-  return !!Reflect.get(command, 'internal');
-}
-
-export function isAfterCommand<T extends StateCommand<any, any>>(
-  command: T,
-): command is T & {
-  correlate: ExecutedGenericStateCommand;
-  internal: true;
-} {
-  return isInternalCommand(command) && command.identity.startsWith('@@AFTER');
 }

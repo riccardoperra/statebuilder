@@ -120,7 +120,6 @@
   "dependencies": {
     "@babel/core": "^7.29.13",
     "@babel/types": "^7.29.14",
-    "@solid-primitives/event-bus": "^1.1.4",
     "consola": "^3.4.2"
   },
   "peerDependenciesMeta": {

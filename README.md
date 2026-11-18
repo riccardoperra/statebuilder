@@ -452,7 +452,39 @@ frame
 
 The `Commands` type is the contract of the store. Each key becomes a command object in `store.commands` and a function
 in `store.actions`. `hold` attaches a handler to a command, and a command can have more than one handler. A handler
-returns the new state or writes with `set`. `watchCommand` returns an observable of the executed commands.
+returns the new state or writes with `set`.
+
+`hold` also takes an object with one handler per command. TypeScript reports a command left without a handler.
+
+```ts
+store.hold({
+  setPadding: (padding, { set }) => set('padding', padding),
+  toggleVisibility: (_, { set }) => set('visible', (visible) => !visible),
+});
+```
+
+`watchCommand` returns an observable of the executed commands. It takes a list of commands, a regular expression on the
+command name, or nothing to watch every command. Subscribers run after the handlers. Pass `{ phase: 'before' }` to run
+before them.
+
+```ts
+frame
+  .watchCommand([frame.commands.setPadding], { phase: 'before' })
+  .subscribe((command) =>
+    console.log('padding will be', command.consumerValue),
+  );
+```
+
+`untrackCommand` runs the handlers and hides the commands from every `watchCommand` subscriber, across all stores.
+
+```ts
+import { untrackCommand } from 'statebuilder/commands';
+
+untrackCommand(() => frame.actions.setPadding(16));
+```
+
+`withProxyCommands({ devtools: { storeName: 'frame' } })` connects the store to Redux DevTools, like `withDevtools`.
+In development, dispatching a command of the store that has no handler logs a warning.
 
 Use `withActions` when an action is one function. Use commands when you want to declare the contract apart from the
 handlers, pass a command around as a value, or attach several handlers.

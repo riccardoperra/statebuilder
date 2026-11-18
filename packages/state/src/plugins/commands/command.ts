@@ -1,118 +1,48 @@
+declare const $payload: unique symbol;
+
 export interface StateCommand<Identity extends string, T> {
-  identity: string;
+  readonly identity: Identity;
 
-  readonly silent?: boolean;
-
-  clone(): StateCommand<Identity, T>;
+  /** Type only. Carries the payload type of the command. */
+  readonly [$payload]: T;
 
   withPayload<TPayload>(): StateCommand<
     Identity,
     unknown extends T ? TPayload : T | TPayload
   >;
-
-  execute<TValue extends T>(
-    payload: TValue,
-  ): ExecutedStateCommand<Identity, TValue, this>;
-
-  with<TMetadata extends object>(metadata: TMetadata): this & TMetadata;
 }
 
-export type ExecutedStateCommand<
-  Identity extends string,
-  T,
-  TStateCommand extends StateCommand<Identity, T>,
-> = Readonly<
-  Omit<TStateCommand, 'execute' | 'with' | 'clone' | 'withPayload'> & {
-    consumerValue: T;
-    executionDate: string;
-  }
->;
+export type CommandPhase = 'before' | 'after';
 
-export type GenericStateCommand = StateCommand<string, unknown>;
-export type ExecutedGenericStateCommand = ExecutedStateCommand<
-  string,
-  unknown,
-  StateCommand<any, any>
->;
+/** What a `watchCommand` subscriber receives. */
+export interface ExecutedStateCommand<Identity extends string, T> {
+  readonly identity: Identity;
+  readonly consumerValue: T;
+  readonly phase: CommandPhase;
+}
 
-type GetCommandInfo<T extends GenericStateCommand> = T extends StateCommand<
-  infer TIdentity,
-  infer TPayload
->
-  ? { identity: TIdentity; payload: TPayload }
-  : never;
+export type GenericStateCommand = StateCommand<string, any>;
+export type ExecutedGenericStateCommand = ExecutedStateCommand<string, unknown>;
 
 export type CommandIdentity<T extends GenericStateCommand> =
-  GetCommandInfo<T>['identity'];
+  T extends StateCommand<infer TIdentity, any> ? TIdentity : never;
 
 export type CommandPayload<T extends GenericStateCommand> =
-  GetCommandInfo<T>['payload'];
+  T extends StateCommand<string, infer TPayload> ? TPayload : never;
 
-class StateCommandImpl<Identity extends string, T>
-  implements StateCommand<Identity, T>
-{
-  readonly silent?: boolean | undefined;
-
-  constructor(public readonly identity: Identity) {}
-
-  clone(): StateCommand<Identity, T> {
-    return this.#clone(this, false);
-  }
-
-  withPayload<TPayload>(): StateCommand<
-    Identity,
-    unknown extends T ? TPayload : T | TPayload
-  > {
-    return this as {} as StateCommand<
-      Identity,
-      unknown extends T ? TPayload : T | TPayload
-    >;
-  }
-
-  execute<TValue extends T>(
-    payload: TValue,
-  ): Readonly<
-    Omit<this, 'execute' | 'with' | 'clone' | 'withPayload'> & {
-      consumerValue: TValue;
-      executionDate: string;
-    }
-  > {
-    return this.#extend(
-      this,
-      {
-        consumerValue: payload,
-        executionDate: new Date().toISOString(),
-      },
-      true,
-    );
-  }
-
-  with<TMetadata extends object>(metadata: TMetadata): this & TMetadata {
-    return this.#extend(this, metadata, false);
-  }
-
-  #extend<TStateCommand extends StateCommand<any, any>, T>(
-    command: TStateCommand,
-    metadata: T,
-    readonly: boolean,
-  ) {
-    const clonedCommand = this.#clone(command, readonly);
-    return Object.assign(clonedCommand, metadata);
-  }
-
-  #clone<TStateCommand extends StateCommand<any, any>>(
-    command: TStateCommand,
-    readonly: boolean,
-  ): TStateCommand {
-    const base = readonly ? {} : createCommand(command.identity);
-    return Object.assign(base, command);
-  }
-}
+export type ExecutedCommandOf<T extends GenericStateCommand> =
+  T extends StateCommand<infer TIdentity, infer TPayload>
+    ? ExecutedStateCommand<TIdentity, TPayload>
+    : never;
 
 export function createCommand<Identity extends string, T = unknown>(
   identity: Identity,
 ): StateCommand<Identity, T> {
-  return new StateCommandImpl(identity);
+  const command = {
+    identity,
+    withPayload: () => command,
+  };
+  return command as unknown as StateCommand<Identity, T>;
 }
 
 export type MapCommandToActions<T extends Record<string, GenericStateCommand>> =

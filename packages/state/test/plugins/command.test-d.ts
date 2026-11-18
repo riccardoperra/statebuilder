@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it, test } from 'vitest';
 import {
   createCommand,
-  ExecutedStateCommand,
+  type ExecutedStateCommand,
   StateCommand,
   withProxyCommands,
 } from '../../src/plugins/commands';
@@ -31,16 +31,6 @@ describe('createCommand', () => {
       StateCommand<'test', string | number | (() => void)>
     >();
   });
-
-  it('infer executed state', () => {
-    const command = createCommand('test')
-      .withPayload<string>()
-      .execute('value');
-
-    expectTypeOf(command).toMatchTypeOf<
-      ExecutedStateCommand<'test', string, StateCommand<'test', string>>
-    >();
-  });
 });
 
 describe('withProxyCommand', () => {
@@ -67,6 +57,58 @@ describe('withProxyCommand', () => {
             SetStoreFunction<{ count: number }>
           >();
         });
+      });
+  });
+
+  test('hold with an object infers every handler', () => {
+    defineStore(() => ({ count: 1 }))
+      .extend(withProxyCommands<{ add: number; reset: void }>())
+      .extend((ctx) => {
+        ctx.hold({
+          add: (amount, context) => {
+            expectTypeOf(amount).toEqualTypeOf<number>();
+            expectTypeOf(context.state).toEqualTypeOf<{ count: number }>();
+          },
+          reset: (payload) => {
+            expectTypeOf(payload).toEqualTypeOf<void>();
+          },
+        });
+
+        // @ts-expect-error `reset` has no handler
+        ctx.hold({ add: () => {} });
+
+        ctx.hold({
+          add: () => {},
+          reset: () => {},
+          // @ts-expect-error `unknownCommand` is not a command of the store
+          unknownCommand: () => {},
+        });
+      });
+  });
+
+  test('watchCommand infers the executed commands', () => {
+    defineStore(() => ({ count: 1 }))
+      .extend(withProxyCommands<{ add: number; rename: string }>())
+      .extend((ctx) => {
+        ctx
+          .watchCommand([ctx.commands.add, ctx.commands.rename])
+          .subscribe((command) => {
+            expectTypeOf(command).toEqualTypeOf<
+              | ExecutedStateCommand<'add', number>
+              | ExecutedStateCommand<'rename', string>
+            >();
+            if (command.identity === 'add') {
+              expectTypeOf(command.consumerValue).toEqualTypeOf<number>();
+            }
+          });
+
+        ctx.watchCommand().subscribe((command) => {
+          expectTypeOf(command).toEqualTypeOf<
+            ExecutedStateCommand<string, unknown>
+          >();
+        });
+
+        ctx.watchCommand(/add/, { phase: 'before' });
       });
   });
 });

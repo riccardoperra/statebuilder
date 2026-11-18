@@ -1,5 +1,9 @@
 import { untrack } from 'solid-js';
-import { createPlugin } from '@statebuilder/container';
+import {
+  createPlugin,
+  type ContainerPluginContext,
+  type GenericStoreApi,
+} from '@statebuilder/container';
 
 export interface WithDevtoolsOptions {
   /** The instance name shown in Redux DevTools. */
@@ -32,48 +36,55 @@ declare global {
 const TIME_TRAVEL = new Set(['JUMP_TO_STATE', 'JUMP_TO_ACTION', 'ROLLBACK']);
 
 /**
- * Connects the store to Redux DevTools. Each write is sent with the name and
- * args of the action that did it, or as `set`. Does nothing when the
+ * Connects a store to Redux DevTools under `name`. Each write is sent with the
+ * name and args of the action that did it, or as `set`. Does nothing when the
  * extension is not installed.
  */
+export function connectDevtools(
+  store: GenericStoreApi,
+  context: Pick<ContainerPluginContext<GenericStoreApi>, 'onSet' | 'onDispose'>,
+  name: string,
+): void {
+  const extension = globalThis.window?.__REDUX_DEVTOOLS_EXTENSION__;
+  if (!extension) return;
+
+  const devtools = extension.connect({ name });
+  devtools.init(untrack(store));
+
+  let travelling = false;
+  const offSet = context.onSet((value, meta) => {
+    if (travelling) return;
+    devtools.send(
+      {
+        type: meta.action ? meta.action.name : 'set',
+        payload: meta.action?.args,
+      },
+      value,
+    );
+  });
+
+  const offMessage = devtools.subscribe((message) => {
+    if (message.type !== 'DISPATCH') return;
+    if (!TIME_TRAVEL.has(message.payload.type)) return;
+    const state = JSON.parse(message.state);
+    travelling = true;
+    try {
+      store.set(() => state);
+    } finally {
+      travelling = false;
+    }
+  });
+
+  context.onDispose(() => {
+    offSet();
+    offMessage();
+  });
+}
+
+/** Connects the store to Redux DevTools. See `connectDevtools`. */
 export function withDevtools(options: WithDevtoolsOptions) {
   return createPlugin(
-    (store, context) => {
-      const extension = globalThis.window?.__REDUX_DEVTOOLS_EXTENSION__;
-      if (!extension) return;
-
-      const devtools = extension.connect({ name: options.name });
-      devtools.init(untrack(store));
-
-      let travelling = false;
-      const offSet = context.onSet((value, meta) => {
-        if (travelling) return;
-        devtools.send(
-          {
-            type: meta.action ? meta.action.name : 'set',
-            payload: meta.action?.args,
-          },
-          value,
-        );
-      });
-
-      const offMessage = devtools.subscribe((message) => {
-        if (message.type !== 'DISPATCH') return;
-        if (!TIME_TRAVEL.has(message.payload.type)) return;
-        const state = JSON.parse(message.state);
-        travelling = true;
-        try {
-          store.set(() => state);
-        } finally {
-          travelling = false;
-        }
-      });
-
-      context.onDispose(() => {
-        offSet();
-        offMessage();
-      });
-    },
+    (store, context) => connectDevtools(store, context, options.name),
     { name: 'withDevtools' },
   );
 }
