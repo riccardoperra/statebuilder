@@ -11,6 +11,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
+  # npm trusted publishing
+  id-token: write
 
 jobs:
   release:
@@ -25,14 +27,6 @@ jobs:
           node-version: 24
           cache: 'pnpm'
 
-      - name: Creating .npmrc
-        run: |
-          cat << EOF > "$HOME/.npmrc"
-            //registry.npmjs.org/:_authToken=$NPM_TOKEN
-          EOF
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Install Dependencies
         run: pnpm install
 
@@ -46,5 +40,3 @@ jobs:
           commit-message: 'chore: update versions'
           pr-title: 'chore: update versions'
           publish-script: pnpm ci:publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
