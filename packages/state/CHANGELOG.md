@@ -1,5 +1,44 @@
 # statebuilder
 
+## 0.9.0-alpha.0
+
+### Minor Changes
+
+- f7b04bd: Breaking changes for users of 0.8:
+
+  | 0.8                                                | Now                                                   |
+  | -------------------------------------------------- | ----------------------------------------------------- |
+  | `StateProvider`, `provideState`, `getStateContext` | `StoreProvider`, `useStore`, `useContainer`           |
+  | `makePlugin`                                       | `createPlugin`                                        |
+  | `ɵdefineResource`, `ɵWithResourceStorage`          | `defineAsync`, `withResourceStorage`                  |
+  | `withReduxDevtools({ storeName })`                 | `withDevtools({ name })` from `statebuilder/devtools` |
+  | `Container.create(owner, parent)`                  | `Container.create({ owner, parent, provide })`        |
+  - A store lives in the root `StoreProvider` unless a nested provider lists it: `<StoreProvider provide={[EditorStore]}>`.
+  - The `'use stateprovider'` directive and the `experimental.transformStateProviderDirective` compiler option are removed.
+  - `withActions` from `statebuilder/actions` is a new way to define named actions.
+
+- 213cd24: Fix the core bugs found in the review.
+
+  - `extend` returns a new definition and no longer changes the one it is called on.
+  - The container identifies a store by its definition object. Two definitions with the same `key` no longer share a store.
+  - A circular `inject` throws a `StateBuilderError` that names the cycle.
+  - The package loads outside Vite.
+  - `asyncAction` exposes `error`, and `latestValue` is typed as a property.
+  - A command dispatch no longer serializes the payload with JSON.
+
+- 70dda50: Bundle the plugin engine (pluggino) into the build and update the toolchain to Vite 8, Vitest 5, TypeScript 7 and tsdown. `solid-js` is now a peer dependency. Inside a plugin, `context.hooks.onInit` and `context.hooks.onDestroy` are replaced by `context.onMount` and `context.onDispose`.
+- 2aa726c: Update compiler to vite 6
+- f6524f7: `statebuilder/commands` keeps `withProxyCommands`, `hold`, `commands`, `actions`, `dispatch` and `watchCommand`, with these changes:
+
+  - `hold` also takes an object with one handler per command. TypeScript reports a command left without a handler.
+  - `watchCommand` takes `{ phase: 'before' | 'after' }` and emits typed commands with `identity`, `consumerValue` and `phase`. The `@@BEFORE/name` and `@@AFTER/name` commands are removed: replace `watchCommand(/@@BEFORE\/name/)` with `watchCommand([store.commands.name], { phase: 'before' })`.
+  - `watchCommand()` with no filter emits once per dispatch.
+  - `untrackCommand` is synchronous by default, restores tracking when the callback throws, and hides the command from every watcher. Pass `true` as second argument to stay untracked until the next microtask.
+  - The `devtools` option opens one Redux DevTools instance per store, named `storeName`, and sends the command name as the action type.
+  - In development, dispatching a command of the store that has no handler logs a warning.
+  - Removed from the command object: `execute`, `with`, `clone`, `executionDate`. Removed exports: `track`, `makeCommandNotifier`, `createTrackObserver`.
+  - The `@solid-primitives/event-bus` dependency is removed.
+
 ## 0.8.1
 
 ### Patch Changes
