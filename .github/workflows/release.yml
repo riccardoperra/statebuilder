@@ -8,6 +8,10 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release:
     name: Release
@@ -36,12 +40,11 @@ jobs:
         run: pnpm build
 
       - name: create and publish versions
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm ci:version
-          commit: 'chore: update versions'
-          title: 'chore: update versions'
-          publish: pnpm ci:publish
+          version-script: pnpm ci:version
+          commit-message: 'chore: update versions'
+          pr-title: 'chore: update versions'
+          publish-script: pnpm ci:publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
